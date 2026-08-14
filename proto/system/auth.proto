@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+import "user.proto";
+import "role.proto";
+
+message LoginReq {
+  string username = 1 [(gogoproto.jsontag) = 'username'];
+  string password = 2 [(gogoproto.jsontag) = 'password'];
+}
+
+message LoginResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+  repeated Role roles = 3 [(gogoproto.jsontag) = 'roles'];
+  string token = 4 [(gogoproto.jsontag) = 'token'];
+  int64 expires_in = 5 [(gogoproto.jsontag) = 'expiresIn'];
+}
+
+message ValidateTokenReq {
+  string token = 1 [(gogoproto.jsontag) = 'token'];
+}
+
+message ValidateTokenResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+  repeated Role roles = 3 [(gogoproto.jsontag) = 'roles'];
+}

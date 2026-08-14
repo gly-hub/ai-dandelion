@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package aiagent;
+option go_package = "./;aiagent";
+import "session.proto";
+import "message.proto";
+import "agent_model.proto";
+import "skill.proto";
+import "mcp.proto";
+import "agent_bot.proto";
+
+service AiAgentService {
+    rpc ListSessions(session_proto.SearchMessageReq)returns(session_proto.SearchMessageResp);
+    rpc CreateSession(session_proto.CreateSessionReq)returns(session_proto.CreateSessionResp);
+    rpc EnsureSession(session_proto.EnsureSessionReq)returns(session_proto.EnsureSessionResp);
+    rpc UpdateSession(session_proto.UpdateSessionReq)returns(session_proto.UpdateSessionResp);
+    rpc DeleteSession(session_proto.DeleteSessionReq)returns(session_proto.DeleteSessionResp);
+
+    rpc ListMessages(message_proto.GetMessageReq)returns(message_proto.GetMessageResp);
+    rpc StreamMessage(message_proto.StreamMessageReq)returns(stream message_proto.StreamMessageResp);
+    rpc SubmitAskUserQuestion(message_proto.SubmitAskUserQuestionReq)returns(message_proto.SubmitAskUserQuestionResp);
+    rpc SubmitToolPermission(message_proto.SubmitToolPermissionReq)returns(message_proto.SubmitToolPermissionResp);
+    rpc ListAgentModels(agent_model_proto.ListAgentModelsReq)returns(agent_model_proto.ListAgentModelsResp);
+    rpc ListSkills(skill_proto.ListSkillsReq)returns(skill_proto.ListSkillsResp);
+    rpc ImportSkillPackage(skill_proto.ImportSkillPackageReq)returns(skill_proto.ImportSkillPackageResp);
+    rpc UpdateSkill(skill_proto.UpdateSkillReq)returns(skill_proto.UpdateSkillResp);
+    rpc DeleteSkill(skill_proto.DeleteSkillReq)returns(skill_proto.DeleteSkillResp);
+
+    rpc ListMCPServers(mcp_proto.ListMCPServersReq)returns(mcp_proto.ListMCPServersResp);
+    rpc CreateMCPServer(mcp_proto.SaveMCPServerReq)returns(mcp_proto.SaveMCPServerResp);
+    rpc UpdateMCPServer(mcp_proto.SaveMCPServerReq)returns(mcp_proto.SaveMCPServerResp);
+    rpc DeleteMCPServer(mcp_proto.DeleteMCPServerReq)returns(mcp_proto.DeleteMCPServerResp);
+
+    rpc ListAgentBots(agent_bot_proto.ListAgentBotsReq)returns(agent_bot_proto.ListAgentBotsResp);
+    rpc ListAgentBotRuntimeConfigs(agent_bot_proto.ListAgentBotRuntimeConfigsReq)returns(agent_bot_proto.ListAgentBotRuntimeConfigsResp);
+    rpc CreateAgentBot(agent_bot_proto.CreateAgentBotReq)returns(agent_bot_proto.CreateAgentBotResp);
+    rpc UpdateAgentBot(agent_bot_proto.UpdateAgentBotReq)returns(agent_bot_proto.UpdateAgentBotResp);
+    rpc DeleteAgentBot(agent_bot_proto.DeleteAgentBotReq)returns(agent_bot_proto.DeleteAgentBotResp);
+    rpc EnableAgentBot(agent_bot_proto.EnableAgentBotReq)returns(agent_bot_proto.EnableAgentBotResp);
+    rpc DisableAgentBot(agent_bot_proto.DisableAgentBotReq)returns(agent_bot_proto.DisableAgentBotResp);
+
+}

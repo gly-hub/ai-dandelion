@@ -1,0 +1,88 @@
+app:
+  name: "inner-gateway"
+  version: "1.0.0"
+  env: "local"
+
+logger:
+  enabled: true
+  level: "info"
+  output: "console"
+  service: "inner-gateway"
+  version: "1.0.0"
+
+grpcClient:
+  timeout: "10s"
+  insecure: true
+  poolSize: 4
+  keepAliveTime: "5m"
+  keepAliveTimeout: "10s"
+  loadBalancing: "round_robin"
+  etcd:
+    endpoints:
+      - "127.0.0.1:2379"
+    dialTimeout: "5s"
+    prefix: "/grpc/services"
+
+httpServer:
+  enabled: true
+  address: "0.0.0.0"
+  port: 8086
+  enableCORS: true
+  enableRecovery: true
+  enableLogging: true
+  enableTrace: false
+  cors:
+    # Replace with the exact browser origins served by this deployment.
+    allowOrigins: "http://localhost:5173"
+    allowMethods: "GET,POST,PUT,DELETE,OPTIONS"
+    allowHeaders: "Authorization,Content-Type,X-Access-Token,X-Bridge-Token,X-API-Key"
+    allowCredentials: false
+
+redis:
+  databases:
+    - name: "ai-dandelion"
+      host: "127.0.0.1"
+      port: 6379
+      password: ""
+      db: 1
+      poolSize: 10
+      minIdleConns: 5
+      maxConnAge: "1h"
+      poolTimeout: "4s"
+      idleTimeout: "5m"
+      dialTimeout: "5s"
+      readTimeout: "3s"
+      writeTimeout: "3s"
+
+mongodb:
+  databases:
+    - name: "log-mongo"
+      host: "127.0.0.1"
+      port: 27017
+      username: ""
+      password: ""
+      database: "gateway_logs"
+      maxPoolSize: 50
+      minPoolSize: 5
+
+auth:
+  # Generate independent high-entropy values for every environment.
+  token_secret: "REPLACE_WITH_A_RANDOM_JWT_SIGNING_SECRET"
+  token_ttl: "24h"
+  bridge_token: "REPLACE_WITH_A_RANDOM_CHANNEL_BRIDGE_TOKEN"
+
+realtime:
+  allowedOrigins:
+    - "http://localhost:5173"
+
+tracing:
+  enabled: false
+  serviceName: "inner-gateway"
+  serviceVersion: "1.0.0"
+  environment: "local"
+  samplingRate: 0.1
+  otlp:
+    enabled: false
+    endpoint: "127.0.0.1:4318"
+    useGRPC: false
+    insecure: true

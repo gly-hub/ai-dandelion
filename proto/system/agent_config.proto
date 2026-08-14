@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message AgentSystemConfig {
+  string system_prompt = 1 [(gogoproto.jsontag) = 'systemPrompt'];
+  string permission_mode = 2 [(gogoproto.jsontag) = 'permissionMode'];
+  int32 max_turns = 3 [(gogoproto.jsontag) = 'maxTurns'];
+  int64 updated_at = 4 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message AgentSessionConfig {
+  string session_type = 1 [(gogoproto.jsontag) = 'sessionType'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string system_prompt = 4 [(gogoproto.jsontag) = 'systemPrompt'];
+  string permission_mode = 5 [(gogoproto.jsontag) = 'permissionMode'];
+  int32 max_turns = 6 [(gogoproto.jsontag) = 'maxTurns'];
+  string model_id = 7 [(gogoproto.jsontag) = 'modelId'];
+  bool enabled = 8 [(gogoproto.jsontag) = 'enabled'];
+  int64 updated_at = 9 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message GetAgentConfigReq {
+}
+
+message GetAgentConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentSystemConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}
+
+message UpdateAgentConfigReq {
+  string system_prompt = 1 [(gogoproto.jsontag) = 'systemPrompt'];
+  string permission_mode = 2 [(gogoproto.jsontag) = 'permissionMode'];
+  int32 max_turns = 3 [(gogoproto.jsontag) = 'maxTurns'];
+}
+
+message UpdateAgentConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentSystemConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}
+
+message ListAgentSessionConfigsReq {
+}
+
+message ListAgentSessionConfigsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated AgentSessionConfig configs = 2 [(gogoproto.jsontag) = 'configs'];
+}
+
+message UpdateAgentSessionConfigReq {
+  string session_type = 1 [(gogoproto.jsontag) = 'sessionType'];
+  string system_prompt = 2 [(gogoproto.jsontag) = 'systemPrompt'];
+  string permission_mode = 3 [(gogoproto.jsontag) = 'permissionMode'];
+  int32 max_turns = 4 [(gogoproto.jsontag) = 'maxTurns'];
+  string model_id = 5 [(gogoproto.jsontag) = 'modelId'];
+  bool enabled = 6 [(gogoproto.jsontag) = 'enabled'];
+}
+
+message UpdateAgentSessionConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentSessionConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}

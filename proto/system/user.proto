@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message User {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string username = 2 [(gogoproto.jsontag) = 'username'];
+  string email = 3 [(gogoproto.jsontag) = 'email'];
+  string phone = 4 [(gogoproto.jsontag) = 'phone'];
+  int32 status = 5 [(gogoproto.jsontag) = 'status'];
+  int64 created_at = 6 [(gogoproto.jsontag) = 'createdAt'];
+  repeated string role_ids = 7 [(gogoproto.jsontag) = 'roleIds'];
+}
+
+message ListUsersReq {
+}
+
+message ListUsersResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated User users = 2 [(gogoproto.jsontag) = 'users'];
+}
+
+message CreateUserReq {
+  string username = 1 [(gogoproto.jsontag) = 'username'];
+  string email = 2 [(gogoproto.jsontag) = 'email'];
+  string password = 3 [(gogoproto.jsontag) = 'password'];
+  string phone = 4 [(gogoproto.jsontag) = 'phone'];
+  int32 status = 5 [(gogoproto.jsontag) = 'status'];
+}
+
+message CreateUserResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+}
+
+message UpdateUserReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string username = 2 [(gogoproto.jsontag) = 'username'];
+  string email = 3 [(gogoproto.jsontag) = 'email'];
+  string password = 4 [(gogoproto.jsontag) = 'password'];
+  string phone = 5 [(gogoproto.jsontag) = 'phone'];
+  int32 status = 6 [(gogoproto.jsontag) = 'status'];
+}
+
+message UpdateUserResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+}
+
+message DeleteUserReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteUserResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}
+
+message EnableUserReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message EnableUserResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+}
+
+message DisableUserReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DisableUserResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package agent_model_proto;
+option go_package = "./;aiagent";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message AgentModelOption {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string model = 3 [(gogoproto.jsontag) = 'model'];
+  bool is_default = 4 [(gogoproto.jsontag) = 'isDefault'];
+}
+
+message ListAgentModelsReq {
+}
+
+message ListAgentModelsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated AgentModelOption models = 2 [(gogoproto.jsontag) = 'models'];
+}

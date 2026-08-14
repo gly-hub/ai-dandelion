@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message Role {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string code = 3 [(gogoproto.jsontag) = 'code'];
+  int32 status = 4 [(gogoproto.jsontag) = 'status'];
+  string remark = 5 [(gogoproto.jsontag) = 'remark'];
+  int32 sort = 6 [(gogoproto.jsontag) = 'sort'];
+  int64 created_at = 7 [(gogoproto.jsontag) = 'createdAt'];
+  repeated string menu_ids = 8 [(gogoproto.jsontag) = 'menuIds'];
+}
+
+message ListRolesReq {
+}
+
+message ListRolesResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated Role roles = 2 [(gogoproto.jsontag) = 'roles'];
+}
+
+message CreateRoleReq {
+  string name = 1 [(gogoproto.jsontag) = 'name'];
+  string code = 2 [(gogoproto.jsontag) = 'code'];
+  int32 status = 3 [(gogoproto.jsontag) = 'status'];
+  string remark = 4 [(gogoproto.jsontag) = 'remark'];
+  int32 sort = 5 [(gogoproto.jsontag) = 'sort'];
+}
+
+message CreateRoleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Role role = 2 [(gogoproto.jsontag) = 'role'];
+}
+
+message UpdateRoleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string code = 3 [(gogoproto.jsontag) = 'code'];
+  int32 status = 4 [(gogoproto.jsontag) = 'status'];
+  string remark = 5 [(gogoproto.jsontag) = 'remark'];
+  int32 sort = 6 [(gogoproto.jsontag) = 'sort'];
+}
+
+message UpdateRoleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Role role = 2 [(gogoproto.jsontag) = 'role'];
+}
+
+message DeleteRoleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteRoleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}
+
+message EnableRoleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message EnableRoleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Role role = 2 [(gogoproto.jsontag) = 'role'];
+}
+
+message DisableRoleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DisableRoleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Role role = 2 [(gogoproto.jsontag) = 'role'];
+}
+
+message GetRoleMenusReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message GetRoleMenusResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated string menu_ids = 2 [(gogoproto.jsontag) = 'menuIds'];
+}
+
+message SetRoleMenusReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  repeated string menu_ids = 2 [(gogoproto.jsontag) = 'menuIds'];
+}
+
+message SetRoleMenusResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated string menu_ids = 2 [(gogoproto.jsontag) = 'menuIds'];
+}
+
+message GetUserRolesReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+}
+
+message GetUserRolesResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated string role_ids = 2 [(gogoproto.jsontag) = 'roleIds'];
+  repeated Role roles = 3 [(gogoproto.jsontag) = 'roles'];
+}
+
+message SetUserRolesReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  repeated string role_ids = 2 [(gogoproto.jsontag) = 'roleIds'];
+}
+
+message SetUserRolesResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated string role_ids = 2 [(gogoproto.jsontag) = 'roleIds'];
+}

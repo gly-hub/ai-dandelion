@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message Menu {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string parent_id = 2 [(gogoproto.jsontag) = 'parentId'];
+  string module = 3 [(gogoproto.jsontag) = 'module'];
+  string placement = 4 [(gogoproto.jsontag) = 'placement'];
+  string name = 5 [(gogoproto.jsontag) = 'name'];
+  string code = 6 [(gogoproto.jsontag) = 'code'];
+  string view_key = 7 [(gogoproto.jsontag) = 'viewKey'];
+  string icon = 8 [(gogoproto.jsontag) = 'icon'];
+  int32 menu_type = 9 [(gogoproto.jsontag) = 'menuType'];
+  int32 sort = 10 [(gogoproto.jsontag) = 'sort'];
+  int32 status = 11 [(gogoproto.jsontag) = 'status'];
+  int32 visible = 12 [(gogoproto.jsontag) = 'visible'];
+  bool is_default = 13 [(gogoproto.jsontag) = 'isDefault'];
+  string remark = 14 [(gogoproto.jsontag) = 'remark'];
+  int64 created_at = 15 [(gogoproto.jsontag) = 'createdAt'];
+  repeated Menu children = 16 [(gogoproto.jsontag) = 'children'];
+  string source_type = 17 [(gogoproto.jsontag) = 'sourceType'];
+  string source_id = 18 [(gogoproto.jsontag) = 'sourceId'];
+}
+
+message ListMenusReq {
+  string module = 1 [(gogoproto.jsontag) = 'module'];
+  string placement = 2 [(gogoproto.jsontag) = 'placement'];
+  bool tree = 3 [(gogoproto.jsontag) = 'tree'];
+  int32 status = 4 [(gogoproto.jsontag) = 'status'];
+}
+
+message ListMenusResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated Menu menus = 2 [(gogoproto.jsontag) = 'menus'];
+}
+
+message GetNavMenusReq {
+  string module = 1 [(gogoproto.jsontag) = 'module'];
+  string user_id = 2 [(gogoproto.jsontag) = 'userId'];
+}
+
+message GetNavMenusResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated Menu menus = 2 [(gogoproto.jsontag) = 'menus'];
+}
+
+message CreateMenuReq {
+  string parent_id = 1 [(gogoproto.jsontag) = 'parentId'];
+  string module = 2 [(gogoproto.jsontag) = 'module'];
+  string placement = 3 [(gogoproto.jsontag) = 'placement'];
+  string name = 4 [(gogoproto.jsontag) = 'name'];
+  string code = 5 [(gogoproto.jsontag) = 'code'];
+  string view_key = 6 [(gogoproto.jsontag) = 'viewKey'];
+  string icon = 7 [(gogoproto.jsontag) = 'icon'];
+  int32 menu_type = 8 [(gogoproto.jsontag) = 'menuType'];
+  int32 sort = 9 [(gogoproto.jsontag) = 'sort'];
+  int32 status = 10 [(gogoproto.jsontag) = 'status'];
+  int32 visible = 11 [(gogoproto.jsontag) = 'visible'];
+  bool is_default = 12 [(gogoproto.jsontag) = 'isDefault'];
+  string remark = 13 [(gogoproto.jsontag) = 'remark'];
+}
+
+message CreateMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Menu menu = 2 [(gogoproto.jsontag) = 'menu'];
+}
+
+message UpdateMenuReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string parent_id = 2 [(gogoproto.jsontag) = 'parentId'];
+  string module = 3 [(gogoproto.jsontag) = 'module'];
+  string placement = 4 [(gogoproto.jsontag) = 'placement'];
+  string name = 5 [(gogoproto.jsontag) = 'name'];
+  string code = 6 [(gogoproto.jsontag) = 'code'];
+  string view_key = 7 [(gogoproto.jsontag) = 'viewKey'];
+  string icon = 8 [(gogoproto.jsontag) = 'icon'];
+  int32 menu_type = 9 [(gogoproto.jsontag) = 'menuType'];
+  int32 sort = 10 [(gogoproto.jsontag) = 'sort'];
+  int32 status = 11 [(gogoproto.jsontag) = 'status'];
+  int32 visible = 12 [(gogoproto.jsontag) = 'visible'];
+  bool is_default = 13 [(gogoproto.jsontag) = 'isDefault'];
+  string remark = 14 [(gogoproto.jsontag) = 'remark'];
+}
+
+message UpdateMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Menu menu = 2 [(gogoproto.jsontag) = 'menu'];
+}
+
+message DeleteMenuReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}
+
+message EnableMenuReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message EnableMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Menu menu = 2 [(gogoproto.jsontag) = 'menu'];
+}
+
+message DisableMenuReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DisableMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Menu menu = 2 [(gogoproto.jsontag) = 'menu'];
+}
+
+message SyncGeneratedFunctionMenuReq {
+  string function_id = 1 [(gogoproto.jsontag) = 'functionId'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string parent_id = 3 [(gogoproto.jsontag) = 'parentId'];
+  string action = 4 [(gogoproto.jsontag) = 'action'];
+  repeated string action_keys = 5 [(gogoproto.jsontag) = 'actionKeys'];
+}
+
+message SyncGeneratedFunctionMenuResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Menu menu = 2 [(gogoproto.jsontag) = 'menu'];
+}
+
+message CheckFunctionMenuAccessReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string action_key = 3 [(gogoproto.jsontag) = 'actionKey'];
+}
+
+message CheckFunctionMenuAccessResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  bool allowed = 2 [(gogoproto.jsontag) = 'allowed'];
+}
+
+// CheckMenuAccess is the server-side counterpart of button visibility. Callers
+// must use it for mutating operations; UI visibility is not an authorization boundary.
+message CheckMenuAccessReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  string menu_code = 2 [(gogoproto.jsontag) = 'menuCode'];
+}
+
+message CheckMenuAccessResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  bool allowed = 2 [(gogoproto.jsontag) = 'allowed'];
+}

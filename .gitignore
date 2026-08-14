@@ -1,0 +1,16 @@
+.idea
+AGENTS.md
+
+# Developer-specific service configuration. Copy each configs_example.yaml to
+# configs_local.yaml and supply deployment credentials outside version control.
+/ai-agent/config/configs_local.yaml
+/inner-gateway/config/configs_local.yaml
+/system/config/configs_local.yaml
+/func-operation/config/configs_local.yaml
+/func-operation/generated_apps/
+
+/data/*
+!/data/user-skills/
+/data/user-skills/*
+!/data/user-skills/_system/
+!/data/user-skills/_system/**

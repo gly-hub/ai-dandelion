@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Doc Builder"
+  short_description: "Draft interaction-ready product docs for func-operation."
+  default_prompt: "Use $product-doc-builder only to clarify missing scope and write the product draft document, with concrete pages, operations, states, acceptance criteria, no pending-questions section, and the required completion tag. Do not modify technical docs, generated app code, or platform code."
