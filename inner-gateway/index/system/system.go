@@ -1,9 +1,9 @@
 package system
 
 import (
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	systemsvc "github.com/gly-hub/ai-dandelion/inner-gateway/internal/service/system"
 	"github.com/gofiber/fiber/v2"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	systemsvc "github.com/team-dandelion/ai-dandelion/inner-gateway/internal/service/system"
 )
 
 func RouteHandler(fiberApp *fiber.App) {

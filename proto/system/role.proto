@@ -3,7 +3,7 @@ syntax = "proto3";
 package system_proto;
 option go_package = "./;system";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+import "github.com/gly-hub/quickgo/grpcep/lib.proto";
 
 message Role {
   string id = 1 [(gogoproto.jsontag) = 'id'];

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"strings"
 
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/system/internal/dao"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
 	"github.com/google/uuid"
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/system/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
-	"github.com/team-dandelion/ai-dandelion/toolbox/eventbus"
 )
 
 const NotificationEventType = "system.notification"

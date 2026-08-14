@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/runtime/generatedapp"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/runtime/generatedapp"
 )
 
 func TestClassifyInvokeErrorAppNotFound(t *testing.T) {

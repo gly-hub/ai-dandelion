@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/cmd"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/cmd"
 )
 
 func main() {

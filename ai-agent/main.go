@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/team-dandelion/ai-dandelion/ai-agent/cmd"
+	"github.com/gly-hub/ai-dandelion/ai-agent/cmd"
 )
 
 func main() {

@@ -1,9 +1,9 @@
 package funcoperation
 
 import (
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	funcoperation "github.com/gly-hub/ai-dandelion/inner-gateway/internal/service/func-operation"
 	"github.com/gofiber/fiber/v2"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	funcoperation "github.com/team-dandelion/ai-dandelion/inner-gateway/internal/service/func-operation"
 )
 
 func RouteHandler(fiberApp *fiber.App) {

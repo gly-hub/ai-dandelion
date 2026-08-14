@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 )
 
 const (

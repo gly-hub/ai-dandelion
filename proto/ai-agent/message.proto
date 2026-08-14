@@ -3,7 +3,7 @@ syntax = "proto3";
 package message_proto;
 option go_package = "./;aiagent";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+import "github.com/gly-hub/quickgo/grpcep/lib.proto";
 
 message MessagePart {
   string type = 1 [(gogoproto.jsontag) = 'type'];

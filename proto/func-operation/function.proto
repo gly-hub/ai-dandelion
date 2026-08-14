@@ -3,7 +3,7 @@ syntax = "proto3";
 package func_operation_proto;
 option go_package = "./;funcoperation";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
-import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+import "github.com/gly-hub/quickgo/grpcep/lib.proto";
 
 message FunctionReadiness {
   string label = 1 [(gogoproto.jsontag) = 'label'];

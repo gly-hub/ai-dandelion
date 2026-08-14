@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 )
 
 func TestTicketManagerIssueConsumeOnce(t *testing.T) {

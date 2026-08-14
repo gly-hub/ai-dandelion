@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	grpcep "github.com/team-dandelion/quickgo/grpcep"
+	grpcep "github.com/gly-hub/quickgo/grpcep"
 	io "io"
 	math "math"
 	math_bits "math/bits"

@@ -1,13 +1,13 @@
 package index
 
 import (
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	aiagent "github.com/gly-hub/ai-dandelion/inner-gateway/index/ai-agent"
+	funcoperation "github.com/gly-hub/ai-dandelion/inner-gateway/index/func-operation"
+	realtime "github.com/gly-hub/ai-dandelion/inner-gateway/index/realtime"
+	systemsvc "github.com/gly-hub/ai-dandelion/inner-gateway/index/system"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/internal/middleware"
 	"github.com/gofiber/fiber/v2"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	aiagent "github.com/team-dandelion/ai-dandelion/inner-gateway/index/ai-agent"
-	funcoperation "github.com/team-dandelion/ai-dandelion/inner-gateway/index/func-operation"
-	realtime "github.com/team-dandelion/ai-dandelion/inner-gateway/index/realtime"
-	systemsvc "github.com/team-dandelion/ai-dandelion/inner-gateway/index/system"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/internal/middleware"
 )
 
 func RouteHandler(fiberApp *fiber.App) {

@@ -1,10 +1,10 @@
 package boot
 
 import (
-	"github.com/team-dandelion/ai-dandelion/func-operation/config"
-	"github.com/team-dandelion/ai-dandelion/func-operation/global"
-	"github.com/team-dandelion/ai-dandelion/toolbox/gormutil"
-	"github.com/team-dandelion/quickgo"
+	"github.com/gly-hub/ai-dandelion/func-operation/config"
+	"github.com/gly-hub/ai-dandelion/func-operation/global"
+	"github.com/gly-hub/ai-dandelion/toolbox/gormutil"
+	"github.com/gly-hub/quickgo"
 )
 
 func bootConfig(confPath string) (cfg *config.Config, err error) {

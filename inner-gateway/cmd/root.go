@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gly-hub/ai-dandelion/inner-gateway/boot"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/index"
+	"github.com/gly-hub/quickgo/logger"
 	"github.com/spf13/cobra"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/boot"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/index"
-	"github.com/team-dandelion/quickgo/logger"
 
 	"os"
 )

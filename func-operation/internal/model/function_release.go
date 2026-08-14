@@ -1,6 +1,6 @@
 package model
 
-import "github.com/team-dandelion/ai-dandelion/func-operation/boot"
+import "github.com/gly-hub/ai-dandelion/func-operation/boot"
 
 func init() {
 	boot.Register(&FunctionRelease{}, &FunctionOutboxEvent{})

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gly-hub/ai-dandelion/toolbox/runtime"
 	"github.com/redis/go-redis/v9"
-	"github.com/team-dandelion/ai-dandelion/toolbox/runtime"
 )
 
 // DistributeLockRedis 基于redis的分布式可重入锁，自动续租

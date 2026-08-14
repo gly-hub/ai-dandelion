@@ -1,8 +1,8 @@
 package logic
 
 import (
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
 )
 
 func expandAllowedMenuIDs(all []model.Menu, seed map[string]struct{}) map[string]struct{} {

@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gly-hub/ai-dandelion/ai-agent/boot"
+	"github.com/gly-hub/ai-dandelion/ai-agent/global"
+	"github.com/gly-hub/ai-dandelion/ai-agent/index"
+	"github.com/gly-hub/quickgo/logger"
 	"github.com/spf13/cobra"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/boot"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/global"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/index"
-	"github.com/team-dandelion/quickgo/logger"
 
 	"os"
 )

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

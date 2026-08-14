@@ -3,8 +3,8 @@ package aiagent
 import (
 	"context"
 
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gofiber/fiber/v2"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
 )
 
 // ListMCPServers

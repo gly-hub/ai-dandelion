@@ -1,10 +1,11 @@
-module github.com/team-dandelion/ai-dandelion
+module github.com/gly-hub/ai-dandelion
 
 go 1.26.3
 
 require (
 	github.com/dop251/goja v0.0.0-20260723142020-b4aef50fa347
 	github.com/gly-hub/claude-agent-sdk-go v1.0.0
+	github.com/gly-hub/quickgo v1.0.1
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/websocket/v2 v2.0.13
 	github.com/gogo/protobuf v1.3.2
@@ -15,7 +16,6 @@ require (
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.10.2
-	github.com/team-dandelion/quickgo v1.0.0
 	github.com/tetratelabs/wazero v1.9.0
 	golang.org/x/crypto v0.51.0
 	golang.org/x/net v0.55.0

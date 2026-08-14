@@ -9,11 +9,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/google/uuid"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
 	"gorm.io/gorm"
 )
 

@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 )
 
 const (

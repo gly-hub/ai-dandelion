@@ -3,15 +3,15 @@ package index
 import (
 	"context"
 
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/system/boot"
-	"github.com/team-dandelion/ai-dandelion/system/global"
-	"github.com/team-dandelion/ai-dandelion/system/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/system/internal/logic"
-	"github.com/team-dandelion/ai-dandelion/system/internal/service"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
-	"github.com/team-dandelion/ai-dandelion/toolbox/eventbus"
-	uploader_minio "github.com/team-dandelion/ai-dandelion/toolbox/uploader-minio"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/system/boot"
+	"github.com/gly-hub/ai-dandelion/system/global"
+	"github.com/gly-hub/ai-dandelion/system/internal/dao"
+	"github.com/gly-hub/ai-dandelion/system/internal/logic"
+	"github.com/gly-hub/ai-dandelion/system/internal/service"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
+	uploader_minio "github.com/gly-hub/ai-dandelion/toolbox/uploader-minio"
 	rpc "google.golang.org/grpc"
 )
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 	"github.com/google/uuid"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/model"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
-	"github.com/team-dandelion/ai-dandelion/toolbox/agent"
 )
 
 type agentBotRunRequest struct {

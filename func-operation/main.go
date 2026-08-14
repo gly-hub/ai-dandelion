@@ -1,6 +1,6 @@
 package main
 
-import "github.com/team-dandelion/ai-dandelion/func-operation/cmd"
+import "github.com/gly-hub/ai-dandelion/func-operation/cmd"
 
 func main() {
 	cmd.Execute()

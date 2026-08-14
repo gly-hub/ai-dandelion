@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 	"github.com/tetratelabs/wazero"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
-	"github.com/team-dandelion/quickgo/grpcep"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/quickgo/grpcep"
 )
 
 func (s *AiAgentService) ListMessages(ctx context.Context, req *aiagent.GetMessageReq) (

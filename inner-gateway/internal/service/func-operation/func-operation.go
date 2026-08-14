@@ -3,8 +3,8 @@ package funcoperation
 import (
 	"context"
 
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
-	"github.com/team-dandelion/quickgo/grpcep"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/quickgo/grpcep"
 	"google.golang.org/grpc"
 )
 

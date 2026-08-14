@@ -1,9 +1,9 @@
 package boot
 
 import (
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/config"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	"github.com/team-dandelion/quickgo"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/config"
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	"github.com/gly-hub/quickgo"
 )
 
 func bootConfig(confPath string) (cfg *config.Config, err error) {

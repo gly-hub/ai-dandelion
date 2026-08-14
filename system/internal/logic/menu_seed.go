@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
-	"github.com/team-dandelion/ai-dandelion/system/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
+	"github.com/gly-hub/ai-dandelion/system/internal/dao"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
 )
 
 type seedMenu struct {

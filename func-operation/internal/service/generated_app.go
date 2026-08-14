@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
-	"github.com/team-dandelion/quickgo/grpcep"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/quickgo/grpcep"
 )
 
 func (s *FuncOperationService) GetFunctionPreviewFrontend(ctx context.Context, req *funcoperation.GetFunctionPreviewFrontendReq) (out *funcoperation.GetFunctionPreviewFrontendResp, err error) {

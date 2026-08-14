@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/gofiber/fiber/v2"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
 	"google.golang.org/grpc"
 )
 

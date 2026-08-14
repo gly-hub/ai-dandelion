@@ -3,7 +3,7 @@ package logic
 import (
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 )
 
 func TestBuildFunctionReadinessProductStage(t *testing.T) {

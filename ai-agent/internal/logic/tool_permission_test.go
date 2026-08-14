@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 )
 
 func TestToolPermissionBrokerWaitAndSubmit(t *testing.T) {

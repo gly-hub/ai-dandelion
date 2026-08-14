@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

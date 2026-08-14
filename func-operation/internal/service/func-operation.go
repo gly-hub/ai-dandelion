@@ -1,6 +1,6 @@
 package service
 
-import "github.com/team-dandelion/ai-dandelion/func-operation/internal/logic"
+import "github.com/gly-hub/ai-dandelion/func-operation/internal/logic"
 
 type FuncOperationService struct {
 	functionLogic     *logic.FunctionLogic
