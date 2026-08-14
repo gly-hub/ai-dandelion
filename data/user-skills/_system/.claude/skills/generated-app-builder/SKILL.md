@@ -416,7 +416,7 @@ Before final response, check:
 - Legacy SQL validation: `func-operation/internal/dao/generated_app.go` (do not use for new apps)
 - Frontend render context type: `../ai-dandelion-web/src/types.ts`
 
-Commands in this project should use the local `rtk` prefix, for example `rtk go test ./...`, `rtk npm run build`, or `rtk env GOCACHE=/private/tmp/ai-dandelion-go-cache go test ./...`.
+Commands in this project should use the local `rtk` prefix, for example `go test ./...`, `npm run build`, or `env GOCACHE=/private/tmp/ai-dandelion-go-cache go test ./...`.
 
 ## Public Configuration Runtime
 
