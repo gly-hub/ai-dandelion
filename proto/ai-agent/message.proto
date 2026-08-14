@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package message_proto;
+option go_package = "./;aiagent";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message MessagePart {
+  string type = 1 [(gogoproto.jsontag) = 'type'];
+  string text = 2 [(gogoproto.jsontag) = 'text,omitempty'];
+  string tool_id = 3 [(gogoproto.jsontag) = 'toolId,omitempty'];
+  string tool_name = 4 [(gogoproto.jsontag) = 'toolName,omitempty'];
+  string input = 5 [(gogoproto.jsontag) = 'input,omitempty'];
+  string result = 6 [(gogoproto.jsontag) = 'result,omitempty'];
+  string status = 7 [(gogoproto.jsontag) = 'status,omitempty'];
+  bool is_error = 8 [(gogoproto.jsontag) = 'isError,omitempty'];
+  string skill_id = 9 [(gogoproto.jsontag) = 'skillId,omitempty'];
+  string label = 10 [(gogoproto.jsontag) = 'label,omitempty'];
+  string mcp_id = 11 [(gogoproto.jsontag) = 'mcpId,omitempty'];
+  string tool_title = 12 [(gogoproto.jsontag) = 'toolTitle,omitempty'];
+  string tool_description = 13 [(gogoproto.jsontag) = 'toolDescription,omitempty'];
+  string file_uuid = 14 [(gogoproto.jsontag) = 'fileUuid,omitempty'];
+  string file_name = 15 [(gogoproto.jsontag) = 'fileName,omitempty'];
+  string content_type = 16 [(gogoproto.jsontag) = 'contentType,omitempty'];
+  int64 file_size = 17 [(gogoproto.jsontag) = 'fileSize,omitempty'];
+  string md5 = 18 [(gogoproto.jsontag) = 'md5,omitempty'];
+  string file_url = 19 [(gogoproto.jsontag) = 'fileUrl,omitempty'];
+}
+
+message MessageExtra {
+  string type = 1 [(gogoproto.jsontag) = 'type'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+  string name = 3 [(gogoproto.jsontag) = 'name'];
+  int32 index = 4 [(gogoproto.jsontag) = 'index,omitempty'];
+}
+
+message Message {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string session_id = 2 [(gogoproto.jsontag) = 'sessionId'];
+  string role = 3 [(gogoproto.jsontag) = 'role'];
+  string content = 4 [(gogoproto.jsontag) = 'content'];
+  repeated MessagePart parts = 5 [(gogoproto.jsontag) = 'parts,omitempty'];
+  int64 created_at = 6 [(gogoproto.jsontag) = 'createdAt'];
+  repeated MessageExtra extra = 7 [(gogoproto.jsontag) = 'extra,omitempty'];
+}
+
+message GetMessageReq {
+  string session_id = 1 [(gogoproto.jsontag) = 'session_id'];
+  int32 limit = 2 [(gogoproto.jsontag) = 'limit'];
+  string before = 3 [(gogoproto.jsontag) = 'before'];
+}
+
+message GetMessageResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated Message messages = 2 [(gogoproto.jsontag) = 'messages'];
+  bool has_more = 3 [(gogoproto.jsontag) = 'hasMore'];
+  string next_before = 4 [(gogoproto.jsontag) = 'nextBefore,omitempty'];
+}
+
+message StreamMessageReq {
+  string session_id = 1 [(gogoproto.jsontag) = 'sessionId'];
+  string content = 2 [(gogoproto.jsontag) = 'content'];
+  string model_id = 3 [(gogoproto.jsontag) = 'modelId'];
+  string agent_session_config_type = 4 [(gogoproto.jsontag) = 'agentSessionConfigType'];
+  string system_prompt = 5 [(gogoproto.jsontag) = 'systemPrompt'];
+  string permission_mode = 6 [(gogoproto.jsontag) = 'permissionMode'];
+  int32 max_turns = 7 [(gogoproto.jsontag) = 'maxTurns'];
+  repeated MessageExtra extra = 8 [(gogoproto.jsontag) = 'extra,omitempty'];
+  string user_id = 9 [(gogoproto.jsontag) = 'userId,omitempty'];
+  repeated MessagePart message_parts = 10 [(gogoproto.jsontag) = 'messageParts,omitempty'];
+}
+
+message StreamMessageResp {
+  string content = 1 [(gogoproto.jsontag) = 'content'];
+  string type = 2 [(gogoproto.jsontag) = 'type'];
+  string text = 3 [(gogoproto.jsontag) = 'text,omitempty'];
+  string tool_id = 4 [(gogoproto.jsontag) = 'toolId,omitempty'];
+  string tool_name = 5 [(gogoproto.jsontag) = 'toolName,omitempty'];
+  string tool_input = 6 [(gogoproto.jsontag) = 'toolInput,omitempty'];
+  string result_text = 7 [(gogoproto.jsontag) = 'resultText,omitempty'];
+  bool is_error = 8 [(gogoproto.jsontag) = 'isError,omitempty'];
+  bool done = 9 [(gogoproto.jsontag) = 'done,omitempty'];
+  Message message = 10 [(gogoproto.jsontag) = 'message,omitempty'];
+  string agent_session_id = 11 [(gogoproto.jsontag) = 'agentSessionId,omitempty'];
+  string tool_title = 12 [(gogoproto.jsontag) = 'toolTitle,omitempty'];
+  string tool_description = 13 [(gogoproto.jsontag) = 'toolDescription,omitempty'];
+}
+
+message SubmitAskUserQuestionReq {
+  string session_id = 1 [(gogoproto.jsontag) = 'sessionId'];
+  string tool_id = 2 [(gogoproto.jsontag) = 'toolId'];
+  string answers_json = 3 [(gogoproto.jsontag) = 'answersJson'];
+  string response = 4 [(gogoproto.jsontag) = 'response,omitempty'];
+}
+
+message SubmitAskUserQuestionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}
+
+message SubmitToolPermissionReq {
+  string session_id = 1 [(gogoproto.jsontag) = 'sessionId'];
+  string tool_id = 2 [(gogoproto.jsontag) = 'toolId'];
+  bool allow = 3 [(gogoproto.jsontag) = 'allow'];
+  string message = 4 [(gogoproto.jsontag) = 'message,omitempty'];
+}
+
+message SubmitToolPermissionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}

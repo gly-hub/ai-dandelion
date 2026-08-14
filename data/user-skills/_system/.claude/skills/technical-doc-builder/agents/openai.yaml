@@ -1,0 +1,4 @@
+interface:
+  display_name: "Technical Doc Builder"
+  short_description: "Draft implementation-ready technical docs from product docs."
+  default_prompt: "Use $technical-doc-builder only to clarify implementation-critical gaps and write the technical draft document, then define concrete layout, frontend modules, backend actions, manifest dataModels/relations/queries, interaction states, no pending-questions section, and finish with the required completion tag. Do not modify product docs, generated app code, or platform code."

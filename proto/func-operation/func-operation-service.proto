@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package funcoperation;
+option go_package = "./;funcoperation";
+import "function.proto";
+
+service FuncOperationService {
+  rpc ListFunctions(func_operation_proto.ListFunctionsReq) returns (func_operation_proto.ListFunctionsResp);
+  rpc CreateFunction(func_operation_proto.CreateFunctionReq) returns (func_operation_proto.CreateFunctionResp);
+  rpc UpdateFunction(func_operation_proto.UpdateFunctionReq) returns (func_operation_proto.UpdateFunctionResp);
+  rpc LoadFunctionDocument(func_operation_proto.LoadFunctionDocumentReq) returns (func_operation_proto.LoadFunctionDocumentResp);
+  rpc CommitFunctionDocument(func_operation_proto.CommitFunctionDocumentReq) returns (func_operation_proto.CommitFunctionDocumentResp);
+  rpc MaterializeFunctionApp(func_operation_proto.MaterializeFunctionAppReq) returns (func_operation_proto.MaterializeFunctionAppResp);
+  rpc LoadFunctionCodeState(func_operation_proto.LoadFunctionCodeStateReq) returns (func_operation_proto.LoadFunctionCodeStateResp);
+  rpc TouchFunctionCodeDraft(func_operation_proto.TouchFunctionCodeDraftReq) returns (func_operation_proto.TouchFunctionCodeDraftResp);
+  rpc ApplyFunctionCode(func_operation_proto.ApplyFunctionCodeReq) returns (func_operation_proto.ApplyFunctionCodeResp);
+  rpc EnsureFunctionSession(func_operation_proto.EnsureFunctionSessionReq) returns (func_operation_proto.EnsureFunctionSessionResp);
+  rpc DeleteFunction(func_operation_proto.DeleteFunctionReq) returns (func_operation_proto.DeleteFunctionResp);
+  rpc ListFunctionDataForms(func_operation_proto.ListFunctionDataFormsReq) returns (func_operation_proto.ListFunctionDataFormsResp);
+  rpc DeleteFunctionDataForm(func_operation_proto.DeleteFunctionDataFormReq) returns (func_operation_proto.DeleteFunctionDataFormResp);
+  rpc GetFunctionPreviewFrontend(func_operation_proto.GetFunctionPreviewFrontendReq) returns (func_operation_proto.GetFunctionPreviewFrontendResp);
+  rpc GetFunctionPreviewBundle(func_operation_proto.GetFunctionPreviewBundleReq) returns (func_operation_proto.GetFunctionPreviewBundleResp);
+  rpc InvokeFunctionPreview(func_operation_proto.InvokeFunctionPreviewReq) returns (func_operation_proto.InvokeFunctionPreviewResp);
+
+  rpc ListPublicConfigs(func_operation_proto.ListPublicConfigsReq) returns (func_operation_proto.ListPublicConfigsResp);
+  rpc CreatePublicConfig(func_operation_proto.CreatePublicConfigReq) returns (func_operation_proto.CreatePublicConfigResp);
+  rpc UpdatePublicConfig(func_operation_proto.UpdatePublicConfigReq) returns (func_operation_proto.UpdatePublicConfigResp);
+  rpc ListPublicConfigVersions(func_operation_proto.ListPublicConfigVersionsReq) returns (func_operation_proto.ListPublicConfigVersionsResp);
+  rpc RollbackPublicConfig(func_operation_proto.RollbackPublicConfigReq) returns (func_operation_proto.RollbackPublicConfigResp);
+  rpc RotatePublicConfigImportKey(func_operation_proto.RotatePublicConfigImportKeyReq) returns (func_operation_proto.RotatePublicConfigImportKeyResp);
+  rpc ImportPublicConfigs(func_operation_proto.ImportPublicConfigsReq) returns (func_operation_proto.ImportPublicConfigsResp);
+  rpc ListExternalAPIClients(func_operation_proto.ListExternalAPIClientsReq) returns (func_operation_proto.ListExternalAPIClientsResp);
+  rpc CreateExternalAPIClient(func_operation_proto.CreateExternalAPIClientReq) returns (func_operation_proto.CreateExternalAPIClientResp);
+  rpc UpdateExternalAPIClient(func_operation_proto.UpdateExternalAPIClientReq) returns (func_operation_proto.UpdateExternalAPIClientResp);
+  rpc DeleteExternalAPIClient(func_operation_proto.DeleteExternalAPIClientReq) returns (func_operation_proto.DeleteExternalAPIClientResp);
+  rpc ListDeletedExternalAPIClients(func_operation_proto.ListDeletedExternalAPIClientsReq) returns (func_operation_proto.ListDeletedExternalAPIClientsResp);
+  rpc PurgeExternalAPIClient(func_operation_proto.PurgeExternalAPIClientReq) returns (func_operation_proto.PurgeExternalAPIClientResp);
+  rpc RotateExternalAPIImportKey(func_operation_proto.RotateExternalAPIImportKeyReq) returns (func_operation_proto.RotateExternalAPIImportKeyResp);
+  rpc ListExternalAPIs(func_operation_proto.ListExternalAPIsReq) returns (func_operation_proto.ListExternalAPIsResp);
+  rpc ListExternalAPIGroups(func_operation_proto.ListExternalAPIGroupsReq) returns (func_operation_proto.ListExternalAPIGroupsResp);
+  rpc CreateExternalAPIGroup(func_operation_proto.CreateExternalAPIGroupReq) returns (func_operation_proto.CreateExternalAPIGroupResp);
+  rpc CreateExternalAPI(func_operation_proto.CreateExternalAPIReq) returns (func_operation_proto.CreateExternalAPIResp);
+  rpc UpdateExternalAPI(func_operation_proto.UpdateExternalAPIReq) returns (func_operation_proto.UpdateExternalAPIResp);
+  rpc DeleteExternalAPI(func_operation_proto.DeleteExternalAPIReq) returns (func_operation_proto.DeleteExternalAPIResp);
+  rpc ImportExternalAPIDocument(func_operation_proto.ImportExternalAPIDocumentReq) returns (func_operation_proto.ImportExternalAPIDocumentResp);
+  rpc UploadExternalAPIDocument(func_operation_proto.UploadExternalAPIDocumentReq) returns (func_operation_proto.UploadExternalAPIDocumentResp);
+  rpc TestExternalAPI(func_operation_proto.TestExternalAPIReq) returns (func_operation_proto.TestExternalAPIResp);
+
+  rpc ListGeneratedApps(func_operation_proto.ListGeneratedAppsReq) returns (func_operation_proto.ListGeneratedAppsResp);
+  rpc ReloadGeneratedApps(func_operation_proto.ReloadGeneratedAppsReq) returns (func_operation_proto.ReloadGeneratedAppsResp);
+  rpc CleanupGeneratedFunctionMenus(func_operation_proto.CleanupGeneratedFunctionMenusReq) returns (func_operation_proto.CleanupGeneratedFunctionMenusResp);
+  rpc GetGeneratedAppFrontend(func_operation_proto.GetGeneratedAppFrontendReq) returns (func_operation_proto.GetGeneratedAppFrontendResp);
+  rpc GetGeneratedAppFrontendBundle(func_operation_proto.GetGeneratedAppFrontendBundleReq) returns (func_operation_proto.GetGeneratedAppFrontendBundleResp);
+  rpc InvokeGeneratedApp(func_operation_proto.InvokeGeneratedAppReq) returns (func_operation_proto.InvokeGeneratedAppResp);
+  rpc ListOutboxEvents(func_operation_proto.ListOutboxEventsReq) returns (func_operation_proto.ListOutboxEventsResp);
+  rpc ReplayOutboxEvents(func_operation_proto.ReplayOutboxEventsReq) returns (func_operation_proto.ReplayOutboxEventsResp);
+}

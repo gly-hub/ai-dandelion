@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message OperationLog {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string module = 2 [(gogoproto.jsontag) = 'module'];
+  string action = 3 [(gogoproto.jsontag) = 'action'];
+  string action_label = 4 [(gogoproto.jsontag) = 'actionLabel'];
+  string resource_type = 5 [(gogoproto.jsontag) = 'resourceType'];
+  string resource_id = 6 [(gogoproto.jsontag) = 'resourceId'];
+  string resource_name = 7 [(gogoproto.jsontag) = 'resourceName'];
+  string operator_id = 8 [(gogoproto.jsontag) = 'operatorId'];
+  string operator_name = 9 [(gogoproto.jsontag) = 'operatorName'];
+  string summary = 10 [(gogoproto.jsontag) = 'summary'];
+  string before_data = 11 [(gogoproto.jsontag) = 'beforeData'];
+  string after_data = 12 [(gogoproto.jsontag) = 'afterData'];
+  int64 created_at = 13 [(gogoproto.jsontag) = 'createdAt'];
+}
+
+message ListOperationLogsReq {
+  string module = 1 [(gogoproto.jsontag) = 'module'];
+  string action = 2 [(gogoproto.jsontag) = 'action'];
+  string resource_type = 3 [(gogoproto.jsontag) = 'resourceType'];
+  string resource_id = 4 [(gogoproto.jsontag) = 'resourceId'];
+  string operator_id = 5 [(gogoproto.jsontag) = 'operatorId'];
+  string keyword = 6 [(gogoproto.jsontag) = 'keyword'];
+  int32 page = 7 [(gogoproto.jsontag) = 'page'];
+  int32 page_size = 8 [(gogoproto.jsontag) = 'pageSize'];
+}
+
+message ListOperationLogsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated OperationLog logs = 2 [(gogoproto.jsontag) = 'logs'];
+  int64 total = 3 [(gogoproto.jsontag) = 'total'];
+}

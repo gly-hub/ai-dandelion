@@ -1,0 +1,112 @@
+app:
+  name: "func-operation"
+  version: "1.0.0"
+  env: "local"
+
+logger:
+  enabled: true
+  level: "info"
+  output: "console"
+  service: "func-operation"
+  version: "1.0.0"
+
+grpcServer:
+  serviceName: "func-operation"
+  address: "0.0.0.0"
+  port: 50052
+  keepAliveTime: "10s"
+  keepAliveTimeout: "3s"
+  etcd:
+    endpoints:
+      - "127.0.0.1:2379"
+    dialTimeout: "5s"
+    prefix: "/grpc/services"
+    ttl: 30
+
+grpcClient:
+  timeout: "10s"
+  insecure: true
+  keepAliveTime: "5m"
+  keepAliveTimeout: "10s"
+  loadBalancing: "round_robin"
+  etcd:
+    endpoints:
+      - "127.0.0.1:2379"
+    dialTimeout: "5s"
+    prefix: "/grpc/services"
+
+gorm:
+  databases:
+    - name: "ai-dandelion"
+      master:
+        type: "sqlite"
+        database: "data/ai-dandelion.db?_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on"
+      maxIdleConn: 1
+      maxOpenConn: 1
+      connMaxLifetime: "30m"
+      connMaxIdleTime: "10m"
+      enableLog: false
+      logLevel: "warn"
+      slowThreshold: 200
+    - name: "ai-dandelion-debug"
+      master:
+        type: "sqlite"
+        database: "data/ai-dandelion-debug.db?_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on"
+      maxIdleConn: 1
+      maxOpenConn: 1
+      connMaxLifetime: "30m"
+      connMaxIdleTime: "10m"
+      enableLog: false
+      logLevel: "warn"
+      slowThreshold: 200
+
+redis:
+  databases:
+    - name: "ai-dandelion"
+      host: "127.0.0.1"
+      port: 6379
+      password: ""
+      db: 1
+      poolSize: 10
+      minIdleConns: 5
+      maxConnAge: "1h"
+      poolTimeout: "4s"
+      idleTimeout: "5m"
+      dialTimeout: "5s"
+      readTimeout: "3s"
+      writeTimeout: "3s"
+
+tracing:
+  enabled: false
+  serviceName: "func-operation"
+  serviceVersion: "1.0.0"
+  environment: "local"
+  samplingRate: 0.1
+  otlp:
+    enabled: false
+    endpoint: "http://127.0.0.1:4318"
+    useGRPC: false
+    insecure: true
+
+generated_app:
+  root_dir: "generated_apps"
+  artifact_store:
+    # Use local for development. For S3, set driver to s3 and populate credentials in configs_local.yaml.
+    driver: "local"
+    s3:
+      endpoint: "s3.example.com"
+      access_key: ""
+      secret_key: ""
+      bucket: "ai-dandelion-artifacts"
+      prefix: "func-operation/releases"
+      region: "us-east-1"
+      use_ssl: true
+  artifact_maintenance:
+    reconcile_interval_seconds: 900
+    stale_staging_seconds: 3600
+  data_capability:
+    default_limit: 20
+    max_limit: 100
+    max_join_depth: 3
+    max_response_bytes: 1048576
+    invoke_timeout_ms: 5000

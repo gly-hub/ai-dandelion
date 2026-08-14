@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package system;
+option go_package = "./;system";
+import "user.proto";
+import "menu.proto";
+import "role.proto";
+import "auth.proto";
+import "agent_model.proto";
+import "agent_config.proto";
+import "operation_log.proto";
+import "notification.proto";
+import "upload.proto";
+
+service SystemService {
+  rpc Login(system_proto.LoginReq) returns (system_proto.LoginResp);
+  rpc ValidateToken(system_proto.ValidateTokenReq) returns (system_proto.ValidateTokenResp);
+
+  rpc ListUsers(system_proto.ListUsersReq) returns (system_proto.ListUsersResp);
+  rpc CreateUser(system_proto.CreateUserReq) returns (system_proto.CreateUserResp);
+  rpc UpdateUser(system_proto.UpdateUserReq) returns (system_proto.UpdateUserResp);
+  rpc DeleteUser(system_proto.DeleteUserReq) returns (system_proto.DeleteUserResp);
+  rpc EnableUser(system_proto.EnableUserReq) returns (system_proto.EnableUserResp);
+  rpc DisableUser(system_proto.DisableUserReq) returns (system_proto.DisableUserResp);
+  rpc GetUserRoles(system_proto.GetUserRolesReq) returns (system_proto.GetUserRolesResp);
+  rpc SetUserRoles(system_proto.SetUserRolesReq) returns (system_proto.SetUserRolesResp);
+
+  rpc ListRoles(system_proto.ListRolesReq) returns (system_proto.ListRolesResp);
+  rpc CreateRole(system_proto.CreateRoleReq) returns (system_proto.CreateRoleResp);
+  rpc UpdateRole(system_proto.UpdateRoleReq) returns (system_proto.UpdateRoleResp);
+  rpc DeleteRole(system_proto.DeleteRoleReq) returns (system_proto.DeleteRoleResp);
+  rpc EnableRole(system_proto.EnableRoleReq) returns (system_proto.EnableRoleResp);
+  rpc DisableRole(system_proto.DisableRoleReq) returns (system_proto.DisableRoleResp);
+  rpc GetRoleMenus(system_proto.GetRoleMenusReq) returns (system_proto.GetRoleMenusResp);
+  rpc SetRoleMenus(system_proto.SetRoleMenusReq) returns (system_proto.SetRoleMenusResp);
+
+  rpc ListMenus(system_proto.ListMenusReq) returns (system_proto.ListMenusResp);
+  rpc GetNavMenus(system_proto.GetNavMenusReq) returns (system_proto.GetNavMenusResp);
+  rpc CreateMenu(system_proto.CreateMenuReq) returns (system_proto.CreateMenuResp);
+  rpc UpdateMenu(system_proto.UpdateMenuReq) returns (system_proto.UpdateMenuResp);
+  rpc DeleteMenu(system_proto.DeleteMenuReq) returns (system_proto.DeleteMenuResp);
+  rpc EnableMenu(system_proto.EnableMenuReq) returns (system_proto.EnableMenuResp);
+  rpc DisableMenu(system_proto.DisableMenuReq) returns (system_proto.DisableMenuResp);
+  rpc SyncGeneratedFunctionMenu(system_proto.SyncGeneratedFunctionMenuReq) returns (system_proto.SyncGeneratedFunctionMenuResp);
+  rpc CheckFunctionMenuAccess(system_proto.CheckFunctionMenuAccessReq) returns (system_proto.CheckFunctionMenuAccessResp);
+  rpc CheckMenuAccess(system_proto.CheckMenuAccessReq) returns (system_proto.CheckMenuAccessResp);
+
+  rpc ListAgentModels(system_proto.ListAgentModelsReq) returns (system_proto.ListAgentModelsResp);
+  rpc CreateAgentModel(system_proto.CreateAgentModelReq) returns (system_proto.CreateAgentModelResp);
+  rpc UpdateAgentModel(system_proto.UpdateAgentModelReq) returns (system_proto.UpdateAgentModelResp);
+  rpc DeleteAgentModel(system_proto.DeleteAgentModelReq) returns (system_proto.DeleteAgentModelResp);
+  rpc EnableAgentModel(system_proto.EnableAgentModelReq) returns (system_proto.EnableAgentModelResp);
+  rpc DisableAgentModel(system_proto.DisableAgentModelReq) returns (system_proto.DisableAgentModelResp);
+
+  rpc GetAgentConfig(system_proto.GetAgentConfigReq) returns (system_proto.GetAgentConfigResp);
+  rpc UpdateAgentConfig(system_proto.UpdateAgentConfigReq) returns (system_proto.UpdateAgentConfigResp);
+  rpc ListAgentSessionConfigs(system_proto.ListAgentSessionConfigsReq) returns (system_proto.ListAgentSessionConfigsResp);
+  rpc UpdateAgentSessionConfig(system_proto.UpdateAgentSessionConfigReq) returns (system_proto.UpdateAgentSessionConfigResp);
+
+  rpc ListOperationLogs(system_proto.ListOperationLogsReq) returns (system_proto.ListOperationLogsResp);
+
+  rpc ListNotifications(system_proto.ListNotificationsReq) returns (system_proto.ListNotificationsResp);
+  rpc SendNotification(system_proto.SendNotificationReq) returns (system_proto.SendNotificationResp);
+  rpc ReadNotification(system_proto.ReadNotificationReq) returns (system_proto.ReadNotificationResp);
+  rpc CreateUpload(system_proto.CreateUploadReq) returns (system_proto.CreateUploadResp);
+  rpc GetUploadPartURL(system_proto.GetUploadPartURLReq) returns (system_proto.GetUploadPartURLResp);
+  rpc CompleteUpload(system_proto.CompleteUploadReq) returns (system_proto.CompleteUploadResp);
+  rpc GetUploadPreviewURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
+  rpc GetUploadDownloadURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
+
+}

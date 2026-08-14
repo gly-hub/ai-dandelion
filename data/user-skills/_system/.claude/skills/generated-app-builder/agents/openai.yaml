@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generated App Builder"
+  short_description: "Build usable, consistently styled generated app features."
+  default_prompt: "Use generated-app-builder only within the provided appDir to create a complete, interactive func-operation app with real business controls, shared styling, manifest dataModels/relations/queries, frontend, backend, WASM build, and verification. Do not modify product docs, technical docs, or platform code."

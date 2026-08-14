@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package session_proto;
+option go_package = "./;aiagent";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message SearchMessageReq {
+  int32 session_type = 1 [(gogoproto.jsontag) = 'session_type' ];
+}
+
+message SearchMessageResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp' ];
+  repeated Session sessions = 2 [(gogoproto.jsontag) = 'sessions' ];
+}
+
+message Session {
+  string id = 1 [(gogoproto.jsontag) = 'id' ];
+  string title = 2 [(gogoproto.jsontag) = 'title' ];
+  int64 created_at = 3 [(gogoproto.jsontag) = 'created_at' ];
+  int64 updated_at = 4 [(gogoproto.jsontag) = 'updated_at' ];
+  int32 session_type = 5 [(gogoproto.jsontag) = 'session_type' ];
+}
+
+message CreateSessionReq {
+  string title = 1 [(gogoproto.jsontag) = 'title' ];
+  int32 session_type = 2 [(gogoproto.jsontag) = 'session_type' ];
+}
+
+message EnsureSessionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id' ];
+  string title = 2 [(gogoproto.jsontag) = 'title' ];
+  int32 session_type = 3 [(gogoproto.jsontag) = 'session_type' ];
+}
+
+message EnsureSessionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp' ];
+  Session session = 2 [(gogoproto.jsontag) = 'session' ];
+  bool created = 3 [(gogoproto.jsontag) = 'created' ];
+}
+
+message CreateSessionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp' ];
+  Session session = 2 [(gogoproto.jsontag) = 'session' ];
+}
+
+message UpdateSessionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id' ];
+  string title = 2 [(gogoproto.jsontag) = 'title' ];
+}
+
+message UpdateSessionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp' ];
+  Session session = 2 [(gogoproto.jsontag) = 'session' ];
+}
+
+message DeleteSessionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id' ];
+}
+
+message DeleteSessionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp' ];
+}

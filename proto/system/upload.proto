@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package system_proto;
+option go_package = "./;system";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message UploadSession {
+  string uuid = 1 [(gogoproto.jsontag) = 'uuid'];
+  string upload_id = 2 [(gogoproto.jsontag) = 'uploadId'];
+  string mode = 3 [(gogoproto.jsontag) = 'mode'];
+  string url = 4 [(gogoproto.jsontag) = 'url'];
+  string content_type = 5 [(gogoproto.jsontag) = 'contentType'];
+  int64 part_size = 6 [(gogoproto.jsontag) = 'partSize'];
+  int32 total_parts = 7 [(gogoproto.jsontag) = 'totalParts'];
+  string md5 = 8 [(gogoproto.jsontag) = 'md5'];
+  string status = 9 [(gogoproto.jsontag) = 'status'];
+  bool reused = 10 [(gogoproto.jsontag) = 'reused'];
+  repeated int32 completed_parts = 11 [(gogoproto.jsontag) = 'completedParts'];
+}
+
+message CreateUploadReq { int64 file_size = 1 [(gogoproto.jsontag) = 'fileSize']; string file_name = 2 [(gogoproto.jsontag) = 'fileName']; string content_type = 3 [(gogoproto.jsontag) = 'contentType']; int64 expires_seconds = 4 [(gogoproto.jsontag) = 'expiresSeconds']; string md5 = 5 [(gogoproto.jsontag) = 'md5']; }
+message CreateUploadResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; UploadSession upload = 2 [(gogoproto.jsontag) = 'upload']; }
+message GetUploadPartURLReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; string upload_id = 2 [(gogoproto.jsontag) = 'uploadId']; int32 part_number = 3 [(gogoproto.jsontag) = 'partNumber']; int64 file_size = 4 [(gogoproto.jsontag) = 'fileSize']; }
+message GetUploadPartURLResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; }
+message CompleteUploadReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; string upload_id = 2 [(gogoproto.jsontag) = 'uploadId']; int64 preview_expires_seconds = 3 [(gogoproto.jsontag) = 'previewExpiresSeconds']; }
+message CompleteUploadResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; }
+message GetUploadURLReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; int64 expires_seconds = 2 [(gogoproto.jsontag) = 'expiresSeconds']; string file_name = 3 [(gogoproto.jsontag) = 'fileName']; }
+message GetUploadURLResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; }

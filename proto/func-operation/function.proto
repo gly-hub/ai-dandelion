@@ -1,0 +1,515 @@
+syntax = "proto3";
+
+package func_operation_proto;
+option go_package = "./;funcoperation";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message FunctionReadiness {
+  string label = 1 [(gogoproto.jsontag) = 'label'];
+  string next_action = 2 [(gogoproto.jsontag) = 'nextAction'];
+  string blocking_reason = 3 [(gogoproto.jsontag) = 'blockingReason'];
+  bool has_pending_product_draft = 4 [(gogoproto.jsontag) = 'hasPendingProductDraft'];
+  bool has_pending_technical_draft = 5 [(gogoproto.jsontag) = 'hasPendingTechnicalDraft'];
+  bool has_pending_code_draft = 6 [(gogoproto.jsontag) = 'hasPendingCodeDraft'];
+}
+
+message Function {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string status = 4 [(gogoproto.jsontag) = 'status'];
+  string workflow_stage = 5 [(gogoproto.jsontag) = 'workflowStage'];
+  string product_doc = 6 [(gogoproto.jsontag) = 'productDoc'];
+  string technical_doc = 7 [(gogoproto.jsontag) = 'technicalDoc'];
+  string product_doc_path = 8 [(gogoproto.jsontag) = 'productDocPath'];
+  string technical_doc_path = 9 [(gogoproto.jsontag) = 'technicalDocPath'];
+  string entry = 10 [(gogoproto.jsontag) = 'entry'];
+  string product_session_id = 11 [(gogoproto.jsontag) = 'productSessionId'];
+  string technical_session_id = 12 [(gogoproto.jsontag) = 'technicalSessionId'];
+  string generation_session_id = 13 [(gogoproto.jsontag) = 'generationSessionId'];
+  string generated_app_id = 14 [(gogoproto.jsontag) = 'generatedAppId'];
+  int64 created_at = 15 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 16 [(gogoproto.jsontag) = 'updatedAt'];
+  int64 function_version = 17 [(gogoproto.jsontag) = 'functionVersion'];
+  int64 product_doc_version = 18 [(gogoproto.jsontag) = 'productDocVersion'];
+  int64 product_draft_version = 19 [(gogoproto.jsontag) = 'productDraftVersion'];
+  int64 technical_doc_version = 20 [(gogoproto.jsontag) = 'technicalDocVersion'];
+  int64 technical_draft_version = 21 [(gogoproto.jsontag) = 'technicalDraftVersion'];
+  int64 code_version = 22 [(gogoproto.jsontag) = 'codeVersion'];
+  bool product_draft_ready = 23 [(gogoproto.jsontag) = 'productDraftReady'];
+  bool technical_draft_ready = 24 [(gogoproto.jsontag) = 'technicalDraftReady'];
+  bool technical_stale = 25 [(gogoproto.jsontag) = 'technicalStale'];
+  bool code_stale = 26 [(gogoproto.jsontag) = 'codeStale'];
+  int64 code_draft_version = 27 [(gogoproto.jsontag) = 'codeDraftVersion'];
+  bool code_draft_ready = 28 [(gogoproto.jsontag) = 'codeDraftReady'];
+  int64 numeric_id = 29 [(gogoproto.jsontag) = 'numericId'];
+  FunctionReadiness readiness = 30 [(gogoproto.jsontag) = 'readiness'];
+  string menu_parent_id = 31 [(gogoproto.jsontag) = 'menuParentId'];
+  string menu_id = 32 [(gogoproto.jsontag) = 'menuId'];
+  string app_dir = 33 [(gogoproto.jsontag) = 'appDir'];
+  string product_draft_doc_path = 34 [(gogoproto.jsontag) = 'productDraftDocPath'];
+  string technical_draft_doc_path = 35 [(gogoproto.jsontag) = 'technicalDraftDocPath'];
+  string active_release_id = 36 [(gogoproto.jsontag) = 'activeReleaseId'];
+}
+
+message ListFunctionsReq {
+}
+
+message ListFunctionsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated Function functions = 2 [(gogoproto.jsontag) = 'functions'];
+}
+
+message CreateFunctionReq {
+  string name = 1 [(gogoproto.jsontag) = 'name'];
+  string description = 2 [(gogoproto.jsontag) = 'description'];
+  string menu_parent_id = 3 [(gogoproto.jsontag) = 'menuParentId'];
+}
+
+message CreateFunctionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+}
+
+message DeleteFunctionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteFunctionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+}
+
+message UpdateFunctionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string status = 4 [(gogoproto.jsontag) = 'status'];
+  string workflow_stage = 5 [(gogoproto.jsontag) = 'workflowStage'];
+  string product_doc = 6 [(gogoproto.jsontag) = 'productDoc'];
+  string technical_doc = 7 [(gogoproto.jsontag) = 'technicalDoc'];
+  string entry = 8 [(gogoproto.jsontag) = 'entry'];
+  string generated_app_id = 9 [(gogoproto.jsontag) = 'generatedAppId'];
+  string menu_parent_id = 10 [(gogoproto.jsontag) = 'menuParentId'];
+}
+
+message UpdateFunctionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+}
+
+message MaterializeFunctionAppReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message MaterializeFunctionAppResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+  GeneratedApp app = 3 [(gogoproto.jsontag) = 'app'];
+}
+
+message FunctionDocument {
+  string doc_type = 1 [(gogoproto.jsontag) = 'docType'];
+  string source = 2 [(gogoproto.jsontag) = 'source'];
+  string path = 3 [(gogoproto.jsontag) = 'path'];
+  string content = 4 [(gogoproto.jsontag) = 'content'];
+  bool exists = 5 [(gogoproto.jsontag) = 'exists'];
+  int64 version = 6 [(gogoproto.jsontag) = 'version'];
+}
+
+message LoadFunctionDocumentReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string doc_type = 2 [(gogoproto.jsontag) = 'docType'];
+  string source = 3 [(gogoproto.jsontag) = 'source'];
+}
+
+message LoadFunctionDocumentResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionDocument document = 2 [(gogoproto.jsontag) = 'document'];
+}
+
+message CommitFunctionDocumentReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string doc_type = 2 [(gogoproto.jsontag) = 'docType'];
+}
+
+message CommitFunctionDocumentResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+  FunctionDocument document = 3 [(gogoproto.jsontag) = 'document'];
+}
+
+message FunctionCodeState {
+  string app_id = 1 [(gogoproto.jsontag) = 'appId'];
+  int64 applied_version = 2 [(gogoproto.jsontag) = 'appliedVersion'];
+  int64 draft_version = 3 [(gogoproto.jsontag) = 'draftVersion'];
+  bool draft_ready = 4 [(gogoproto.jsontag) = 'draftReady'];
+  bool app_exists = 5 [(gogoproto.jsontag) = 'appExists'];
+  bool draft_exists = 6 [(gogoproto.jsontag) = 'draftExists'];
+  string applied_app_version = 7 [(gogoproto.jsontag) = 'appliedAppVersion'];
+  string draft_app_version = 8 [(gogoproto.jsontag) = 'draftAppVersion'];
+  int64 applied_updated_at = 9 [(gogoproto.jsontag) = 'appliedUpdatedAt'];
+  int64 draft_updated_at = 10 [(gogoproto.jsontag) = 'draftUpdatedAt'];
+  string summary = 11 [(gogoproto.jsontag) = 'summary'];
+}
+
+message LoadFunctionCodeStateReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message LoadFunctionCodeStateResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionCodeState state = 2 [(gogoproto.jsontag) = 'state'];
+}
+
+message TouchFunctionCodeDraftReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message TouchFunctionCodeDraftResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+  FunctionCodeState state = 3 [(gogoproto.jsontag) = 'state'];
+}
+
+message ApplyFunctionCodeReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message ApplyFunctionCodeResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+  GeneratedApp app = 3 [(gogoproto.jsontag) = 'app'];
+  FunctionCodeState state = 4 [(gogoproto.jsontag) = 'state'];
+}
+
+message EnsureFunctionSessionReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string conversation = 2 [(gogoproto.jsontag) = 'conversation'];
+}
+
+message EnsureFunctionSessionResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  Function function = 2 [(gogoproto.jsontag) = 'function'];
+  string session_id = 3 [(gogoproto.jsontag) = 'sessionId'];
+  bool created = 4 [(gogoproto.jsontag) = 'created'];
+}
+
+
+message FunctionDataForm {
+  string name = 1 [(gogoproto.jsontag) = 'name'];
+  string label = 2 [(gogoproto.jsontag) = 'label'];
+  int32 field_count = 3 [(gogoproto.jsontag) = 'fieldCount'];
+  int64 row_count = 4 [(gogoproto.jsontag) = 'rowCount'];
+  string table_name = 5 [(gogoproto.jsontag) = 'tableName'];
+}
+
+message ListFunctionDataFormsReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message ListFunctionDataFormsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionDataForm forms = 2 [(gogoproto.jsontag) = 'forms'];
+}
+
+message DeleteFunctionDataFormReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+}
+
+message DeleteFunctionDataFormResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionDataForm forms = 2 [(gogoproto.jsontag) = 'forms'];
+}
+
+// PublicConfig stores one globally unique config key. Its value is a JSON
+// option array, for example [{"value":"chengdu","label":"成都"}].
+message PublicConfig {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string config_key = 2 [(gogoproto.jsontag) = 'configKey'];
+  string name = 3 [(gogoproto.jsontag) = 'name'];
+  string description = 4 [(gogoproto.jsontag) = 'description'];
+  string value_json = 5 [(gogoproto.jsontag) = 'valueJson'];
+  int64 version = 6 [(gogoproto.jsontag) = 'version'];
+  string updated_by = 7 [(gogoproto.jsontag) = 'updatedBy'];
+  int64 created_at = 8 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 9 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message PublicConfigVersion {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string config_key = 2 [(gogoproto.jsontag) = 'configKey'];
+  int64 version = 3 [(gogoproto.jsontag) = 'version'];
+  string value_json = 4 [(gogoproto.jsontag) = 'valueJson'];
+  string operator_id = 5 [(gogoproto.jsontag) = 'operatorId'];
+  string source = 6 [(gogoproto.jsontag) = 'source'];
+  int64 created_at = 7 [(gogoproto.jsontag) = 'createdAt'];
+}
+
+message ListPublicConfigsReq {}
+message ListPublicConfigsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated PublicConfig configs = 2 [(gogoproto.jsontag) = 'configs'];
+}
+
+message CreatePublicConfigReq {
+  string config_key = 1 [(gogoproto.jsontag) = 'configKey'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string value_json = 4 [(gogoproto.jsontag) = 'valueJson'];
+}
+message CreatePublicConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  PublicConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}
+
+message UpdatePublicConfigReq {
+  string config_key = 1 [(gogoproto.jsontag) = 'configKey'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string value_json = 4 [(gogoproto.jsontag) = 'valueJson'];
+}
+message UpdatePublicConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  PublicConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}
+
+message ListPublicConfigVersionsReq { string config_key = 1 [(gogoproto.jsontag) = 'configKey']; }
+message ListPublicConfigVersionsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated PublicConfigVersion versions = 2 [(gogoproto.jsontag) = 'versions'];
+}
+
+message RollbackPublicConfigReq {
+  string config_key = 1 [(gogoproto.jsontag) = 'configKey'];
+  int64 version = 2 [(gogoproto.jsontag) = 'version'];
+}
+message RollbackPublicConfigResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  PublicConfig config = 2 [(gogoproto.jsontag) = 'config'];
+}
+
+message RotatePublicConfigImportKeyReq {}
+message RotatePublicConfigImportKeyResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string import_key = 2 [(gogoproto.jsontag) = 'importKey']; }
+message ImportPublicConfigsReq { string api_key = 1 [(gogoproto.jsontag) = 'apiKey']; string configs_json = 2 [(gogoproto.jsontag) = 'configsJson']; }
+message ImportPublicConfigsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated PublicConfig configs = 2 [(gogoproto.jsontag) = 'configs']; }
+
+message GeneratedApp {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string version = 3 [(gogoproto.jsontag) = 'version'];
+  string description = 4 [(gogoproto.jsontag) = 'description'];
+  string export = 5 [(gogoproto.jsontag) = 'export'];
+  string frontend_entry = 6 [(gogoproto.jsontag) = 'frontendEntry'];
+  string backend_source = 7 [(gogoproto.jsontag) = 'backendSource'];
+  string backend_module = 8 [(gogoproto.jsontag) = 'backendModule'];
+  int64 created_at = 9 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 10 [(gogoproto.jsontag) = 'updatedAt'];
+  string table_prefix = 11 [(gogoproto.jsontag) = 'tablePrefix'];
+}
+
+message ListGeneratedAppsReq {
+}
+
+message ListGeneratedAppsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated GeneratedApp apps = 2 [(gogoproto.jsontag) = 'apps'];
+}
+
+message ReloadGeneratedAppsReq {
+}
+
+message ReloadGeneratedAppsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated GeneratedApp apps = 2 [(gogoproto.jsontag) = 'apps'];
+}
+
+message GetFunctionPreviewFrontendReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string path = 2 [(gogoproto.jsontag) = 'path'];
+}
+
+message GetFunctionPreviewFrontendResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string code = 2 [(gogoproto.jsontag) = 'code'];
+}
+
+message FrontendBundle {
+  string version = 1 [(gogoproto.jsontag) = 'version'];
+  string entry = 2 [(gogoproto.jsontag) = 'entry'];
+  map<string, string> modules = 3 [(gogoproto.jsontag) = 'modules'];
+}
+
+message GetFunctionPreviewBundleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message GetFunctionPreviewBundleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FrontendBundle bundle = 2 [(gogoproto.jsontag) = 'bundle'];
+}
+
+message GetGeneratedAppFrontendBundleReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+}
+
+message GetGeneratedAppFrontendBundleResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FrontendBundle bundle = 2 [(gogoproto.jsontag) = 'bundle'];
+}
+
+message InvokeFunctionPreviewReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string payload = 2 [(gogoproto.jsontag) = 'payload'];
+}
+
+message InvokeFunctionPreviewResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string app_id = 2 [(gogoproto.jsontag) = 'appId'];
+  string version = 3 [(gogoproto.jsontag) = 'version'];
+  string export = 4 [(gogoproto.jsontag) = 'export'];
+  uint64 result = 5 [(gogoproto.jsontag) = 'result'];
+  string response = 6 [(gogoproto.jsontag) = 'response'];
+  string duration = 7 [(gogoproto.jsontag) = 'duration'];
+  string runtime = 8 [(gogoproto.jsontag) = 'runtime'];
+  int32 module_len = 9 [(gogoproto.jsontag) = 'moduleLen'];
+  string backend_source = 10 [(gogoproto.jsontag) = 'backendSource'];
+  string backend_module = 11 [(gogoproto.jsontag) = 'backendModule'];
+}
+
+message CleanupGeneratedFunctionMenusReq {
+}
+
+message CleanupGeneratedFunctionMenusResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  int32 removed_count = 2 [(gogoproto.jsontag) = 'removedCount'];
+}
+
+message GetGeneratedAppFrontendReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string path = 2 [(gogoproto.jsontag) = 'path'];
+}
+
+message GetGeneratedAppFrontendResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string code = 2 [(gogoproto.jsontag) = 'code'];
+}
+
+message InvokeGeneratedAppReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string payload = 2 [(gogoproto.jsontag) = 'payload'];
+  string user_id = 3 [(gogoproto.jsontag) = 'userId'];
+}
+
+message InvokeGeneratedAppResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string app_id = 2 [(gogoproto.jsontag) = 'appId'];
+  string version = 3 [(gogoproto.jsontag) = 'version'];
+  string export = 4 [(gogoproto.jsontag) = 'export'];
+  uint64 result = 5 [(gogoproto.jsontag) = 'result'];
+  string response = 6 [(gogoproto.jsontag) = 'response'];
+  string duration = 7 [(gogoproto.jsontag) = 'duration'];
+  string runtime = 8 [(gogoproto.jsontag) = 'runtime'];
+  int32 module_len = 9 [(gogoproto.jsontag) = 'moduleLen'];
+  string backend_source = 10 [(gogoproto.jsontag) = 'backendSource'];
+  string backend_module = 11 [(gogoproto.jsontag) = 'backendModule'];
+  string error_code = 12 [(gogoproto.jsontag) = 'errorCode'];
+  string error_message = 13 [(gogoproto.jsontag) = 'errorMessage'];
+  string stage = 14 [(gogoproto.jsontag) = 'stage'];
+  string hint = 15 [(gogoproto.jsontag) = 'hint'];
+}
+
+message OutboxEvent {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string event_type = 3 [(gogoproto.jsontag) = 'eventType'];
+  string status = 4 [(gogoproto.jsontag) = 'status'];
+  int32 attempts = 5 [(gogoproto.jsontag) = 'attempts'];
+  int64 next_attempt_at = 6 [(gogoproto.jsontag) = 'nextAttemptAt'];
+  string last_error = 7 [(gogoproto.jsontag) = 'lastError'];
+  int64 created_at = 8 [(gogoproto.jsontag) = 'createdAt'];
+}
+
+message ListOutboxEventsReq { int32 limit = 1 [(gogoproto.jsontag) = 'limit']; }
+message ListOutboxEventsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated OutboxEvent events = 2 [(gogoproto.jsontag) = 'events']; }
+message ReplayOutboxEventsReq { int32 limit = 1 [(gogoproto.jsontag) = 'limit']; }
+message ReplayOutboxEventsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; int32 processed_count = 2 [(gogoproto.jsontag) = 'processedCount']; }
+
+message ExternalAPIClient {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string client_key = 2 [(gogoproto.jsontag) = 'clientKey'];
+  string name = 3 [(gogoproto.jsontag) = 'name'];
+  string base_url = 4 [(gogoproto.jsontag) = 'baseUrl'];
+  string default_headers_json = 5 [(gogoproto.jsontag) = 'defaultHeadersJson'];
+  string description = 6 [(gogoproto.jsontag) = 'description'];
+  string status = 7 [(gogoproto.jsontag) = 'status'];
+  int64 created_at = 8 [(gogoproto.jsontag) = 'createdAt'];
+	int64 updated_at = 9 [(gogoproto.jsontag) = 'updatedAt'];
+	int64 deleted_at = 10 [(gogoproto.jsontag) = 'deletedAt'];
+	string swagger_import_key = 11 [(gogoproto.jsontag) = 'swaggerImportKey'];
+	string pre_request_script = 12 [(gogoproto.jsontag) = 'preRequestScript'];
+	string post_response_script = 13 [(gogoproto.jsontag) = 'postResponseScript'];
+	bool swagger_import_key_configured = 14 [(gogoproto.jsontag) = 'swaggerImportKeyConfigured'];
+}
+
+message ExternalAPI {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string api_key = 2 [(gogoproto.jsontag) = 'apiKey'];
+  string client_key = 3 [(gogoproto.jsontag) = 'clientKey'];
+  string name = 4 [(gogoproto.jsontag) = 'name'];
+  string method = 5 [(gogoproto.jsontag) = 'method'];
+  string path = 6 [(gogoproto.jsontag) = 'path'];
+  string headers_json = 7 [(gogoproto.jsontag) = 'headersJson'];
+  string request_schema_json = 8 [(gogoproto.jsontag) = 'requestSchemaJson'];
+  string response_schema_json = 9 [(gogoproto.jsontag) = 'responseSchemaJson'];
+  string description = 10 [(gogoproto.jsontag) = 'description'];
+  string status = 11 [(gogoproto.jsontag) = 'status'];
+  int64 created_at = 12 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 13 [(gogoproto.jsontag) = 'updatedAt'];
+	string group_id = 14 [(gogoproto.jsontag) = 'groupId'];
+}
+
+message ExternalAPIGroup {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string client_key = 2 [(gogoproto.jsontag) = 'clientKey'];
+  string parent_id = 3 [(gogoproto.jsontag) = 'parentId'];
+  string name = 4 [(gogoproto.jsontag) = 'name'];
+  string description = 5 [(gogoproto.jsontag) = 'description'];
+  int32 sort = 6 [(gogoproto.jsontag) = 'sort'];
+  int64 created_at = 7 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 8 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message ListExternalAPIClientsReq {}
+message ListExternalAPIClientsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated ExternalAPIClient clients = 2 [(gogoproto.jsontag) = 'clients']; }
+message CreateExternalAPIClientReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string name = 2 [(gogoproto.jsontag) = 'name']; string base_url = 3 [(gogoproto.jsontag) = 'baseUrl']; string default_headers_json = 4 [(gogoproto.jsontag) = 'defaultHeadersJson']; string description = 5 [(gogoproto.jsontag) = 'description']; string pre_request_script = 6 [(gogoproto.jsontag) = 'preRequestScript']; string post_response_script = 7 [(gogoproto.jsontag) = 'postResponseScript']; }
+message CreateExternalAPIClientResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; ExternalAPIClient client = 2 [(gogoproto.jsontag) = 'client']; }
+message UpdateExternalAPIClientReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string name = 2 [(gogoproto.jsontag) = 'name']; string base_url = 3 [(gogoproto.jsontag) = 'baseUrl']; string default_headers_json = 4 [(gogoproto.jsontag) = 'defaultHeadersJson']; string description = 5 [(gogoproto.jsontag) = 'description']; string status = 6 [(gogoproto.jsontag) = 'status']; string pre_request_script = 7 [(gogoproto.jsontag) = 'preRequestScript']; string post_response_script = 8 [(gogoproto.jsontag) = 'postResponseScript']; }
+message UpdateExternalAPIClientResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; ExternalAPIClient client = 2 [(gogoproto.jsontag) = 'client']; }
+message DeleteExternalAPIClientReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; }
+message DeleteExternalAPIClientResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; }
+message ListDeletedExternalAPIClientsReq {}
+message ListDeletedExternalAPIClientsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated ExternalAPIClient clients = 2 [(gogoproto.jsontag) = 'clients']; }
+message PurgeExternalAPIClientReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; }
+message PurgeExternalAPIClientResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; }
+message RotateExternalAPIImportKeyReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; }
+message RotateExternalAPIImportKeyResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string swagger_import_key = 2 [(gogoproto.jsontag) = 'swaggerImportKey']; }
+message ListExternalAPIsReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; }
+message ListExternalAPIsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated ExternalAPI apis = 2 [(gogoproto.jsontag) = 'apis']; }
+message ListExternalAPIGroupsReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; }
+message ListExternalAPIGroupsResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; repeated ExternalAPIGroup groups = 2 [(gogoproto.jsontag) = 'groups']; }
+message CreateExternalAPIGroupReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string parent_id = 2 [(gogoproto.jsontag) = 'parentId']; string name = 3 [(gogoproto.jsontag) = 'name']; string description = 4 [(gogoproto.jsontag) = 'description']; int32 sort = 5 [(gogoproto.jsontag) = 'sort']; }
+message CreateExternalAPIGroupResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; ExternalAPIGroup group = 2 [(gogoproto.jsontag) = 'group']; }
+message CreateExternalAPIReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string api_key = 2 [(gogoproto.jsontag) = 'apiKey']; string name = 3 [(gogoproto.jsontag) = 'name']; string method = 4 [(gogoproto.jsontag) = 'method']; string path = 5 [(gogoproto.jsontag) = 'path']; string headers_json = 6 [(gogoproto.jsontag) = 'headersJson']; string request_schema_json = 7 [(gogoproto.jsontag) = 'requestSchemaJson']; string response_schema_json = 8 [(gogoproto.jsontag) = 'responseSchemaJson']; string description = 9 [(gogoproto.jsontag) = 'description']; string group_id = 10 [(gogoproto.jsontag) = 'groupId']; }
+message CreateExternalAPIResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; ExternalAPI api = 2 [(gogoproto.jsontag) = 'api']; }
+message UpdateExternalAPIReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string api_key = 2 [(gogoproto.jsontag) = 'apiKey']; string name = 3 [(gogoproto.jsontag) = 'name']; string method = 4 [(gogoproto.jsontag) = 'method']; string path = 5 [(gogoproto.jsontag) = 'path']; string headers_json = 6 [(gogoproto.jsontag) = 'headersJson']; string request_schema_json = 7 [(gogoproto.jsontag) = 'requestSchemaJson']; string response_schema_json = 8 [(gogoproto.jsontag) = 'responseSchemaJson']; string description = 9 [(gogoproto.jsontag) = 'description']; string status = 10 [(gogoproto.jsontag) = 'status']; string group_id = 11 [(gogoproto.jsontag) = 'groupId']; }
+message UpdateExternalAPIResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; ExternalAPI api = 2 [(gogoproto.jsontag) = 'api']; }
+message DeleteExternalAPIReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string api_key = 2 [(gogoproto.jsontag) = 'apiKey']; }
+message DeleteExternalAPIResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; }
+message ImportExternalAPIDocumentReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string document_json = 2 [(gogoproto.jsontag) = 'documentJson']; string mode = 3 [(gogoproto.jsontag) = 'mode']; }
+message ImportExternalAPIDocumentResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; int32 created_count = 2 [(gogoproto.jsontag) = 'createdCount']; int32 updated_count = 3 [(gogoproto.jsontag) = 'updatedCount']; repeated ExternalAPIGroup groups = 4 [(gogoproto.jsontag) = 'groups']; repeated ExternalAPI apis = 5 [(gogoproto.jsontag) = 'apis']; }
+message UploadExternalAPIDocumentReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string api_key = 2 [(gogoproto.jsontag) = 'apiKey']; string document_json = 3 [(gogoproto.jsontag) = 'documentJson']; }
+message UploadExternalAPIDocumentResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; int32 created_count = 2 [(gogoproto.jsontag) = 'createdCount']; int32 updated_count = 3 [(gogoproto.jsontag) = 'updatedCount']; }
+message TestExternalAPIReq { string client_key = 1 [(gogoproto.jsontag) = 'clientKey']; string api_key = 2 [(gogoproto.jsontag) = 'apiKey']; string query_json = 3 [(gogoproto.jsontag) = 'queryJson']; string headers_json = 4 [(gogoproto.jsontag) = 'headersJson']; string body_json = 5 [(gogoproto.jsontag) = 'bodyJson']; }
+message TestExternalAPIResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; int32 status_code = 2 [(gogoproto.jsontag) = 'statusCode']; string response_headers_json = 3 [(gogoproto.jsontag) = 'responseHeadersJson']; string response_body_json = 4 [(gogoproto.jsontag) = 'responseBodyJson']; int64 duration_ms = 5 [(gogoproto.jsontag) = 'durationMs']; }

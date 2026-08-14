@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package mcp_proto;
+option go_package = "./;aiagent";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message MCPKV {
+  string key = 1 [(gogoproto.jsontag) = 'key'];
+  string value = 2 [(gogoproto.jsontag) = 'value'];
+}
+
+message AgentMCPServer {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string type = 4 [(gogoproto.jsontag) = 'type'];
+  bool enabled = 5 [(gogoproto.jsontag) = 'enabled'];
+  string command = 6 [(gogoproto.jsontag) = 'command,omitempty'];
+  repeated string args = 7 [(gogoproto.jsontag) = 'args,omitempty'];
+  repeated MCPKV env = 8 [(gogoproto.jsontag) = 'env,omitempty'];
+  string url = 9 [(gogoproto.jsontag) = 'url,omitempty'];
+  repeated MCPKV headers = 10 [(gogoproto.jsontag) = 'headers,omitempty'];
+  int64 updated_at = 11 [(gogoproto.jsontag) = 'updatedAt'];
+  string config_json = 12 [(gogoproto.jsontag) = 'configJson,omitempty'];
+}
+
+message ListMCPServersReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+}
+
+message ListMCPServersResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated AgentMCPServer servers = 2 [(gogoproto.jsontag) = 'servers'];
+}
+
+message SaveMCPServerReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  AgentMCPServer server = 2 [(gogoproto.jsontag) = 'server'];
+}
+
+message SaveMCPServerResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentMCPServer server = 2 [(gogoproto.jsontag) = 'server'];
+}
+
+message DeleteMCPServerReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteMCPServerResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+}

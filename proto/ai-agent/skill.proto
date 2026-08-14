@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package skill_proto;
+option go_package = "./;aiagent";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/team-dandelion/quickgo/grpcep/lib.proto";
+
+message AgentSkill {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string name = 2 [(gogoproto.jsontag) = 'name'];
+  string description = 3 [(gogoproto.jsontag) = 'description'];
+  string source = 4 [(gogoproto.jsontag) = 'source'];
+  bool enabled = 5 [(gogoproto.jsontag) = 'enabled'];
+  int64 updated_at = 6 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message ListSkillsReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+}
+
+message ListSkillsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated AgentSkill skills = 2 [(gogoproto.jsontag) = 'skills'];
+}
+
+message ImportSkillPackageReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  string file_name = 2 [(gogoproto.jsontag) = 'fileName'];
+  bytes data = 3 [(gogoproto.jsontag) = 'data'];
+}
+
+message ImportSkillPackageResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentSkill skill = 2 [(gogoproto.jsontag) = 'skill'];
+}
+
+message UpdateSkillReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  AgentSkill skill = 2 [(gogoproto.jsontag) = 'skill'];
+}
+
+message UpdateSkillResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  AgentSkill skill = 2 [(gogoproto.jsontag) = 'skill'];
+}
+
+message DeleteSkillReq {
+  string user_id = 1 [(gogoproto.jsontag) = 'userId'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+}
+
+message DeleteSkillResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+}
