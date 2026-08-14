@@ -4,11 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/team-dandelion/ai-dandelion/ai-agent/global"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/logic"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/service"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/ai-agent/global"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/logic"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/service"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	rpc "google.golang.org/grpc"
 )
 

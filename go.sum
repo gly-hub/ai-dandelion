@@ -61,6 +61,8 @@ github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/gly-hub/claude-agent-sdk-go v1.0.0 h1:JcZVqEzTLgaNWHqqRDcoLJ8tSD6J9nDWjAlsqLFpu2Y=
 github.com/gly-hub/claude-agent-sdk-go v1.0.0/go.mod h1:pQmw0jDVKSsrZ8ZKZVddaMdgCo1g/XxnQuO+sSjbGCk=
+github.com/gly-hub/quickgo v1.0.1 h1:mZfawb7VUz5G4ep6ZKDV2K3ZQ0ZevLbzpIDpLofNoAE=
+github.com/gly-hub/quickgo v1.0.1/go.mod h1:RzIrHVE8LyKHlO7uzLPKdV4S5A40Ha+o6Wz4Eyu8ldo=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=
 github.com/go-ini/ini v1.67.0/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3Ies8=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
@@ -283,8 +285,6 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/team-dandelion/quickgo v1.0.0 h1:G9f7mw2ciQwdPydCW17lONXRkVSnEnhvAQ7XFYj75z8=
-github.com/team-dandelion/quickgo v1.0.0/go.mod h1:IXfuV4ylOe44O5tYu8vikHqj/j92DXytYhaMkihz0aU=
 github.com/tetratelabs/wazero v1.9.0 h1:IcZ56OuxrtaEz8UYNRHBrUa9bYeX9oVY93KspZZBf/I=
 github.com/tetratelabs/wazero v1.9.0/go.mod h1:TSbcXCfFP0L2FGkRPxHphadXPjo1T6W+CseNNY7EkjM=
 github.com/tinylib/msgp v1.6.1 h1:ESRv8eL3u+DNHUoSAAQRE50Hm162zqAnBoGv9PzScPY=

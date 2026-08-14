@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/team-dandelion/ai-dandelion/toolbox/eventbus"
+	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
 )
 
 func TestPublishEventTargetsUserConnections(t *testing.T) {

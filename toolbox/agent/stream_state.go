@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	claudeagentsdk "github.com/gly-hub/claude-agent-sdk-go"
-	"github.com/team-dandelion/quickgo/json"
+	"github.com/gly-hub/quickgo/json"
 )
 
 type streamState struct {

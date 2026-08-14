@@ -11,8 +11,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 	"github.com/google/uuid"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
 )
 
 const templateAppID = "hello-greeting"

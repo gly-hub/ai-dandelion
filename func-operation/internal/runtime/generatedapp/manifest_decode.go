@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
 )
 
 type manifestDataModelFlexible struct {

@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gly-hub/ai-dandelion/toolbox/uploader-minio/minio_ext"
 	"github.com/minio/minio-go"
 	miniov6 "github.com/minio/minio-go/v6"
 	gouuid "github.com/satori/go.uuid"
-	"github.com/team-dandelion/ai-dandelion/toolbox/uploader-minio/minio_ext"
 )
 
 type MinioUploader struct {

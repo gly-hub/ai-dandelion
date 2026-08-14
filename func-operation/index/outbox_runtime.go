@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/logic"
-	"github.com/team-dandelion/quickgo/logger"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/logic"
+	"github.com/gly-hub/quickgo/logger"
 )
 
 var (

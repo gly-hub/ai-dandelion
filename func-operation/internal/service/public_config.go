@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
-	"github.com/team-dandelion/quickgo/grpcep"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/quickgo/grpcep"
 )
 
 func (s *FuncOperationService) ListPublicConfigs(ctx context.Context, req *funcoperation.ListPublicConfigsReq) (out *funcoperation.ListPublicConfigsResp, err error) {

@@ -1,6 +1,6 @@
 package model
 
-import "github.com/team-dandelion/ai-dandelion/ai-agent/boot"
+import "github.com/gly-hub/ai-dandelion/ai-agent/boot"
 
 func init() {
 	boot.Register(&SessionReference{})

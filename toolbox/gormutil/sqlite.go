@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	qggorm "github.com/team-dandelion/quickgo/db/gorm"
+	qggorm "github.com/gly-hub/quickgo/db/gorm"
 )
 
 func EnsureSQLiteDirs(config *qggorm.GormManagerConfig) error {

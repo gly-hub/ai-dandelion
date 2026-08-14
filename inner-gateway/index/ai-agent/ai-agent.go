@@ -1,9 +1,9 @@
 package aiagent
 
 import (
+	"github.com/gly-hub/ai-dandelion/inner-gateway/global"
+	aiagent "github.com/gly-hub/ai-dandelion/inner-gateway/internal/service/ai-agent"
 	"github.com/gofiber/fiber/v2"
-	"github.com/team-dandelion/ai-dandelion/inner-gateway/global"
-	aiagent "github.com/team-dandelion/ai-dandelion/inner-gateway/internal/service/ai-agent"
 )
 
 func RouteHandler(fiberApp *fiber.App) {

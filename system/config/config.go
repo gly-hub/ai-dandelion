@@ -1,11 +1,11 @@
 package config
 
 import (
-	uploader_minio "github.com/team-dandelion/ai-dandelion/toolbox/uploader-minio"
-	"github.com/team-dandelion/quickgo"
-	"github.com/team-dandelion/quickgo/db/gorm"
-	"github.com/team-dandelion/quickgo/db/redis"
-	"github.com/team-dandelion/quickgo/tracing"
+	uploader_minio "github.com/gly-hub/ai-dandelion/toolbox/uploader-minio"
+	"github.com/gly-hub/quickgo"
+	"github.com/gly-hub/quickgo/db/gorm"
+	"github.com/gly-hub/quickgo/db/redis"
+	"github.com/gly-hub/quickgo/tracing"
 )
 
 type Config struct {

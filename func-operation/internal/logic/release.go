@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/runtime/generatedapp"
-	"github.com/team-dandelion/ai-dandelion/toolbox/authctx"
-	"github.com/team-dandelion/ai-dandelion/toolbox/eventbus"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/runtime/generatedapp"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
 	"gorm.io/gorm"
 )
 

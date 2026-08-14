@@ -3,7 +3,7 @@ package dao
 import (
 	"context"
 
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
 	"gorm.io/gorm"
 )
 

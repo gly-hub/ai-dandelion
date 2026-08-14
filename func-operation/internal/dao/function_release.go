@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 	"github.com/google/uuid"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
 	"gorm.io/gorm"
 )
 

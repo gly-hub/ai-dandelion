@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/quickgo/grpcep"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/quickgo/grpcep"
 )
 
 func (s *SystemService) ListAgentSessionConfigs(ctx context.Context, req *systemproto.ListAgentSessionConfigsReq) (

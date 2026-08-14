@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/team-dandelion/ai-dandelion/system/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
+	"github.com/gly-hub/ai-dandelion/system/internal/dao"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
 	"gorm.io/gorm"
 )
 

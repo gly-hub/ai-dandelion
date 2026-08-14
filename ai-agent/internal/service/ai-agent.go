@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/logic"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/logic"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 )
 
 type AiAgentService struct {

@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gly-hub/ai-dandelion/system/boot"
+	"github.com/gly-hub/ai-dandelion/system/global"
+	"github.com/gly-hub/ai-dandelion/system/index"
+	"github.com/gly-hub/quickgo/logger"
 	"github.com/spf13/cobra"
-	"github.com/team-dandelion/ai-dandelion/system/boot"
-	"github.com/team-dandelion/ai-dandelion/system/global"
-	"github.com/team-dandelion/ai-dandelion/system/index"
-	"github.com/team-dandelion/quickgo/logger"
 )
 
 var rootCmd = &cobra.Command{

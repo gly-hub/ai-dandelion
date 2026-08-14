@@ -3,8 +3,8 @@ package system
 import (
 	"context"
 
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/quickgo/grpcep"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/quickgo/grpcep"
 	"google.golang.org/grpc"
 )
 

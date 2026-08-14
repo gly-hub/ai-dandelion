@@ -15,8 +15,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"

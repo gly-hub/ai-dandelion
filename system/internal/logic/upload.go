@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/ai-dandelion/system/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/system/internal/model"
-	uploader_minio "github.com/team-dandelion/ai-dandelion/toolbox/uploader-minio"
-	"github.com/team-dandelion/ai-dandelion/toolbox/uploader-minio/minio_ext"
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/ai-dandelion/system/internal/dao"
+	"github.com/gly-hub/ai-dandelion/system/internal/model"
+	uploader_minio "github.com/gly-hub/ai-dandelion/toolbox/uploader-minio"
+	"github.com/gly-hub/ai-dandelion/toolbox/uploader-minio/minio_ext"
 )
 
 const maxPresignedURLExpire = 7 * 24 * time.Hour

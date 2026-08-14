@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 )
 
 func TestFunctionLogicDefersAiAgentConnectionUntilRPC(t *testing.T) {

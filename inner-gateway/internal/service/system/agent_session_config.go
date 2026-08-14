@@ -3,10 +3,10 @@ package system
 import (
 	"context"
 
+	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
+	"github.com/gly-hub/quickgo/gerr"
+	"github.com/gly-hub/quickgo/grpcep"
 	"github.com/gofiber/fiber/v2"
-	systemproto "github.com/team-dandelion/ai-dandelion/proto/system"
-	"github.com/team-dandelion/quickgo/gerr"
-	"github.com/team-dandelion/quickgo/grpcep"
 )
 
 // ListAgentSessionConfigs

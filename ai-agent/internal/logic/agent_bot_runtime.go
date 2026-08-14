@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/model"
-	"github.com/team-dandelion/quickgo/logger"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
+	"github.com/gly-hub/quickgo/logger"
 )
 
 type AgentBotRuntime struct {

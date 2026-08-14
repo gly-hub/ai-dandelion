@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/team-dandelion/ai-dandelion/system/global"
-	"github.com/team-dandelion/ai-dandelion/toolbox/gormutil"
-	"github.com/team-dandelion/ai-dandelion/toolbox/redislock"
-	"github.com/team-dandelion/quickgo/logger"
+	"github.com/gly-hub/ai-dandelion/system/global"
+	"github.com/gly-hub/ai-dandelion/toolbox/gormutil"
+	"github.com/gly-hub/ai-dandelion/toolbox/redislock"
+	"github.com/gly-hub/quickgo/logger"
 )
 
 type DatabaseModel interface {

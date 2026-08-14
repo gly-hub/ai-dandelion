@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/model"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
-	"github.com/team-dandelion/ai-dandelion/toolbox/agent"
-	"github.com/team-dandelion/ai-dandelion/toolbox/wecomaibot"
-	"github.com/team-dandelion/quickgo/logger"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/wecomaibot"
+	"github.com/gly-hub/quickgo/logger"
 )
 
 const wecomStreamUpdateInterval = 800 * time.Millisecond

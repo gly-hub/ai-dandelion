@@ -1,8 +1,8 @@
 package global
 
 import (
-	"github.com/team-dandelion/ai-dandelion/func-operation/config"
-	"github.com/team-dandelion/quickgo"
+	"github.com/gly-hub/ai-dandelion/func-operation/config"
+	"github.com/gly-hub/quickgo"
 )
 
 var (

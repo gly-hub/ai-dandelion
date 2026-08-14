@@ -1,6 +1,6 @@
 package model
 
-import "github.com/team-dandelion/ai-dandelion/system/boot"
+import "github.com/gly-hub/ai-dandelion/system/boot"
 
 func init() {
 	boot.Register(&AgentSystemConfig{})

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/team-dandelion/ai-dandelion/system/internal/logic"
+	"github.com/gly-hub/ai-dandelion/system/internal/logic"
 )
 
 type SystemService struct {

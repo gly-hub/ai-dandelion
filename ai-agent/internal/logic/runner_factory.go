@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/team-dandelion/ai-dandelion/ai-agent/config"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/model"
-	"github.com/team-dandelion/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/ai-agent/config"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
+	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 	"gorm.io/gorm"
 )
 

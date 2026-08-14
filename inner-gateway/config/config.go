@@ -1,10 +1,10 @@
 package config
 
 import (
-	"github.com/team-dandelion/quickgo"
-	"github.com/team-dandelion/quickgo/db/mongodb"
-	"github.com/team-dandelion/quickgo/db/redis"
-	"github.com/team-dandelion/quickgo/tracing"
+	"github.com/gly-hub/quickgo"
+	"github.com/gly-hub/quickgo/db/mongodb"
+	"github.com/gly-hub/quickgo/db/redis"
+	"github.com/gly-hub/quickgo/tracing"
 )
 
 type Config struct {

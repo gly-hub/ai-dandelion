@@ -3,8 +3,8 @@ package logic
 import (
 	"strings"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/model"
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
 )
 
 const (

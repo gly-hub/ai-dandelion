@@ -72,21 +72,21 @@ prepare_proto_include_root() {
   TMP_INCLUDE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/ai-dandelion-proto.XXXXXX")" || return 1
 
   link_module_include "github.com/gogo/protobuf" "gogoproto/gogo.proto" || return 1
-  link_module_include "github.com/team-dandelion/quickgo" "grpcep/lib.proto" || return 1
+  link_module_include "github.com/gly-hub/quickgo" "grpcep/lib.proto" || return 1
 
   printf '%s\n' "$TMP_INCLUDE_ROOT"
 }
 
 build_gogo_out_opts() {
   local quickgo_dir
-  quickgo_dir="$(go list -m -f '{{.Dir}}' github.com/team-dandelion/quickgo 2>/dev/null)" || return 1
+  quickgo_dir="$(go list -m -f '{{.Dir}}' github.com/gly-hub/quickgo 2>/dev/null)" || return 1
 
   if [ ! -f "$quickgo_dir/grpcep/lib.proto" ]; then
     return 1
   fi
 
   # quickgo/grpcep/lib.proto 的 go_package 是相对路径，需显式映射为可导入包路径。
-  printf '%s\n' "Mgithub.com/team-dandelion/quickgo/grpcep/lib.proto=github.com/team-dandelion/quickgo/grpcep,plugins=grpc"
+  printf '%s\n' "Mgithub.com/gly-hub/quickgo/grpcep/lib.proto=github.com/gly-hub/quickgo/grpcep,plugins=grpc"
 }
 
 # gen_dir <dir> [proto_file ...]

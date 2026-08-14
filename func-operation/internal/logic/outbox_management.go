@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
-	"github.com/team-dandelion/ai-dandelion/func-operation/internal/dao"
-	funcoperation "github.com/team-dandelion/ai-dandelion/proto/func-operation"
+	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
 )
 
 type OutboxManagementLogic struct {

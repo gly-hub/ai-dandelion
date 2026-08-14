@@ -5,12 +5,12 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gly-hub/ai-dandelion/ai-agent/config"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
+	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
+	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 	"github.com/google/uuid"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/config"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/dao"
-	"github.com/team-dandelion/ai-dandelion/ai-agent/internal/model"
-	aiagent "github.com/team-dandelion/ai-dandelion/proto/ai-agent"
-	"github.com/team-dandelion/ai-dandelion/toolbox/agent"
 	"gorm.io/gorm"
 )
 
