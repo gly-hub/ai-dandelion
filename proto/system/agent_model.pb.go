@@ -5,9 +5,9 @@ package system
 
 import (
 	fmt "fmt"
+	grpcep "github.com/gly-hub/quickgo/grpcep"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	grpcep "github.com/gly-hub/quickgo/grpcep"
 	io "io"
 	math "math"
 	math_bits "math/bits"

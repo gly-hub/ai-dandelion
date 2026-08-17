@@ -292,6 +292,7 @@ func (h *Handler) startAgentStream(ctx context.Context, in Envelope, write Write
 	h.runsMu.Lock()
 	if _, exists := h.runs[in.RequestID]; exists {
 		h.runsMu.Unlock()
+		cancel()
 		_ = write(errorEnvelope(in.RequestID, "requestId is already running"))
 		return
 	}

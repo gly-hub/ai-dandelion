@@ -39,7 +39,7 @@ func (c Client) ListObjectParts(bucketName, objectName, uploadID string) (partsI
 }
 
 // listObjectPartsQuery (List Parts query)
-//     - lists some or all (up to 1000) parts that have been uploaded
+//   - lists some or all (up to 1000) parts that have been uploaded
 //     for a specific multipart upload
 //
 // You can use the request parameters as selection criteria to return
