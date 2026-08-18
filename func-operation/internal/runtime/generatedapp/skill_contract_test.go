@@ -8,7 +8,7 @@ func TestValidateAgentSkillContract(t *testing.T) {
 		ToolPrefix: "book_management",
 		Operations: []AgentSkillOperation{{
 			Key: "create_book", Action: "book_create", Effect: "create", AutoExecute: true,
-			Fields: []AgentSkillField{{Key: "title", Type: "string", Required: true}},
+			Fields: []AgentSkillField{{Key: "publishDate", Type: "string"}, {Key: "title", Type: "string", Required: true}},
 		}},
 	}
 	if err := ValidateAgentSkillContract(valid, []string{"book_create"}); err != nil {

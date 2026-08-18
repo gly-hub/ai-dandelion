@@ -132,6 +132,25 @@ func RegisterHandler(s *rpc.Server) {
 	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic)
 	functionSkillLogic := logic.NewFunctionSkillLogic(functionSkillDao, functionSkillReleaseDao, functionSkillGrantDao, functionSkillApprovalDao, functionSkillExecutionDao, functionDao, appLogic, authorizer)
 	releaseLogic.SetFunctionSkillSynchronizer(functionSkillLogic)
+	// Reconcile skill snapshots for releases that were already published before
+	// function skills were enabled (or while the service was offline).  The
+	// normal publish path calls SyncPublished synchronously, but startup must
+	// also backfill that side effect so an existing published function appears
+	// in the Agent skill directory without requiring a no-op re-publish.
+	publishedReleases, err := releaseDao.ListPublished(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for i := range publishedReleases {
+		release := &publishedReleases[i]
+		function, functionErr := functionDao.Get(context.Background(), release.FunctionID)
+		if functionErr != nil {
+			continue
+		}
+		if err := functionSkillLogic.SyncPublished(context.Background(), function, release); err != nil {
+			panic(err)
+		}
+	}
 	if err := appLogic.SyncPublishedFunctionActions(context.Background()); err != nil {
 		panic(err)
 	}
