@@ -91,11 +91,15 @@ func NewMessageLogic(
 
 func (m *MessageLogic) ListMessages(ctx context.Context, req *aiagent.GetMessageReq) (
 	[]*aiagent.Message, bool, string, error) {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, false, "", err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return nil, false, "", err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return nil, false, "", err
 	}
 
@@ -123,6 +127,10 @@ func (m *MessageLogic) StreamMessage(
 		return errAgentRunnerNotConfigured
 	}
 
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
@@ -136,7 +144,7 @@ func (m *MessageLogic) StreamMessage(
 	if strings.TrimSpace(prompt) == "" {
 		prompt = content
 	}
-	session, err := m.sessionDao.Get(ctx, sessionID)
+	session, err := m.sessionDao.Get(ctx, userID, sessionID)
 	if err != nil {
 		return err
 	}
@@ -183,7 +191,7 @@ func (m *MessageLogic) StreamMessage(
 		defer cancelPersist()
 		message, saveErr := m.addMessage(persistCtx, sessionID, model.RoleAssistant, answer.String(), parts.parts())
 		if saveErr == nil {
-			if updateErr := m.sessionDao.UpdateAgentSession(persistCtx, sessionID, agentSessionID, message.CreatedAt); updateErr == nil {
+			if updateErr := m.sessionDao.UpdateAgentSession(persistCtx, userID, sessionID, agentSessionID, message.CreatedAt); updateErr == nil {
 				partialSaved = true
 			}
 		}
@@ -208,7 +216,7 @@ func (m *MessageLogic) StreamMessage(
 				if event.AgentSessionID != "" {
 					agentSessionID = event.AgentSessionID
 				}
-				if err := m.sessionDao.UpdateAgentSession(ctx, sessionID, agentSessionID, message.CreatedAt); err != nil {
+				if err := m.sessionDao.UpdateAgentSession(ctx, userID, sessionID, agentSessionID, message.CreatedAt); err != nil {
 					return err
 				}
 				return send(streamRespFromEvent(agent.Event{Type: "done", AgentSessionID: agentSessionID, Done: true}, modelMessageToProto(message)))
@@ -364,22 +372,30 @@ func (m *MessageLogic) toolPermissionHandler(sessionID string) agent.ToolPermiss
 }
 
 func (m *MessageLogic) SubmitAskUserQuestion(ctx context.Context, req *aiagent.SubmitAskUserQuestionReq) error {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return err
 	}
 	return m.askUserQuestionBroker.Submit(sessionID, strings.TrimSpace(req.GetToolId()), req.GetAnswersJson(), req.GetResponse())
 }
 
 func (m *MessageLogic) SubmitToolPermission(ctx context.Context, req *aiagent.SubmitToolPermissionReq) error {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return err
 	}
 	return m.toolPermissionBroker.Submit(

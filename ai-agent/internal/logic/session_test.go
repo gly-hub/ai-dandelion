@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/dao"
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -22,7 +24,7 @@ func TestSessionLogicUpdateSession(t *testing.T) {
 		t.Fatalf("migrate session table: %v", err)
 	}
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	sessionDao := dao.NewSession(db)
 	logic := NewSessionLogic(sessionDao)
 	session, err := logic.CreateSession(ctx, &aiagent.CreateSessionReq{Title: "Original title"})
@@ -40,7 +42,7 @@ func TestSessionLogicUpdateSession(t *testing.T) {
 	if updated.GetTitle() != "Renamed session" {
 		t.Fatalf("unexpected updated title: %q", updated.GetTitle())
 	}
-	stored, err := sessionDao.Get(ctx, session.GetId())
+	stored, err := sessionDao.Get(ctx, "user-a", session.GetId())
 	if err != nil {
 		t.Fatalf("get updated session: %v", err)
 	}
@@ -66,7 +68,7 @@ func TestSessionLogicCreateListDelete(t *testing.T) {
 	}
 
 	logic := NewSessionLogic(dao.NewSession(db))
-	ctx := context.Background()
+	ctx := testUserContext()
 
 	first, err := logic.CreateSession(ctx, &aiagent.CreateSessionReq{Title: "  "})
 	if err != nil {
@@ -151,4 +153,44 @@ func TestSessionLogicCreateListDelete(t *testing.T) {
 	if len(sessions) != 1 || sessions[0].GetId() != second.GetId() {
 		t.Fatalf("unexpected sessions after delete: %#v", sessions)
 	}
+}
+
+func TestSessionLogicIsolatesUsers(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("open sqlite: %v", err)
+	}
+	if err := db.AutoMigrate(&model.Session{}); err != nil {
+		t.Fatalf("migrate session table: %v", err)
+	}
+
+	logic := NewSessionLogic(dao.NewSession(db))
+	userA := testUserContext("user-a")
+	userB := testUserContext("user-b")
+	sessionA, err := logic.CreateSession(userA, &aiagent.CreateSessionReq{Title: "User A"})
+	if err != nil {
+		t.Fatalf("create user A session: %v", err)
+	}
+	if _, err := logic.CreateSession(userB, &aiagent.CreateSessionReq{Title: "User B"}); err != nil {
+		t.Fatalf("create user B session: %v", err)
+	}
+
+	sessions, err := logic.ListSessions(userA, &aiagent.SearchMessageReq{})
+	if err != nil {
+		t.Fatalf("list user A sessions: %v", err)
+	}
+	if len(sessions) != 1 || sessions[0].GetId() != sessionA.GetId() {
+		t.Fatalf("unexpected user A sessions: %#v", sessions)
+	}
+	if _, err := logic.UpdateSession(userB, &aiagent.UpdateSessionReq{Id: sessionA.GetId(), Title: "Hijacked"}); !errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Fatalf("expected cross-user update to be hidden, got %v", err)
+	}
+}
+
+func testUserContext(userIDs ...string) context.Context {
+	userID := "user-a"
+	if len(userIDs) > 0 {
+		userID = userIDs[0]
+	}
+	return authctx.ContextWithUser(context.Background(), authctx.User{ID: userID})
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/google/uuid"
 )
 
@@ -31,6 +32,10 @@ func (r *AgentBotRuntime) streamAgentBotMessage(
 		return errAgentRunnerNotConfigured
 	}
 	sessionID, err := requireSessionID(req.SessionID)
+	if err != nil {
+		return err
+	}
+	userID, err := authctx.RequireUserID(ctx)
 	if err != nil {
 		return err
 	}
@@ -80,7 +85,7 @@ func (r *AgentBotRuntime) streamAgentBotMessage(
 				if event.AgentSessionID != "" {
 					agentSessionID = event.AgentSessionID
 				}
-				if err := r.messageLogic.sessionDao.UpdateAgentSession(ctx, sessionID, agentSessionID, message.CreatedAt); err != nil {
+				if err := r.messageLogic.sessionDao.UpdateAgentSession(ctx, userID, sessionID, agentSessionID, message.CreatedAt); err != nil {
 					return err
 				}
 				return send(agentBotStreamEvent{Done: true})

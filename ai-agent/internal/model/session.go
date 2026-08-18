@@ -16,6 +16,7 @@ const (
 // Session 对话会话表（与 session.proto 字段对应）。
 type Session struct {
 	ID             string `gorm:"column:id;type:varchar(36);primaryKey"`
+	UserID         string `gorm:"column:user_id;type:varchar(128);not null;default:'';index;comment:所属用户 ID"`
 	Title          string `gorm:"column:title;type:varchar(200);not null;default:'';comment:会话标题"`
 	SessionType    int    `gorm:"column:session_type;type:tinyint(1);not null;default:1;comment:回话类型"` // 1-普通会话
 	AgentSessionId string `gorm:"column:agent_session_id;type:varchar(200);not null;default:'';comment:sdk会话id"`

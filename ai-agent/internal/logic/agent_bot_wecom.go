@@ -11,6 +11,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/gly-hub/ai-dandelion/toolbox/wecomaibot"
 	"github.com/gly-hub/quickgo/logger"
 )
@@ -95,7 +96,8 @@ func (h *wecomRuntimeHandler) handleText(ctx context.Context, client *wecomaibot
 		return
 	}
 	sessionID := fmt.Sprintf("channel:wecom:%s:%s", h.channel.ID, wecomaibot.ConversationKey(frame))
-	if _, _, err := h.runtime.sessionLogic.EnsureSession(ctx, &aiagent.EnsureSessionReq{
+	sessionCtx := authctx.ContextWithUser(ctx, authctx.User{ID: "channel:" + h.channel.ID})
+	if _, _, err := h.runtime.sessionLogic.EnsureSession(sessionCtx, &aiagent.EnsureSessionReq{
 		Id:          sessionID,
 		Title:       h.bot.Bot.Name,
 		SessionType: int32(model.SessionTypeChannel),
@@ -116,13 +118,13 @@ func (h *wecomRuntimeHandler) handleText(ctx context.Context, client *wecomaibot
 		EngineConfig:   h.engineConfig,
 		AgentSessionID: "",
 	}
-	session, err := h.runtime.messageLogic.sessionDao.Get(ctx, sessionID)
+	session, err := h.runtime.messageLogic.sessionDao.Get(sessionCtx, "channel:"+h.channel.ID, sessionID)
 	if err == nil {
 		req.AgentSessionID = session.AgentSessionId
 	} else {
 		logger.Error(ctx, "get wecom session failed: %v", err)
 	}
-	err = h.runtime.streamAgentBotMessage(ctx, req, func(event agentBotStreamEvent) error {
+	err = h.runtime.streamAgentBotMessage(sessionCtx, req, func(event agentBotStreamEvent) error {
 		text := formatWeComAgentEvent(event.Event)
 		if text != "" {
 			accumulated.WriteString(text)
