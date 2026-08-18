@@ -22,6 +22,8 @@ type AgentEngineRunConfig struct {
 	MCPServers      map[string]agent.MCPServerConfig
 	AskUserQuestion agent.AskUserQuestionHandler
 	ToolPermission  agent.ToolPermissionHandler
+	ForceToolPermission func(string) bool
+	Cleanup         func()
 	UserContent     any
 }
 
@@ -55,6 +57,7 @@ func (e *AgentEngine) Stream(
 		MCPServers:      config.MCPServers,
 		AskUserQuestion: config.AskUserQuestion,
 		ToolPermission:  config.ToolPermission,
+		ForceToolPermission: config.ForceToolPermission,
 		UserContent:     config.UserContent,
 	})
 	return events, errs, nil

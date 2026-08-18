@@ -39,6 +39,14 @@ var rootCmd = &cobra.Command{
 			global.ErrChan <- fmt.Errorf("grpc server init failed")
 			return
 		}
+		if global.GetApp().GrpcClientManager() == nil {
+			global.ErrChan <- fmt.Errorf("grpc client init failed")
+			return
+		}
+		if err := global.GetApp().GrpcClientManager().RegisterService("func-operation"); err != nil {
+			global.ErrChan <- fmt.Errorf("register func-operation service err: %v", err)
+			return
+		}
 
 		err := global.GetApp().GrpcServer().RegisterService(index.RegisterHandler)
 		if err != nil {

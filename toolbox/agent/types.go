@@ -68,8 +68,9 @@ type ToolPermissionRequest struct {
 
 // ToolPermissionDecision is returned after the user approves or declines a tool call.
 type ToolPermissionDecision struct {
-	Allow   bool
-	Message string
+	Allow        bool
+	Message      string
+	UpdatedInput map[string]any
 }
 
 // ToolPermissionHandler blocks until the application receives an approval decision.
@@ -85,6 +86,7 @@ type StreamOptions struct {
 	MCPServers      map[string]MCPServerConfig
 	AskUserQuestion AskUserQuestionHandler
 	ToolPermission  ToolPermissionHandler
+	ForceToolPermission func(string) bool
 	UserContent     any
 }
 

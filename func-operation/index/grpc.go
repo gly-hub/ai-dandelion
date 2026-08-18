@@ -33,6 +33,11 @@ func RegisterHandler(s *rpc.Server) {
 	externalAPIDao := dao.NewExternalAPI(db)
 	debugGeneratedAppDao := dao.NewGeneratedApp(debugDB)
 	releaseDao := dao.NewFunctionRelease(db)
+	functionSkillDao := dao.NewFunctionSkill(db)
+	functionSkillReleaseDao := dao.NewFunctionSkillRelease(db)
+	functionSkillGrantDao := dao.NewFunctionSkillGrant(db)
+	functionSkillApprovalDao := dao.NewFunctionSkillApproval(db)
+	functionSkillExecutionDao := dao.NewFunctionSkillExecution(db)
 	outboxDao := dao.NewFunctionOutbox(db)
 	redisClient, redisErr := global.GetApp().RedisManager().GetRedisClient("ai-dandelion")
 	if redisErr != nil || redisClient == nil {
@@ -125,6 +130,8 @@ func RegisterHandler(s *rpc.Server) {
 	StartArtifactRuntime(releaseLogic, artifactReconcileInterval, staleStagingAfter)
 	functionLogic := logic.NewFunctionLogic(functionDao, messageStore, generatedAppDao, appRuntime, previewRuntime, aiAgentClientProvider, menuSync, authorizer, releaseLogic)
 	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic)
+	functionSkillLogic := logic.NewFunctionSkillLogic(functionSkillDao, functionSkillReleaseDao, functionSkillGrantDao, functionSkillApprovalDao, functionSkillExecutionDao, functionDao, appLogic, authorizer)
+	releaseLogic.SetFunctionSkillSynchronizer(functionSkillLogic)
 	if err := appLogic.SyncPublishedFunctionActions(context.Background()); err != nil {
 		panic(err)
 	}
@@ -133,7 +140,7 @@ func RegisterHandler(s *rpc.Server) {
 	appRuntime.SetExternalAPIExecutor(externalAPILogic)
 	previewRuntime.SetExternalAPIExecutor(externalAPILogic)
 	outboxLogic := logic.NewOutboxManagementLogic(outboxDao, outboxProcessor, authorizer)
-	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic)
+	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic, functionSkillLogic)
 
 	funcoperation.RegisterFuncOperationServiceServer(s, funcOperationService)
 }

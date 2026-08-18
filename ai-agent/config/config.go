@@ -11,6 +11,7 @@ type Config struct {
 	AppConfig        quickgo.AppConfig        `json:"app" yaml:"app"`
 	LoggerConfig     quickgo.LoggerConfig     `json:"logger" yaml:"logger"`
 	GrpcServerConfig quickgo.GrpcServerConfig `json:"grpcServer" yaml:"grpcServer"`
+	GrpcClientConfig quickgo.GrpcClientConfig `json:"grpcClient" yaml:"grpcClient"`
 	GormConfig       gorm.GormManagerConfig   `json:"gorm" yaml:"gorm"`
 	RedisConfig      redis.RedisManagerConfig `json:"redis" yaml:"redis"`
 	TracingConfig    tracing.Config           `json:"tracing" yaml:"tracing"`
@@ -18,16 +19,17 @@ type Config struct {
 }
 
 type AgentConfig struct {
-	CWD             string           `json:"cwd" yaml:"cwd"`
-	SystemPrompt    string           `json:"system_prompt" yaml:"system_prompt"`
-	Model           string           `json:"model" yaml:"model"`
-	CLIPath         string           `json:"cli_path" yaml:"cli_path"`
-	PermissionMode  string           `json:"permission_mode" yaml:"permission_mode"`
-	MaxTurns        int              `json:"max_turns" yaml:"max_turns"`
-	AuthToken       string           `json:"auth_token" yaml:"auth_token"`
-	BaseURL         string           `json:"base_url" yaml:"base_url"`
-	SkillStorageDir string           `json:"skill_storage_dir" yaml:"skill_storage_dir"`
-	ThinkConfig     AgentThinkConfig `json:"think_config" yaml:"think_config"`
+	CWD                 string           `json:"cwd" yaml:"cwd"`
+	SystemPrompt        string           `json:"system_prompt" yaml:"system_prompt"`
+	Model               string           `json:"model" yaml:"model"`
+	CLIPath             string           `json:"cli_path" yaml:"cli_path"`
+	PermissionMode      string           `json:"permission_mode" yaml:"permission_mode"`
+	MaxTurns            int              `json:"max_turns" yaml:"max_turns"`
+	AuthToken           string           `json:"auth_token" yaml:"auth_token"`
+	BaseURL             string           `json:"base_url" yaml:"base_url"`
+	SkillStorageDir     string           `json:"skill_storage_dir" yaml:"skill_storage_dir"`
+	FunctionSkillMCPURL string           `json:"function_skill_mcp_url" yaml:"function_skill_mcp_url"`
+	ThinkConfig         AgentThinkConfig `json:"think_config" yaml:"think_config"`
 }
 
 type AgentThinkConfig struct {

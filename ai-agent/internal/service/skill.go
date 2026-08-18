@@ -14,6 +14,16 @@ func (s *AiAgentService) ListSkills(ctx context.Context, req *aiagent.ListSkills
 	return
 }
 
+func (s *AiAgentService) ListFunctionSkills(ctx context.Context, req *aiagent.ListFunctionSkillsReq) (
+	out *aiagent.ListFunctionSkillsResp, err error) {
+	grpcep.InitResponse(&out)
+	if s.functionSkillRuntime == nil {
+		return out, nil
+	}
+	out.Skills, err = s.functionSkillRuntime.List(ctx, req)
+	return
+}
+
 func (s *AiAgentService) ImportSkillPackage(ctx context.Context, req *aiagent.ImportSkillPackageReq) (
 	out *aiagent.ImportSkillPackageResp, err error) {
 	grpcep.InitResponse(&out)

@@ -211,6 +211,39 @@ Data manifest rules:
 - Do not include `tables` or DDL for new apps unless repairing a legacy app that explicitly still uses raw SQL.
 - `manifest.actions` is only for state-changing, button-permission-controlled actions. Do not include read-only actions such as `list`, `detail`, `query`, `search`, `page`, or `stats`.
 
+## Agent Function Skill Contract
+
+New or regenerated functions must also declare an `agentSkill` object in `manifest.json` when their business workflow can be operated through the web Agent. This is the published contract for the platform Function Skill; it is not shown directly in the generated page.
+
+```json
+{
+  "agentSkill": {
+    "name": "图书管理",
+    "toolPrefix": "book_management",
+    "description": "维护图书馆藏信息。",
+    "operations": [
+      {
+        "key": "create_book",
+        "action": "book_create",
+        "effect": "create",
+        "description": "新增一本图书",
+        "autoExecute": true,
+        "fields": [
+          {"key": "title", "label": "书名", "type": "string", "required": true, "description": "图书标题"},
+          {"key": "author", "label": "作者", "type": "string", "required": true}
+        ]
+      }
+    ]
+  }
+}
+```
+
+- `toolPrefix`, operation `key`, action, and every field `key` use stable lowercase snake_case identifiers. The final MCP tool name is `<toolPrefix>__<key>`.
+- Each operation must contain `key`, `action`, `effect`, `description`, and a flat `fields` list. Supported `effect` values are `read`, `create`, `update`, `delete`, and `execute`; field types are `string`, `number`, `integer`, `boolean`, and `enum` (with non-empty `enumValues`). Nested object and file fields are not supported.
+- Backend payloads must be flat and use the exact same field names: `{"action":"<action>", ...toolInput}`. The backend dispatch action and the frontend invocation action must therefore match the operation `action` exactly.
+- Every non-read operation action must appear in `manifest.actions`. Read-only operations must still be implemented through the normal runtime access checks, but are not listed in `manifest.actions`.
+- Only `effect: "create"` may set `autoExecute: true`. Updates, deletes, and execute operations always require the Agent confirmation flow; leave `autoExecute` false for them.
+
 ## Frontend Requirements
 
 Build `frontend.js` as an ES module exporting `render(container, context)`.

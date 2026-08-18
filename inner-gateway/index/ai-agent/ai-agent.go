@@ -24,6 +24,7 @@ func RouteHandler(fiberApp *fiber.App) {
 	}
 	baseRouter.Get("/models", aiAgentServerController.ListAgentModels)
 	baseRouter.Get("/skills", aiAgentServerController.ListSkills)
+	baseRouter.Get("/function-skills", aiAgentServerController.ListFunctionSkills)
 	baseRouter.Post("/skills/import", aiAgentServerController.ImportSkillPackage)
 	baseRouter.Put("/skills/:id", aiAgentServerController.UpdateSkill)
 	baseRouter.Delete("/skills/:id", aiAgentServerController.DeleteSkill)

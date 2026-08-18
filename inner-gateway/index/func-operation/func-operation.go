@@ -7,8 +7,10 @@ import (
 )
 
 func RouteHandler(fiberApp *fiber.App) {
-	baseRouter := fiberApp.Group("/func-operation")
+	// This MCP endpoint is grant-authenticated by func-operation, not browser-authenticated.
 	funcOperationController := funcoperation.NewFuncOperationServerController(global.GetApp().GrpcClientManager())
+	fiberApp.All("/mcp/function-skills", funcOperationController.FunctionSkillMCP)
+	baseRouter := fiberApp.Group("/func-operation")
 
 	functionRouter := baseRouter.Group("/functions")
 	{
@@ -28,6 +30,8 @@ func RouteHandler(fiberApp *fiber.App) {
 		functionRouter.Get("/:id/preview/frontend/*", funcOperationController.GetFunctionPreviewFrontend)
 		functionRouter.Get("/:id/preview/bundle", funcOperationController.GetFunctionPreviewBundle)
 		functionRouter.Post("/:id/preview/invoke", funcOperationController.InvokeFunctionPreview)
+		functionRouter.Put("/:id/skill", funcOperationController.SetFunctionSkillEnabled)
+		functionRouter.Get("/:id/skill-executions", funcOperationController.ListFunctionSkillExecutions)
 		functionRouter.Delete("/:id", funcOperationController.DeleteFunction)
 	}
 

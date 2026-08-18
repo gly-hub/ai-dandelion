@@ -7,8 +7,9 @@ func init() {
 }
 
 const (
-	SessionReferenceTypeSkill = "skill"
-	SessionReferenceTypeMCP   = "mcp"
+	SessionReferenceTypeSkill         = "skill"
+	SessionReferenceTypeMCP           = "mcp"
+	SessionReferenceTypeFunctionSkill = "function_skill"
 )
 
 // SessionReference 会话引用表，记录会话使用过的技能和 MCP。

@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package func_operation_proto;
+option go_package = "./;funcoperation";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gly-hub/quickgo/grpcep/lib.proto";
+
+message FunctionSkillField {
+  string key = 1 [(gogoproto.jsontag) = 'key'];
+  string label = 2 [(gogoproto.jsontag) = 'label'];
+  string type = 3 [(gogoproto.jsontag) = 'type'];
+  bool required = 4 [(gogoproto.jsontag) = 'required'];
+  repeated string enum_values = 5 [(gogoproto.jsontag) = 'enumValues'];
+  string description = 6 [(gogoproto.jsontag) = 'description'];
+}
+
+message FunctionSkillOperation {
+  string key = 1 [(gogoproto.jsontag) = 'key'];
+  string action = 2 [(gogoproto.jsontag) = 'action'];
+  string effect = 3 [(gogoproto.jsontag) = 'effect'];
+  string description = 4 [(gogoproto.jsontag) = 'description'];
+  repeated FunctionSkillField fields = 5 [(gogoproto.jsontag) = 'fields'];
+  bool auto_execute = 6 [(gogoproto.jsontag) = 'autoExecute'];
+}
+
+message FunctionSkill {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string release_id = 3 [(gogoproto.jsontag) = 'releaseId'];
+  string name = 4 [(gogoproto.jsontag) = 'name'];
+  string description = 5 [(gogoproto.jsontag) = 'description'];
+  string tool_prefix = 6 [(gogoproto.jsontag) = 'toolPrefix'];
+  bool enabled = 7 [(gogoproto.jsontag) = 'enabled'];
+  repeated FunctionSkillOperation operations = 8 [(gogoproto.jsontag) = 'operations'];
+  int64 updated_at = 9 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message FunctionSkillTool {
+  string name = 1 [(gogoproto.jsontag) = 'name'];
+  string description = 2 [(gogoproto.jsontag) = 'description'];
+  string input_schema_json = 3 [(gogoproto.jsontag) = 'inputSchemaJson'];
+  bool auto_execute = 4 [(gogoproto.jsontag) = 'autoExecute'];
+  string effect = 5 [(gogoproto.jsontag) = 'effect'];
+}
+
+message ListFunctionSkillsReq { string user_id = 1 [(gogoproto.jsontag) = 'userId']; }
+message ListFunctionSkillsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionSkill skills = 2 [(gogoproto.jsontag) = 'skills'];
+}
+
+message SetFunctionSkillEnabledReq {
+  string function_id = 1 [(gogoproto.jsontag) = 'functionId'];
+  bool enabled = 2 [(gogoproto.jsontag) = 'enabled'];
+}
+message SetFunctionSkillEnabledResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionSkill skill = 2 [(gogoproto.jsontag) = 'skill'];
+}
+
+message IssueFunctionSkillGrantReq {
+  string session_id = 1 [(gogoproto.jsontag) = 'sessionId'];
+  repeated string skill_ids = 2 [(gogoproto.jsontag) = 'skillIds'];
+}
+message IssueFunctionSkillGrantResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string grant_token = 2 [(gogoproto.jsontag) = 'grantToken'];
+  int64 expires_at = 3 [(gogoproto.jsontag) = 'expiresAt'];
+}
+
+message GetFunctionSkillToolsReq { string grant_token = 1 [(gogoproto.jsontag) = 'grantToken']; }
+message GetFunctionSkillToolsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionSkillTool tools = 2 [(gogoproto.jsontag) = 'tools'];
+}
+
+message CreateFunctionSkillApprovalReq {
+  string grant_token = 1 [(gogoproto.jsontag) = 'grantToken'];
+  string tool_name = 2 [(gogoproto.jsontag) = 'toolName'];
+  string tool_use_id = 3 [(gogoproto.jsontag) = 'toolUseId'];
+  string input_json = 4 [(gogoproto.jsontag) = 'inputJson'];
+}
+message CreateFunctionSkillApprovalResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string approval_token = 2 [(gogoproto.jsontag) = 'approvalToken'];
+}
+
+message ExecuteFunctionSkillReq {
+  string grant_token = 1 [(gogoproto.jsontag) = 'grantToken'];
+  string tool_name = 2 [(gogoproto.jsontag) = 'toolName'];
+  string tool_use_id = 3 [(gogoproto.jsontag) = 'toolUseId'];
+  string input_json = 4 [(gogoproto.jsontag) = 'inputJson'];
+  string approval_token = 5 [(gogoproto.jsontag) = 'approvalToken'];
+}
+message ExecuteFunctionSkillResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  string result_json = 2 [(gogoproto.jsontag) = 'resultJson'];
+  bool is_error = 3 [(gogoproto.jsontag) = 'isError'];
+  string error_message = 4 [(gogoproto.jsontag) = 'errorMessage'];
+}
+
+message FunctionSkillExecution {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string skill_release_id = 3 [(gogoproto.jsontag) = 'skillReleaseId'];
+  string tool_name = 4 [(gogoproto.jsontag) = 'toolName'];
+  string status = 5 [(gogoproto.jsontag) = 'status'];
+  string error_message = 6 [(gogoproto.jsontag) = 'errorMessage'];
+  int64 created_at = 7 [(gogoproto.jsontag) = 'createdAt'];
+}
+message ListFunctionSkillExecutionsReq {
+  string function_id = 1 [(gogoproto.jsontag) = 'functionId'];
+  int32 limit = 2 [(gogoproto.jsontag) = 'limit'];
+}
+message ListFunctionSkillExecutionsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionSkillExecution executions = 2 [(gogoproto.jsontag) = 'executions'];
+}

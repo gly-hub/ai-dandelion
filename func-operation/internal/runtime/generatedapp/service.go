@@ -179,6 +179,7 @@ type manifest struct {
 	Consumes     []CapabilityConsume      `json:"consumes,omitempty"`
 	ConfigKeys   []string                 `json:"configKeys,omitempty"`
 	ExternalAPIs []ExternalAPIDeclaration `json:"externalApis,omitempty"`
+	AgentSkill   *AgentSkillContract      `json:"agentSkill,omitempty"`
 }
 
 type ExternalAPIDeclaration struct {

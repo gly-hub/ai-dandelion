@@ -23,6 +23,18 @@ grpcServer:
     prefix: "/grpc/services"
     ttl: 30
 
+grpcClient:
+  timeout: "10s"
+  insecure: true
+  keepAliveTime: "5m"
+  keepAliveTimeout: "10s"
+  loadBalancing: "round_robin"
+  etcd:
+    endpoints:
+      - "127.0.0.1:2379"
+    dialTimeout: "5s"
+    prefix: "/grpc/services"
+
 gorm:
   databases:
     - name: "ai-dandelion"
@@ -83,3 +95,4 @@ agent:
     display: "summarized"
     max_thinking_tokens: 0
   skill_storage_dir: "data/user-skills"
+  function_skill_mcp_url: "http://127.0.0.1:8080/mcp/function-skills"
