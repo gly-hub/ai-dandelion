@@ -126,7 +126,7 @@ func TestMessageLogicStreamPersistsConversation(t *testing.T) {
 		nil,
 	)
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	session, err := sessionLogic.CreateSession(ctx, &aiagent.CreateSessionReq{})
 	if err != nil {
 		t.Fatalf("create session: %v", err)
@@ -168,7 +168,7 @@ func TestMessageLogicStreamPersistsConversation(t *testing.T) {
 		t.Fatalf("missing persisted roles: %#v", messages)
 	}
 
-	storedSession, err := sessionDao.Get(ctx, session.GetId())
+	storedSession, err := sessionDao.Get(ctx, "user-a", session.GetId())
 	if err != nil {
 		t.Fatalf("get stored session: %v", err)
 	}
@@ -203,11 +203,11 @@ func TestMessageLogicStreamPersistsPartialOnCancel(t *testing.T) {
 	}
 	sessionDao := dao.NewSession(db)
 	messageDao := dao.NewMessage(db)
-	session, err := NewSessionLogic(sessionDao).CreateSession(context.Background(), &aiagent.CreateSessionReq{})
+	session, err := NewSessionLogic(sessionDao).CreateSession(testUserContext(), &aiagent.CreateSessionReq{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(testUserContext())
 	done := make(chan error, 1)
 	logic := newTestMessageLogic(db, sessionDao, messageDao, cancelableRunner{})
 	go func() {
@@ -218,7 +218,7 @@ func TestMessageLogicStreamPersistsPartialOnCancel(t *testing.T) {
 	if err := <-done; !errors.Is(err, context.Canceled) {
 		t.Fatalf("stream error = %v", err)
 	}
-	messages, _, _, err := logic.ListMessages(context.Background(), &aiagent.GetMessageReq{SessionId: session.GetId()})
+	messages, _, _, err := logic.ListMessages(testUserContext(), &aiagent.GetMessageReq{SessionId: session.GetId()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +254,7 @@ func TestMessageLogicStreamPersistsStructuredParts(t *testing.T) {
 	}
 	messageLogic := newTestMessageLogic(db, sessionDao, messageDao, runner)
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	session, err := sessionLogic.CreateSession(ctx, &aiagent.CreateSessionReq{})
 	if err != nil {
 		t.Fatalf("create session: %v", err)
@@ -341,11 +341,11 @@ func TestMessageLogicStreamInjectsDefaultFunctionSkill(t *testing.T) {
 		nil,
 	)
 
-	session, err := sessionLogic.CreateSession(context.Background(), &aiagent.CreateSessionReq{SessionType: int32(model.SessionTypeFunction)})
+	session, err := sessionLogic.CreateSession(testUserContext(), &aiagent.CreateSessionReq{SessionType: int32(model.SessionTypeFunction)})
 	if err != nil {
 		t.Fatalf("create session: %v", err)
 	}
-	err = messageLogic.StreamMessage(context.Background(), &aiagent.StreamMessageReq{
+	err = messageLogic.StreamMessage(testUserContext(), &aiagent.StreamMessageReq{
 		SessionId:              session.GetId(),
 		Content:                "生成页面",
 		AgentSessionConfigType: "func_generation",
@@ -366,11 +366,11 @@ func TestMessageLogicStreamInjectsDefaultFunctionSkill(t *testing.T) {
 		t.Fatalf("unexpected add dirs: %#v", runner.calls[0].addDirs)
 	}
 
-	session, err = sessionLogic.CreateSession(context.Background(), &aiagent.CreateSessionReq{SessionType: int32(model.SessionTypeFunction)})
+	session, err = sessionLogic.CreateSession(testUserContext(), &aiagent.CreateSessionReq{SessionType: int32(model.SessionTypeFunction)})
 	if err != nil {
 		t.Fatalf("create technical session: %v", err)
 	}
-	err = messageLogic.StreamMessage(context.Background(), &aiagent.StreamMessageReq{
+	err = messageLogic.StreamMessage(testUserContext(), &aiagent.StreamMessageReq{
 		SessionId:              session.GetId(),
 		Content:                "生成研发文档",
 		AgentSessionConfigType: "func_technical",
@@ -416,7 +416,7 @@ func TestMessageLogicStreamUsesExtraSkills(t *testing.T) {
 		nil,
 	)
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	session, err := sessionLogic.CreateSession(ctx, &aiagent.CreateSessionReq{})
 	if err != nil {
 		t.Fatalf("create session: %v", err)
@@ -514,7 +514,7 @@ func TestMessageLogicStreamUsesMCPServers(t *testing.T) {
 		mcpLogic,
 	)
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	if _, err := mcpLogic.CreateMCPServer(ctx, &aiagent.SaveMCPServerReq{
 		UserId: "user-a",
 		Server: &aiagent.AgentMCPServer{
@@ -579,7 +579,7 @@ func TestMessageLogicListMessagesPagination(t *testing.T) {
 	sessionLogic := NewSessionLogic(sessionDao)
 	messageLogic := newTestMessageLogic(db, sessionDao, messageDao, &fakeRunner{})
 
-	ctx := context.Background()
+	ctx := testUserContext()
 	session, err := sessionLogic.CreateSession(ctx, &aiagent.CreateSessionReq{Title: "Paged chat"})
 	if err != nil {
 		t.Fatalf("create session: %v", err)
@@ -619,7 +619,7 @@ func TestMessageLogicListMessagesPagination(t *testing.T) {
 
 func TestMessageLogicStreamValidatesContent(t *testing.T) {
 	messageLogic := newTestMessageLogic(nil, nil, nil, &fakeRunner{})
-	err := messageLogic.StreamMessage(context.Background(), &aiagent.StreamMessageReq{
+	err := messageLogic.StreamMessage(testUserContext(), &aiagent.StreamMessageReq{
 		SessionId: "s1",
 		Content:   "  ",
 	}, func(*aiagent.StreamMessageResp) error {

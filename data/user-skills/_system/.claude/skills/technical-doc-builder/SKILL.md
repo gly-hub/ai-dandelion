@@ -99,10 +99,11 @@ The technical document is the direct handoff to `generated-app-builder`. It must
 | Product flow | Page, action, state, recovery path | `frontend.js`, `frontend/ui.js` |
 | Frontend action | Control, handler, API wrapper, state update | `frontend.js`, `frontend/api.js`, `frontend/state.js` |
 | Backend action | Action string, request, response, validation, data capability intent, permission mode | `backend/main.go`, handler files |
+| App Skill | Tool key, action, effect, flat fields, exposure and confirmation policy | `manifest.json`, Function Skill runtime |
 | Data schema | Entity, dataModel, relation, query, indexes, enum values | `manifest.json`, `backend/models.go` |
 | Style contract | Root class, namespace, components, responsive behavior | `frontend/styles.js` |
 
-If non-critical details are absent, choose a conservative default and state the chosen behavior directly in the relevant section. If any row cannot be filled without changing scope or implementation contracts, ask the user before writing the draft. Do not leave implementation-critical gaps in Sections 8-14.
+If non-critical details are absent, choose a conservative default and state the chosen behavior directly in the relevant section. If any row cannot be filled without changing scope or implementation contracts, ask the user before writing the draft. Do not leave implementation-critical gaps in Sections 8-15.
 
 ## Required Structure
 
@@ -120,6 +121,7 @@ If non-critical details are absent, choose a conservative default and state the 
 12. 前端交互流程与状态合同
 13. 样式规范与视觉一致性
 14. 验收与自检清单
+15. App Skill 契约
 
 Prefer actionable detail over abstract advice.
 
@@ -144,6 +146,7 @@ Use this section shape in the generated technical document. The content can be c
 ## 12. 前端交互流程与状态合同
 ## 13. 样式规范与视觉一致性
 ## 14. 验收与自检清单
+## 15. App Skill 契约
 ```
 
 Do not add a "待确认问题" section. If the document would need that section, stop and ask the user before writing the draft.
@@ -519,9 +522,31 @@ Must include:
 - Section 10 actions match Section 11 `frontend/api.js` wrappers.
 - Section 9 model, relation, and query names match backend constants.
 - Section 13 class names match components in Section 11.
+- Section 15 App Skill operations cover every primary list, visible detail flow, and Agent-exposed write action.
+- Section 15 field definitions match the backend request fields; read actions are absent from `manifest.actions`.
 - Every required product action has UI, API, backend, validation, success, and failure handling.
 - No user-facing text exposes generated-app internals.
 - No placeholder content remains.
+
+### Section 15: App Skill 契约
+
+Every generated function has one App Skill at the same business level as the function. Define the complete Agent-operable capability set before code generation; do not defer this to `generated-app-builder` or infer it from write permissions.
+
+Required table:
+
+| Tool key | Backend action | Effect | Agent 场景 | Flat fields | 权限与确认 | 返回形态 |
+| --- | --- | --- | --- | --- | --- | --- |
+
+Rules:
+
+- Include one `read` list operation for every main list, work queue, dashboard, or searchable collection. Its fields must explicitly include every supported search, filter, sort, and pagination input.
+- Include one `read` detail operation for every visible detail page, drawer, or modal. The stable record identifier is required.
+- Include every Agent-exposed create/update/delete/execute action exactly once. Actions that are strictly internal must be marked non-exposed with the reason in this section.
+- `create` may use `autoExecute: true` only when the product explicitly permits automatic creation. `update`, `delete`, and `execute` always require confirmation. Read operations do not require confirmation.
+- Fields must be flat, typed as `string`, `number`, `integer`, `boolean`, or `enum`; document enum values and required fields. Nested objects and files are out of scope.
+- The tool name is `<toolPrefix>__<tool key>`. Define a stable lowercase snake_case `toolPrefix` for the function.
+- Read actions use `read_default` and never enter `manifest.actions`; non-read actions are `button_controlled` and must enter `manifest.actions`.
+- The Function Skill runtime wraps flat tool arguments into the generated app request `{"action":"<action>","data":{...toolInput}}`; frontend and backend continue to use the same action name.
 
 ## Workflow Position
 
@@ -529,7 +554,7 @@ Must include:
 product-doc-builder → technical-doc (this skill) → generated-app-builder
 ```
 
-Sections 8-14 are the handoff contract to code generation. If non-critical details are ambiguous, resolve them with conservative defaults in the relevant section. If ambiguity changes layout, data models, validation, or action behavior, ask the user before writing the draft.
+Sections 8-15 are the handoff contract to code generation. If non-critical details are ambiguous, resolve them with conservative defaults in the relevant section. If ambiguity changes layout, data models, validation, or action behavior, ask the user before writing the draft.
 
 ## Failure Contract
 

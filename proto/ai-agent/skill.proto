@@ -23,6 +23,21 @@ message ListSkillsResp {
   repeated AgentSkill skills = 2 [(gogoproto.jsontag) = 'skills'];
 }
 
+message AgentFunctionSkill {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string name = 3 [(gogoproto.jsontag) = 'name'];
+  string description = 4 [(gogoproto.jsontag) = 'description'];
+  string tool_prefix = 5 [(gogoproto.jsontag) = 'toolPrefix'];
+  int64 updated_at = 6 [(gogoproto.jsontag) = 'updatedAt'];
+}
+
+message ListFunctionSkillsReq { string user_id = 1 [(gogoproto.jsontag) = 'userId']; }
+message ListFunctionSkillsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated AgentFunctionSkill skills = 2 [(gogoproto.jsontag) = 'skills'];
+}
+
 message ImportSkillPackageReq {
   string user_id = 1 [(gogoproto.jsontag) = 'userId'];
   string file_name = 2 [(gogoproto.jsontag) = 'fileName'];

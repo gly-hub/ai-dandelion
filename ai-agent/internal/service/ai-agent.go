@@ -7,12 +7,13 @@ import (
 
 type AiAgentService struct {
 	aiagent.UnimplementedAiAgentServiceServer
-	sessionLogic    *logic.SessionLogic
-	messageLogic    *logic.MessageLogic
-	agentModelLogic *logic.AgentModelLogic
-	skillLogic      *logic.SkillLogic
-	mcpLogic        *logic.MCPLogic
-	agentBotLogic   *logic.AgentBotLogic
+	sessionLogic         *logic.SessionLogic
+	messageLogic         *logic.MessageLogic
+	agentModelLogic      *logic.AgentModelLogic
+	skillLogic           *logic.SkillLogic
+	mcpLogic             *logic.MCPLogic
+	functionSkillRuntime *logic.FunctionSkillRuntime
+	agentBotLogic        *logic.AgentBotLogic
 }
 
 func NewAiAgentService(
@@ -21,14 +22,16 @@ func NewAiAgentService(
 	agentModelLogic *logic.AgentModelLogic,
 	skillLogic *logic.SkillLogic,
 	mcpLogic *logic.MCPLogic,
+	functionSkillRuntime *logic.FunctionSkillRuntime,
 	agentBotLogic *logic.AgentBotLogic,
 ) *AiAgentService {
 	return &AiAgentService{
-		sessionLogic:    sessionLogic,
-		messageLogic:    messageLogic,
-		agentModelLogic: agentModelLogic,
-		skillLogic:      skillLogic,
-		mcpLogic:        mcpLogic,
-		agentBotLogic:   agentBotLogic,
+		sessionLogic:         sessionLogic,
+		messageLogic:         messageLogic,
+		agentModelLogic:      agentModelLogic,
+		skillLogic:           skillLogic,
+		mcpLogic:             mcpLogic,
+		functionSkillRuntime: functionSkillRuntime,
+		agentBotLogic:        agentBotLogic,
 	}
 }

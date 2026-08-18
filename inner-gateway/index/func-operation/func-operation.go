@@ -7,8 +7,8 @@ import (
 )
 
 func RouteHandler(fiberApp *fiber.App) {
-	baseRouter := fiberApp.Group("/func-operation")
 	funcOperationController := funcoperation.NewFuncOperationServerController(global.GetApp().GrpcClientManager())
+	baseRouter := fiberApp.Group("/func-operation")
 
 	functionRouter := baseRouter.Group("/functions")
 	{
@@ -28,6 +28,8 @@ func RouteHandler(fiberApp *fiber.App) {
 		functionRouter.Get("/:id/preview/frontend/*", funcOperationController.GetFunctionPreviewFrontend)
 		functionRouter.Get("/:id/preview/bundle", funcOperationController.GetFunctionPreviewBundle)
 		functionRouter.Post("/:id/preview/invoke", funcOperationController.InvokeFunctionPreview)
+		functionRouter.Put("/:id/skill", funcOperationController.SetFunctionSkillEnabled)
+		functionRouter.Get("/:id/skill-executions", funcOperationController.ListFunctionSkillExecutions)
 		functionRouter.Delete("/:id", funcOperationController.DeleteFunction)
 	}
 

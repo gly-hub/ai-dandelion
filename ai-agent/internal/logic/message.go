@@ -19,6 +19,7 @@ import (
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	claudeagentsdk "github.com/gly-hub/claude-agent-sdk-go"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,6 +42,7 @@ type MessageLogic struct {
 	agentSessionConfigDao *dao.AgentSessionConfig
 	skillLogic            *SkillLogic
 	mcpLogic              *MCPLogic
+	functionSkillRuntime  *FunctionSkillRuntime
 	askUserQuestionBroker *AskUserQuestionBroker
 	toolPermissionBroker  *ToolPermissionBroker
 }
@@ -65,7 +67,12 @@ func NewMessageLogic(
 	agentSessionConfigDao *dao.AgentSessionConfig,
 	skillLogic *SkillLogic,
 	mcpLogic *MCPLogic,
+	functionSkillRuntimes ...*FunctionSkillRuntime,
 ) *MessageLogic {
+	var functionSkillRuntime *FunctionSkillRuntime
+	if len(functionSkillRuntimes) > 0 {
+		functionSkillRuntime = functionSkillRuntimes[0]
+	}
 	return &MessageLogic{
 		sessionDao:            sessionDao,
 		messageDao:            messageDao,
@@ -76,6 +83,7 @@ func NewMessageLogic(
 		agentSessionConfigDao: agentSessionConfigDao,
 		skillLogic:            skillLogic,
 		mcpLogic:              mcpLogic,
+		functionSkillRuntime:  functionSkillRuntime,
 		askUserQuestionBroker: NewAskUserQuestionBroker(),
 		toolPermissionBroker:  NewToolPermissionBroker(),
 	}
@@ -83,11 +91,15 @@ func NewMessageLogic(
 
 func (m *MessageLogic) ListMessages(ctx context.Context, req *aiagent.GetMessageReq) (
 	[]*aiagent.Message, bool, string, error) {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, false, "", err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return nil, false, "", err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return nil, false, "", err
 	}
 
@@ -115,6 +127,10 @@ func (m *MessageLogic) StreamMessage(
 		return errAgentRunnerNotConfigured
 	}
 
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
@@ -128,7 +144,7 @@ func (m *MessageLogic) StreamMessage(
 	if strings.TrimSpace(prompt) == "" {
 		prompt = content
 	}
-	session, err := m.sessionDao.Get(ctx, sessionID)
+	session, err := m.sessionDao.Get(ctx, userID, sessionID)
 	if err != nil {
 		return err
 	}
@@ -154,6 +170,9 @@ func (m *MessageLogic) StreamMessage(
 	if err != nil {
 		return err
 	}
+	if engineConfig.Cleanup != nil {
+		defer engineConfig.Cleanup()
+	}
 	engineConfig.UserContent = userContent
 	events, errs, err := m.agentEngine.Stream(ctx, agentSessionID, prompt, resume, engineConfig)
 	if err != nil {
@@ -172,7 +191,7 @@ func (m *MessageLogic) StreamMessage(
 		defer cancelPersist()
 		message, saveErr := m.addMessage(persistCtx, sessionID, model.RoleAssistant, answer.String(), parts.parts())
 		if saveErr == nil {
-			if updateErr := m.sessionDao.UpdateAgentSession(persistCtx, sessionID, agentSessionID, message.CreatedAt); updateErr == nil {
+			if updateErr := m.sessionDao.UpdateAgentSession(persistCtx, userID, sessionID, agentSessionID, message.CreatedAt); updateErr == nil {
 				partialSaved = true
 			}
 		}
@@ -197,7 +216,7 @@ func (m *MessageLogic) StreamMessage(
 				if event.AgentSessionID != "" {
 					agentSessionID = event.AgentSessionID
 				}
-				if err := m.sessionDao.UpdateAgentSession(ctx, sessionID, agentSessionID, message.CreatedAt); err != nil {
+				if err := m.sessionDao.UpdateAgentSession(ctx, userID, sessionID, agentSessionID, message.CreatedAt); err != nil {
 					return err
 				}
 				return send(streamRespFromEvent(agent.Event{Type: "done", AgentSessionID: agentSessionID, Done: true}, modelMessageToProto(message)))
@@ -268,7 +287,7 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 	if err != nil {
 		return AgentEngineRunConfig{}, err
 	}
-	return AgentEngineRunConfig{
+	engineConfig := AgentEngineRunConfig{
 		ModelID:         modelID,
 		SystemPrompt:    override.SystemPrompt,
 		PermissionMode:  override.PermissionMode,
@@ -278,7 +297,58 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 		MCPServers:      mcpServers,
 		AskUserQuestion: m.askUserQuestionHandler(sessionID),
 		ToolPermission:  m.toolPermissionHandler(sessionID),
-	}, nil
+	}
+	functionSkillIDs := extractSessionReferenceIDs(sessionRefs, model.SessionReferenceTypeFunctionSkill)
+	if len(functionSkillIDs) == 0 {
+		functionSkillIDs = extractFunctionSkillIDsFromParts(userParts, req.GetExtra())
+	}
+	if len(functionSkillIDs) == 0 || m.functionSkillRuntime == nil {
+		return engineConfig, nil
+	}
+	setup, err := m.functionSkillRuntime.Prepare(ctx, userIDForSkills(ctx, req.GetUserId()), sessionID, functionSkillIDs)
+	if err != nil {
+		return AgentEngineRunConfig{}, err
+	}
+	engineConfig.Skills = append(engineConfig.Skills, setup.SkillNames...)
+	engineConfig.AddDirs = append(engineConfig.AddDirs, setup.AddDirs...)
+	if engineConfig.SDKMCPServers == nil {
+		engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig, len(setup.SDKMCPServers))
+	}
+	for id, server := range setup.SDKMCPServers {
+		engineConfig.SDKMCPServers[id] = server
+	}
+	engineConfig.Cleanup = setup.Cleanup
+	basePermission := engineConfig.ToolPermission
+	engineConfig.ToolPermission = m.functionSkillToolPermissionHandler(sessionID, setup, basePermission)
+	engineConfig.ForceToolPermission = setup.IsFunctionTool
+	return engineConfig, nil
+}
+
+func (m *MessageLogic) functionSkillToolPermissionHandler(_ string, setup *FunctionSkillSetup, fallback agent.ToolPermissionHandler) agent.ToolPermissionHandler {
+	return func(ctx context.Context, req agent.ToolPermissionRequest, emit func(agent.Event) bool) (agent.ToolPermissionDecision, error) {
+		if setup == nil || !setup.IsFunctionTool(req.ToolName) {
+			return fallback(ctx, req, emit)
+		}
+		updated := make(map[string]any, len(req.Input)+1)
+		for key, value := range req.Input {
+			updated[key] = value
+		}
+		updated[functionSkillToolUseIDInputKey] = req.ToolID
+		if setup.IsAutoTool(req.ToolName) {
+			return agent.ToolPermissionDecision{Allow: true, UpdatedInput: updated}, nil
+		}
+		decision, err := fallback(ctx, req, emit)
+		if err != nil || !decision.Allow {
+			return decision, err
+		}
+		approval, err := m.functionSkillRuntime.CreateApproval(ctx, setup, setup.CanonicalToolName(req.ToolName), req.ToolID, req.Input)
+		if err != nil {
+			return agent.ToolPermissionDecision{}, err
+		}
+		updated[functionSkillApprovalInputKey] = approval
+		decision.UpdatedInput = updated
+		return decision, nil
+	}
 }
 
 func (m *MessageLogic) askUserQuestionHandler(sessionID string) agent.AskUserQuestionHandler {
@@ -302,22 +372,30 @@ func (m *MessageLogic) toolPermissionHandler(sessionID string) agent.ToolPermiss
 }
 
 func (m *MessageLogic) SubmitAskUserQuestion(ctx context.Context, req *aiagent.SubmitAskUserQuestionReq) error {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return err
 	}
 	return m.askUserQuestionBroker.Submit(sessionID, strings.TrimSpace(req.GetToolId()), req.GetAnswersJson(), req.GetResponse())
 }
 
 func (m *MessageLogic) SubmitToolPermission(ctx context.Context, req *aiagent.SubmitToolPermissionReq) error {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID, err := requireSessionID(req.GetSessionId())
 	if err != nil {
 		return err
 	}
-	if err := m.sessionDao.Exists(ctx, sessionID); err != nil {
+	if err := m.sessionDao.Exists(ctx, userID, sessionID); err != nil {
 		return err
 	}
 	return m.toolPermissionBroker.Submit(
@@ -463,6 +541,8 @@ func userMessageParts(req *aiagent.StreamMessageReq) []*aiagent.MessagePart {
 				McpId: item.GetId(),
 				Label: item.GetName(),
 			})
+		case "function_skill":
+			parts = append(parts, &aiagent.MessagePart{Type: "function_skill", SkillId: item.GetId(), Label: item.GetName()})
 		}
 	}
 	if content != "" {
@@ -496,6 +576,16 @@ func normalizeUserMessageParts(parts []*aiagent.MessagePart) []*aiagent.MessageP
 				label = id
 			}
 			next = append(next, &aiagent.MessagePart{Type: "skill", SkillId: id, Label: label})
+		case "function_skill":
+			id := strings.TrimSpace(part.GetSkillId())
+			if id == "" {
+				continue
+			}
+			label := strings.TrimSpace(part.GetLabel())
+			if label == "" {
+				label = id
+			}
+			next = append(next, &aiagent.MessagePart{Type: "function_skill", SkillId: id, Label: label})
 		case "mcp":
 			id := strings.TrimSpace(part.GetMcpId())
 			if id == "" {
@@ -535,6 +625,8 @@ func promptFromParts(parts []*aiagent.MessagePart) string {
 			builder.WriteString(part.GetText())
 		case "skill":
 			builder.WriteString(formatPromptMarker("技能", part.GetLabel(), part.GetSkillId()))
+		case "function_skill":
+			builder.WriteString(formatPromptMarker("功能技能", part.GetLabel(), part.GetSkillId()))
 		case "mcp":
 			builder.WriteString(formatPromptMarker("MCP", part.GetLabel(), part.GetMcpId()))
 		case "file", "image", "document":
@@ -660,6 +752,16 @@ func extraFromParts(parts []*aiagent.MessagePart) []*aiagent.MessageExtra {
 				name = id
 			}
 			extra = append(extra, &aiagent.MessageExtra{Type: "skill", Id: id, Name: name, Index: int32(index)})
+		case "function_skill":
+			id := strings.TrimSpace(part.GetSkillId())
+			if id == "" {
+				continue
+			}
+			name := strings.TrimSpace(part.GetLabel())
+			if name == "" {
+				name = id
+			}
+			extra = append(extra, &aiagent.MessageExtra{Type: "function_skill", Id: id, Name: name, Index: int32(index)})
 		case "mcp":
 			id := strings.TrimSpace(part.GetMcpId())
 			if id == "" {
@@ -715,6 +817,37 @@ func extractSkillIDsFromParts(parts []*aiagent.MessagePart, fallbackExtra []*aia
 		return skills
 	}
 	return extractSkillIDs(fallbackExtra)
+}
+
+func extractFunctionSkillIDsFromParts(parts []*aiagent.MessagePart, fallbackExtra []*aiagent.MessageExtra) []string {
+	ids := make([]string, 0)
+	seen := make(map[string]struct{})
+	for _, part := range parts {
+		if part == nil || part.GetType() != "function_skill" {
+			continue
+		}
+		id := strings.TrimSpace(part.GetSkillId())
+		if id == "" {
+			continue
+		}
+		if _, ok := seen[id]; !ok {
+			seen[id] = struct{}{}
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) > 0 {
+		return ids
+	}
+	for _, item := range normalizeExtra(fallbackExtra) {
+		if item.GetType() != "function_skill" {
+			continue
+		}
+		if _, ok := seen[item.GetId()]; !ok {
+			seen[item.GetId()] = struct{}{}
+			ids = append(ids, item.GetId())
+		}
+	}
+	return ids
 }
 
 func extractMCPIDs(extra []*aiagent.MessageExtra) []string {
@@ -801,6 +934,8 @@ func referencesFromMessageParts(sessionID string, parts []*aiagent.MessagePart, 
 			addRef(model.SessionReferenceTypeSkill, part.GetSkillId(), part.GetLabel())
 		case "mcp":
 			addRef(model.SessionReferenceTypeMCP, part.GetMcpId(), part.GetLabel())
+		case "function_skill":
+			addRef(model.SessionReferenceTypeFunctionSkill, part.GetSkillId(), part.GetLabel())
 		}
 	}
 	if len(refs) > 0 {
@@ -812,6 +947,8 @@ func referencesFromMessageParts(sessionID string, parts []*aiagent.MessagePart, 
 			addRef(model.SessionReferenceTypeSkill, item.GetId(), item.GetName())
 		case "mcp":
 			addRef(model.SessionReferenceTypeMCP, item.GetId(), item.GetName())
+		case "function_skill":
+			addRef(model.SessionReferenceTypeFunctionSkill, item.GetId(), item.GetName())
 		}
 	}
 	return refs
@@ -845,7 +982,7 @@ func normalizeExtra(extra []*aiagent.MessageExtra) []*aiagent.MessageExtra {
 		}
 		extraType := strings.TrimSpace(item.GetType())
 		id := strings.TrimSpace(item.GetId())
-		if id == "" || (extraType != "skill" && extraType != "mcp") {
+		if id == "" || (extraType != "skill" && extraType != "mcp" && extraType != "function_skill") {
 			continue
 		}
 		name := strings.TrimSpace(item.GetName())

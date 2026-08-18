@@ -11,6 +11,7 @@ type Config struct {
 	AppConfig        quickgo.AppConfig        `json:"app" yaml:"app"`
 	LoggerConfig     quickgo.LoggerConfig     `json:"logger" yaml:"logger"`
 	GrpcServerConfig quickgo.GrpcServerConfig `json:"grpcServer" yaml:"grpcServer"`
+	GrpcClientConfig quickgo.GrpcClientConfig `json:"grpcClient" yaml:"grpcClient"`
 	GormConfig       gorm.GormManagerConfig   `json:"gorm" yaml:"gorm"`
 	RedisConfig      redis.RedisManagerConfig `json:"redis" yaml:"redis"`
 	TracingConfig    tracing.Config           `json:"tracing" yaml:"tracing"`

@@ -68,6 +68,42 @@ func (f *FuncOperationServerController) UpdateFunction(ctx *fiber.Ctx) error {
 	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
 }
 
+// SetFunctionSkillEnabled enables or disables Agent operations for a function.
+// @tags Func Operation
+// @summary 设置功能技能状态
+// @router /func-operation/functions/{id}/skill [PUT]
+func (f *FuncOperationServerController) SetFunctionSkillEnabled(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.SetFunctionSkillEnabledReq{FunctionId: ctx.Params("id")}
+	if err := f.baseHandler.ParseJson(ctx, rpcParam); err != nil {
+		return f.baseHandler.Response(ctx, grpcep.JsonResponse{}, gerr.NewGErr(grpcep.ParamsErrCode, err.Error()))
+	}
+	rpcParam.FunctionId = ctx.Params("id")
+	handler := func(rpcCtx context.Context, req *funcoperation.SetFunctionSkillEnabledReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.SetFunctionSkillEnabled(rpcCtx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
+// ListFunctionSkillExecutions returns the administrator audit trail for a function skill.
+// @tags Func Operation
+// @summary 查询功能技能执行记录
+// @router /func-operation/functions/{id}/skill-executions [GET]
+func (f *FuncOperationServerController) ListFunctionSkillExecutions(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.ListFunctionSkillExecutionsReq{FunctionId: ctx.Params("id"), Limit: int32(ctx.QueryInt("limit", 0))}
+	handler := func(rpcCtx context.Context, req *funcoperation.ListFunctionSkillExecutionsReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.ListFunctionSkillExecutions(rpcCtx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
 // LoadFunctionDocument
 // @tags Func Operation
 // @summary 加载功能文档

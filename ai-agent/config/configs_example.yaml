@@ -23,6 +23,18 @@ grpcServer:
     prefix: "/grpc/services"
     ttl: 30
 
+grpcClient:
+  timeout: "10s"
+  insecure: true
+  keepAliveTime: "5m"
+  keepAliveTimeout: "10s"
+  loadBalancing: "round_robin"
+  etcd:
+    endpoints:
+      - "127.0.0.1:2379"
+    dialTimeout: "5s"
+    prefix: "/grpc/services"
+
 gorm:
   databases:
     - name: "ai-dandelion"

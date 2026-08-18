@@ -33,6 +33,11 @@ func RegisterHandler(s *rpc.Server) {
 	externalAPIDao := dao.NewExternalAPI(db)
 	debugGeneratedAppDao := dao.NewGeneratedApp(debugDB)
 	releaseDao := dao.NewFunctionRelease(db)
+	functionSkillDao := dao.NewFunctionSkill(db)
+	functionSkillReleaseDao := dao.NewFunctionSkillRelease(db)
+	functionSkillGrantDao := dao.NewFunctionSkillGrant(db)
+	functionSkillApprovalDao := dao.NewFunctionSkillApproval(db)
+	functionSkillExecutionDao := dao.NewFunctionSkillExecution(db)
 	outboxDao := dao.NewFunctionOutbox(db)
 	redisClient, redisErr := global.GetApp().RedisManager().GetRedisClient("ai-dandelion")
 	if redisErr != nil || redisClient == nil {
@@ -125,6 +130,27 @@ func RegisterHandler(s *rpc.Server) {
 	StartArtifactRuntime(releaseLogic, artifactReconcileInterval, staleStagingAfter)
 	functionLogic := logic.NewFunctionLogic(functionDao, messageStore, generatedAppDao, appRuntime, previewRuntime, aiAgentClientProvider, menuSync, authorizer, releaseLogic)
 	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic)
+	functionSkillLogic := logic.NewFunctionSkillLogic(functionSkillDao, functionSkillReleaseDao, functionSkillGrantDao, functionSkillApprovalDao, functionSkillExecutionDao, functionDao, appLogic, authorizer)
+	releaseLogic.SetFunctionSkillSynchronizer(functionSkillLogic)
+	// Reconcile skill snapshots for releases that were already published before
+	// function skills were enabled (or while the service was offline).  The
+	// normal publish path calls SyncPublished synchronously, but startup must
+	// also backfill that side effect so an existing published function appears
+	// in the Agent skill directory without requiring a no-op re-publish.
+	publishedReleases, err := releaseDao.ListPublished(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	for i := range publishedReleases {
+		release := &publishedReleases[i]
+		function, functionErr := functionDao.Get(context.Background(), release.FunctionID)
+		if functionErr != nil {
+			continue
+		}
+		if err := functionSkillLogic.SyncPublished(context.Background(), function, release); err != nil {
+			panic(err)
+		}
+	}
 	if err := appLogic.SyncPublishedFunctionActions(context.Background()); err != nil {
 		panic(err)
 	}
@@ -133,7 +159,7 @@ func RegisterHandler(s *rpc.Server) {
 	appRuntime.SetExternalAPIExecutor(externalAPILogic)
 	previewRuntime.SetExternalAPIExecutor(externalAPILogic)
 	outboxLogic := logic.NewOutboxManagementLogic(outboxDao, outboxProcessor, authorizer)
-	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic)
+	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic, functionSkillLogic)
 
 	funcoperation.RegisterFuncOperationServiceServer(s, funcOperationService)
 }

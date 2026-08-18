@@ -24,6 +24,10 @@ func RouteHandler(fiberApp *fiber.App) {
 	}
 	baseRouter.Get("/models", aiAgentServerController.ListAgentModels)
 	baseRouter.Get("/skills", aiAgentServerController.ListSkills)
+	baseRouter.Get("/function-skills", aiAgentServerController.ListFunctionSkills)
+	// Keep the short form available for clients that use the product-facing
+	// name.  The canonical route is /ai-agent/function-skills.
+	baseRouter.Get("/func-skills", aiAgentServerController.ListFunctionSkills)
 	baseRouter.Post("/skills/import", aiAgentServerController.ImportSkillPackage)
 	baseRouter.Put("/skills/:id", aiAgentServerController.UpdateSkill)
 	baseRouter.Delete("/skills/:id", aiAgentServerController.DeleteSkill)

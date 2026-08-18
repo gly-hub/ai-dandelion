@@ -9,6 +9,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/logic"
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/service"
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
+	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
 	rpc "google.golang.org/grpc"
 )
 
@@ -38,10 +39,17 @@ func RegisterHandler(s *rpc.Server) {
 	agentModelLogic := logic.NewAgentModelLogic(agentModelDao)
 	skillLogic := logic.NewSkillLogic(global.GetConfig().AgentConfig.SkillStorageDir)
 	mcpLogic := logic.NewMCPLogic(global.GetConfig().AgentConfig.SkillStorageDir)
+	functionSkillRuntime := logic.NewFunctionSkillRuntime(func(ctx context.Context) (funcoperation.FuncOperationServiceClient, error) {
+		conn, err := global.GetApp().GrpcClientManager().GetConn(ctx, "func-operation")
+		if err != nil {
+			return nil, err
+		}
+		return funcoperation.NewFuncOperationServiceClient(conn), nil
+	})
 	agentEngine := logic.NewAgentEngine(runnerFactory, agentModelLogic)
 
 	sessionLogic := logic.NewSessionLogic(sessionDao, runnerFactory.DefaultRunner())
-	messageLogic := logic.NewMessageLogic(sessionDao, messageDao, sessionReferenceDao, runnerFactory, agentModelLogic, agentSessionConfigDao, skillLogic, mcpLogic)
+	messageLogic := logic.NewMessageLogic(sessionDao, messageDao, sessionReferenceDao, runnerFactory, agentModelLogic, agentSessionConfigDao, skillLogic, mcpLogic, functionSkillRuntime)
 	runtime := logic.NewAgentBotRuntime(agentBotDao, sessionLogic, messageLogic, agentEngine, skillLogic, mcpLogic)
 	agentBotLogic := logic.NewAgentBotLogic(agentBotDao, runtime.Reload)
 	if err := runtime.Start(context.Background()); err != nil {
@@ -51,7 +59,7 @@ func RegisterHandler(s *rpc.Server) {
 	agentBotRuntime = runtime
 	agentBotRuntimeMu.Unlock()
 
-	aiAgentService := service.NewAiAgentService(sessionLogic, messageLogic, agentModelLogic, skillLogic, mcpLogic, agentBotLogic)
+	aiAgentService := service.NewAiAgentService(sessionLogic, messageLogic, agentModelLogic, skillLogic, mcpLogic, functionSkillRuntime, agentBotLogic)
 	aiagent.RegisterAiAgentServiceServer(s, aiAgentService)
 }
 

@@ -22,6 +22,14 @@ type ReleaseLogic struct {
 	runtime   *generatedapp.Service
 	functions *dao.Function
 	bus       eventbus.Bus
+	skillSync FunctionSkillReleaseSynchronizer
+}
+
+// FunctionSkillReleaseSynchronizer keeps optional AI skill snapshots aligned
+// with immutable function releases without coupling release storage to skill storage.
+type FunctionSkillReleaseSynchronizer interface {
+	SyncPublished(context.Context, *model.Function, *model.FunctionRelease) error
+	RevokeFunction(context.Context, string) error
 }
 
 func NewReleaseLogic(releases *dao.FunctionRelease, outbox *dao.FunctionOutbox, runtime *generatedapp.Service, functions *dao.Function, buses ...eventbus.Bus) *ReleaseLogic {
@@ -30,6 +38,12 @@ func NewReleaseLogic(releases *dao.FunctionRelease, outbox *dao.FunctionOutbox, 
 		bus = buses[0]
 	}
 	return &ReleaseLogic{releases: releases, outbox: outbox, runtime: runtime, functions: functions, bus: bus}
+}
+
+func (r *ReleaseLogic) SetFunctionSkillSynchronizer(sync FunctionSkillReleaseSynchronizer) {
+	if r != nil {
+		r.skillSync = sync
+	}
 }
 
 // BackfillLegacyPublished prevents an upgrade from taking trusted legacy
@@ -94,6 +108,11 @@ func (r *ReleaseLogic) RevokeOrphanedPublished(ctx context.Context) error {
 			if err := r.releases.RevokeByFunctionID(ctx, release.FunctionID, nowUnixMicro()); err != nil {
 				return err
 			}
+			if r.skillSync != nil {
+				if err := r.skillSync.RevokeFunction(ctx, release.FunctionID); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil
@@ -103,7 +122,13 @@ func (r *ReleaseLogic) RevokeFunctionReleases(ctx context.Context, functionID st
 	if r == nil || r.releases == nil {
 		return nil
 	}
-	return r.releases.RevokeByFunctionID(ctx, functionID, nowUnixMicro())
+	if err := r.releases.RevokeByFunctionID(ctx, functionID, nowUnixMicro()); err != nil {
+		return err
+	}
+	if r.skillSync != nil {
+		return r.skillSync.RevokeFunction(ctx, functionID)
+	}
+	return nil
 }
 
 // ReconcileArtifactStore verifies every published release before removing
@@ -216,6 +241,11 @@ func (r *ReleaseLogic) Publish(ctx context.Context, function *model.Function) (*
 	release.Status = model.FunctionReleaseStatusPublished
 	release.PublishedAt = now
 	release.UpdatedAt = now
+	if r.skillSync != nil {
+		if err := r.skillSync.SyncPublished(ctx, function, release); err != nil {
+			return nil, err
+		}
+	}
 	return release, nil
 }
 

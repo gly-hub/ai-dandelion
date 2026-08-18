@@ -211,6 +211,65 @@ Data manifest rules:
 - Do not include `tables` or DDL for new apps unless repairing a legacy app that explicitly still uses raw SQL.
 - `manifest.actions` is only for state-changing, button-permission-controlled actions. Do not include read-only actions such as `list`, `detail`, `query`, `search`, `page`, or `stats`.
 
+## Agent Function Skill Contract
+
+Every new or regenerated function must declare an `agentSkill` object in `manifest.json`. This is the published contract for the platform App Skill; it is not shown directly in the generated page. Do not omit it merely because the first workflow is a list or detail query: users need to ask the web Agent to inspect as well as change function data.
+
+```json
+{
+  "agentSkill": {
+    "name": "图书管理",
+    "toolPrefix": "book_management",
+    "description": "维护图书馆藏信息。",
+    "operations": [
+      {
+        "key": "list_books",
+        "action": "book_list",
+        "effect": "read",
+        "description": "按关键词、分类和状态查询图书列表",
+        "fields": [
+          {"key": "keyword", "label": "关键词", "type": "string", "description": "书名、作者或 ISBN"},
+          {"key": "category", "label": "分类", "type": "string"},
+          {"key": "status", "label": "状态", "type": "enum", "enumValues": ["在架", "下架"]}
+        ]
+      },
+      {
+        "key": "get_book",
+        "action": "book_detail",
+        "effect": "read",
+        "description": "查看一本图书的完整资料",
+        "fields": [
+          {"key": "id", "label": "图书 ID", "type": "integer", "required": true}
+        ]
+      },
+      {
+        "key": "create_book",
+        "action": "book_create",
+        "effect": "create",
+        "description": "新增一本图书",
+        "autoExecute": true,
+        "fields": [
+          {"key": "title", "label": "书名", "type": "string", "required": true, "description": "图书标题"},
+          {"key": "author", "label": "作者", "type": "string", "required": true}
+        ]
+      }
+    ]
+  }
+}
+```
+
+- `toolPrefix`, operation `key`, action, and every field `key` use stable lowercase snake_case identifiers. The final MCP tool name is `<toolPrefix>__<key>`.
+- Each operation must contain `key`, `action`, `effect`, `description`, and a flat `fields` list. Supported `effect` values are `read`, `create`, `update`, `delete`, and `execute`; field types are `string`, `number`, `integer`, `boolean`, and `enum` (with non-empty `enumValues`). Nested object and file fields are not supported.
+- MCP tool arguments are flat and use the exact field names. The Function Skill runtime converts them to the generated app envelope `{"action":"<action>","data":toolInput}`. The backend dispatch action and frontend invocation action must therefore match the operation `action` exactly.
+- Every non-read operation action must appear in `manifest.actions`. Read-only operations must still be implemented through the normal runtime access checks, but are not listed in `manifest.actions`.
+- Only `effect: "create"` may set `autoExecute: true`. Updates, deletes, and execute operations always require the Agent confirmation flow; leave `autoExecute` false for them.
+- Build the skill from the applied technical document's App Skill contract, never by selecting only write actions. Required capability coverage is:
+  - Every main list, queue, dashboard, or searchable collection has one `effect: "read"` list operation. Include every supported search, filter, sorting, and pagination field as flat optional fields.
+  - Every user-visible detail page, drawer, or modal has one `effect: "read"` detail operation with its stable record identifier as a required field.
+  - Every user-triggered state-changing action that the Agent is allowed to perform has exactly one non-read operation with matching action and fields. Pure internal helper actions may be omitted only when the technical document marks them as non-exposed.
+  - A skill needs at least one read operation. Use unique operation keys and action names; read actions never appear in `manifest.actions`.
+- Before building, verify three-way parity: technical document App Skill table -> `manifest.agentSkill.operations` -> frontend API wrapper and backend dispatch. Do not report completion when a listed page/action lacks its skill operation or a skill operation lacks backend dispatch.
+
 ## Frontend Requirements
 
 Build `frontend.js` as an ES module exporting `render(container, context)`.
@@ -402,6 +461,10 @@ Before final response, check:
 - Controlled write action event handlers re-check `can(actionKey)` before invoking backend API wrappers.
 - Backend dispatch has no action missing from frontend API wrappers.
 - Frontend API wrappers have no action missing from backend dispatch.
+- `manifest.agentSkill` exists and has at least one read operation.
+- Every primary list/work queue has an `effect: "read"` list tool whose flat fields cover its search, filters, sorting, and pagination inputs.
+- Every visible detail flow has an `effect: "read"` detail tool with the required record identifier.
+- Every Agent-exposed write action has exactly one matching skill operation; skill action names and fields match backend dispatch and frontend API wrappers.
 - Frontend API wrappers should surface empty backend results as a diagnostic error, for example `后端无响应，请确认 backend.wasm 已重建且功能已重新匹配`.
 - The app can be listed/loaded by the generated app runtime, or the blocking error is documented.
 

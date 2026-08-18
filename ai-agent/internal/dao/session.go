@@ -15,9 +15,9 @@ func NewSession(db *gorm.DB) *Session {
 	return &Session{db: db}
 }
 
-func (s *Session) List(ctx context.Context, sessionType int32) ([]model.Session, error) {
+func (s *Session) List(ctx context.Context, userID string, sessionType int32) ([]model.Session, error) {
 	var sessions []model.Session
-	query := s.db.WithContext(ctx)
+	query := s.db.WithContext(ctx).Where("user_id = ?", userID)
 	if sessionType > 0 {
 		query = query.Where("session_type = ?", sessionType)
 	}
@@ -33,10 +33,10 @@ func (s *Session) Create(ctx context.Context, session *model.Session) error {
 	return s.db.WithContext(ctx).Create(session).Error
 }
 
-func (s *Session) UpdateTitle(ctx context.Context, sessionID string, title string, updatedAt int64) error {
+func (s *Session) UpdateTitle(ctx context.Context, userID string, sessionID string, title string, updatedAt int64) error {
 	result := s.db.WithContext(ctx).
 		Model(&model.Session{}).
-		Where("id = ?", sessionID).
+		Where("id = ? AND user_id = ?", sessionID, userID).
 		Updates(map[string]interface{}{
 			"title":      title,
 			"updated_at": updatedAt,
@@ -50,10 +50,10 @@ func (s *Session) UpdateTitle(ctx context.Context, sessionID string, title strin
 	return nil
 }
 
-func (s *Session) Get(ctx context.Context, sessionID string) (*model.Session, error) {
+func (s *Session) Get(ctx context.Context, userID string, sessionID string) (*model.Session, error) {
 	var session model.Session
 	err := s.db.WithContext(ctx).
-		Where("id = ?", sessionID).
+		Where("id = ? AND user_id = ?", sessionID, userID).
 		First(&session).
 		Error
 	if err != nil {
@@ -62,10 +62,10 @@ func (s *Session) Get(ctx context.Context, sessionID string) (*model.Session, er
 	return &session, nil
 }
 
-func (s *Session) Delete(ctx context.Context, sessionID string) error {
+func (s *Session) Delete(ctx context.Context, userID string, sessionID string) error {
 	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.
-			Where("id = ?", sessionID).
+			Where("id = ? AND user_id = ?", sessionID, userID).
 			Delete(&model.Session{})
 		if result.Error != nil {
 			return result.Error
@@ -86,19 +86,19 @@ func (s *Session) Delete(ctx context.Context, sessionID string) error {
 	})
 }
 
-func (s *Session) Exists(ctx context.Context, sessionID string) error {
+func (s *Session) Exists(ctx context.Context, userID string, sessionID string) error {
 	var session model.Session
 	return s.db.WithContext(ctx).
 		Select("id").
-		Where("id = ?", sessionID).
+		Where("id = ? AND user_id = ?", sessionID, userID).
 		First(&session).
 		Error
 }
 
-func (s *Session) UpdateAgentSession(ctx context.Context, sessionID string, agentSessionID string, updatedAt int64) error {
+func (s *Session) UpdateAgentSession(ctx context.Context, userID string, sessionID string, agentSessionID string, updatedAt int64) error {
 	return s.db.WithContext(ctx).
 		Model(&model.Session{}).
-		Where("id = ?", sessionID).
+		Where("id = ? AND user_id = ?", sessionID, userID).
 		Updates(map[string]interface{}{
 			"agent_session_id": agentSessionID,
 			"updated_at":       updatedAt,

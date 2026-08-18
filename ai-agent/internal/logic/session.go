@@ -9,6 +9,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/ai-agent/internal/model"
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -32,7 +33,11 @@ func NewSessionLogic(sessionDao *dao.Session, runners ...agent.Runner) *SessionL
 
 func (s *SessionLogic) ListSessions(ctx context.Context, req *aiagent.SearchMessageReq) (
 	[]*aiagent.Session, error) {
-	sessions, err := s.sessionDao.List(ctx, req.GetSessionType())
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sessions, err := s.sessionDao.List(ctx, userID, req.GetSessionType())
 	if err != nil {
 		return nil, err
 	}
@@ -46,6 +51,10 @@ func (s *SessionLogic) ListSessions(ctx context.Context, req *aiagent.SearchMess
 
 func (s *SessionLogic) CreateSession(ctx context.Context, req *aiagent.CreateSessionReq) (
 	*aiagent.Session, error) {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	now := nowUnixMicro()
 	title := strings.TrimSpace(req.GetTitle())
 	if title == "" {
@@ -59,6 +68,7 @@ func (s *SessionLogic) CreateSession(ctx context.Context, req *aiagent.CreateSes
 
 	session := &model.Session{
 		ID:          uuid.NewString(),
+		UserID:      userID,
 		Title:       title,
 		SessionType: sessionType,
 		CreatedAt:   now,
@@ -71,12 +81,16 @@ func (s *SessionLogic) CreateSession(ctx context.Context, req *aiagent.CreateSes
 }
 
 func (s *SessionLogic) EnsureSession(ctx context.Context, req *aiagent.EnsureSessionReq) (*aiagent.Session, bool, error) {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, false, err
+	}
 	sessionID := strings.TrimSpace(req.GetId())
 	if sessionID == "" {
 		return nil, false, errors.New("session id is required")
 	}
 
-	existing, err := s.sessionDao.Get(ctx, sessionID)
+	existing, err := s.sessionDao.Get(ctx, userID, sessionID)
 	if err == nil {
 		return modelSessionToProto(existing), false, nil
 	}
@@ -96,13 +110,14 @@ func (s *SessionLogic) EnsureSession(ctx context.Context, req *aiagent.EnsureSes
 
 	session := &model.Session{
 		ID:          sessionID,
+		UserID:      userID,
 		Title:       title,
 		SessionType: sessionType,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
 	if err := s.sessionDao.Create(ctx, session); err != nil {
-		if existing, getErr := s.sessionDao.Get(ctx, sessionID); getErr == nil {
+		if existing, getErr := s.sessionDao.Get(ctx, userID, sessionID); getErr == nil {
 			return modelSessionToProto(existing), false, nil
 		}
 		return nil, false, err
@@ -111,6 +126,10 @@ func (s *SessionLogic) EnsureSession(ctx context.Context, req *aiagent.EnsureSes
 }
 
 func (s *SessionLogic) UpdateSession(ctx context.Context, req *aiagent.UpdateSessionReq) (*aiagent.Session, error) {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sessionID := strings.TrimSpace(req.GetId())
 	if sessionID == "" {
 		return nil, errors.New("session id is required")
@@ -123,12 +142,12 @@ func (s *SessionLogic) UpdateSession(ctx context.Context, req *aiagent.UpdateSes
 		return nil, errors.New("session title must not exceed 200 characters")
 	}
 
-	session, err := s.sessionDao.Get(ctx, sessionID)
+	session, err := s.sessionDao.Get(ctx, userID, sessionID)
 	if err != nil {
 		return nil, err
 	}
 	now := nowUnixMicro()
-	if err := s.sessionDao.UpdateTitle(ctx, sessionID, title, now); err != nil {
+	if err := s.sessionDao.UpdateTitle(ctx, userID, sessionID, title, now); err != nil {
 		return nil, err
 	}
 	session.Title = title
@@ -137,15 +156,19 @@ func (s *SessionLogic) UpdateSession(ctx context.Context, req *aiagent.UpdateSes
 }
 
 func (s *SessionLogic) DeleteSession(ctx context.Context, req *aiagent.DeleteSessionReq) error {
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return err
+	}
 	sessionID := strings.TrimSpace(req.GetId())
 	if sessionID == "" {
 		return errors.New("session id is required")
 	}
-	session, err := s.sessionDao.Get(ctx, sessionID)
+	session, err := s.sessionDao.Get(ctx, userID, sessionID)
 	if err != nil {
 		return err
 	}
-	if err := s.sessionDao.Delete(ctx, sessionID); err != nil {
+	if err := s.sessionDao.Delete(ctx, userID, sessionID); err != nil {
 		return err
 	}
 	if s.runner == nil || strings.TrimSpace(session.AgentSessionId) == "" {
