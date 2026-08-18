@@ -11,6 +11,11 @@ import (
 
 var skillIdentifierPattern = regexp.MustCompile(`^[a-z][a-z0-9_]{0,79}$`)
 
+// Generated app payloads commonly use camelCase field names (for example
+// publishDate).  Tool prefixes and operation keys remain lowercase stable
+// identifiers, while field keys may also contain ASCII capitals.
+var skillFieldPattern = regexp.MustCompile(`^[a-z][a-zA-Z0-9_]{0,79}$`)
+
 type AgentSkillContract struct {
 	Name        string                `json:"name"`
 	ToolPrefix  string                `json:"toolPrefix"`
@@ -102,7 +107,7 @@ func ValidateAgentSkillContract(contract *AgentSkillContract, declaredActions []
 		for j := range op.Fields {
 			field := &op.Fields[j]
 			field.Key, field.Type = strings.TrimSpace(field.Key), strings.ToLower(strings.TrimSpace(field.Type))
-			if !skillIdentifierPattern.MatchString(field.Key) {
+			if !skillFieldPattern.MatchString(field.Key) {
 				return fmt.Errorf("operation %q field %d key is invalid", op.Key, j)
 			}
 			if _, exists := fieldKeys[field.Key]; exists {
