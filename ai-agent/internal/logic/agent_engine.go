@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
+	claudeagentsdk "github.com/gly-hub/claude-agent-sdk-go"
 )
 
 type AgentEngine struct {
@@ -13,18 +14,19 @@ type AgentEngine struct {
 }
 
 type AgentEngineRunConfig struct {
-	ModelID         string
-	SystemPrompt    string
-	PermissionMode  string
-	MaxTurns        int
-	Skills          []string
-	AddDirs         []string
-	MCPServers      map[string]agent.MCPServerConfig
-	AskUserQuestion agent.AskUserQuestionHandler
-	ToolPermission  agent.ToolPermissionHandler
+	ModelID             string
+	SystemPrompt        string
+	PermissionMode      string
+	MaxTurns            int
+	Skills              []string
+	AddDirs             []string
+	MCPServers          map[string]agent.MCPServerConfig
+	SDKMCPServers       map[string]claudeagentsdk.MCPServerConfig
+	AskUserQuestion     agent.AskUserQuestionHandler
+	ToolPermission      agent.ToolPermissionHandler
 	ForceToolPermission func(string) bool
-	Cleanup         func()
-	UserContent     any
+	Cleanup             func()
+	UserContent         any
 }
 
 func NewAgentEngine(runnerFactory runnerFactory, agentModelLogic *AgentModelLogic) *AgentEngine {
@@ -52,13 +54,14 @@ func (e *AgentEngine) Stream(
 		return nil, nil, errAgentRunnerNotConfigured
 	}
 	events, errs := runner.Stream(ctx, agentSessionID, prompt, resume, agent.StreamOptions{
-		Skills:          config.Skills,
-		AddDirs:         config.AddDirs,
-		MCPServers:      config.MCPServers,
-		AskUserQuestion: config.AskUserQuestion,
-		ToolPermission:  config.ToolPermission,
+		Skills:              config.Skills,
+		AddDirs:             config.AddDirs,
+		MCPServers:          config.MCPServers,
+		SDKMCPServers:       config.SDKMCPServers,
+		AskUserQuestion:     config.AskUserQuestion,
+		ToolPermission:      config.ToolPermission,
 		ForceToolPermission: config.ForceToolPermission,
-		UserContent:     config.UserContent,
+		UserContent:         config.UserContent,
 	})
 	return events, errs, nil
 }

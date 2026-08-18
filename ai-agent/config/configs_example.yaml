@@ -95,4 +95,3 @@ agent:
     display: "summarized"
     max_thinking_tokens: 0
   skill_storage_dir: "data/user-skills"
-  function_skill_mcp_url: "http://127.0.0.1:8086/mcp/function-skills"

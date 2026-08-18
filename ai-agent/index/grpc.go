@@ -45,7 +45,7 @@ func RegisterHandler(s *rpc.Server) {
 			return nil, err
 		}
 		return funcoperation.NewFuncOperationServiceClient(conn), nil
-	}, global.GetConfig().AgentConfig)
+	})
 	agentEngine := logic.NewAgentEngine(runnerFactory, agentModelLogic)
 
 	sessionLogic := logic.NewSessionLogic(sessionDao, runnerFactory.DefaultRunner())
