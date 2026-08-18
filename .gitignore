@@ -14,3 +14,5 @@ AGENTS.md
 /data/user-skills/*
 !/data/user-skills/_system/
 !/data/user-skills/_system/**
+
+/scripts
