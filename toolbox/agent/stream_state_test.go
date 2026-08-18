@@ -117,6 +117,17 @@ func TestClaudeRunnerOptionsAlignWithReferenceBehavior(t *testing.T) {
 	}
 }
 
+func TestClaudeRunnerOptionsIncludeSDKMCPServer(t *testing.T) {
+	runner := NewClaudeRunner(Config{})
+	sdkServer := claudeagentsdk.CreateSDKMCPServer("function-skills", "1.0.0", nil)
+	options := runner.options(context.Background(), "session", false, StreamOptions{
+		SDKMCPServers: map[string]claudeagentsdk.MCPServerConfig{"function-skills": sdkServer},
+	}, nil)
+	if _, ok := options.MCPServers["function-skills"].(claudeagentsdk.SDKMCPServerConfig); !ok {
+		t.Fatalf("SDK MCP server was not propagated: %#v", options.MCPServers)
+	}
+}
+
 func TestClaudeRunnerCanUseToolWaitsOnlyForAskUserQuestion(t *testing.T) {
 	expectedInput := map[string]any{"questions": []any{"original"}, "answers": map[string]any{"original": "answer"}}
 	runner := NewClaudeRunner(Config{})

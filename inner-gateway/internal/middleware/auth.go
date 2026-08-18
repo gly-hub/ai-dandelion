@@ -97,9 +97,6 @@ func isPublicRequest(ctx *fiber.Ctx) bool {
 	if path == "/ai-agent/agent-bots/runtime" {
 		return true
 	}
-	if path == "/mcp/function-skills" {
-		return true
-	}
 	if strings.EqualFold(ctx.Method(), fiber.MethodPost) && strings.HasPrefix(path, "/func-operation/swagger-import/") {
 		return true
 	}

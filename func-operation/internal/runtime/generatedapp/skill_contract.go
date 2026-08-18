@@ -47,6 +47,20 @@ func ParseAgentSkillContract(raw string) (*AgentSkillContract, error) {
 	return contract, err
 }
 
+// ParseAgentSkillSnapshot parses the immutable contract stored with a skill
+// release. New snapshots contain the contract itself; the manifest fallback
+// keeps snapshots created by earlier builds readable.
+func ParseAgentSkillSnapshot(raw string) (*AgentSkillContract, error) {
+	var contract AgentSkillContract
+	if err := json.Unmarshal([]byte(raw), &contract); err != nil {
+		return nil, err
+	}
+	if contract.Name != "" || contract.ToolPrefix != "" || len(contract.Operations) > 0 {
+		return &contract, nil
+	}
+	return ParseAgentSkillContract(raw)
+}
+
 // ParseAgentSkillManifest returns the optional contract and the state-changing
 // action declarations from an immutable manifest snapshot.
 func ParseAgentSkillManifest(raw string) (*AgentSkillContract, []string, error) {
@@ -80,6 +94,8 @@ func ValidateAgentSkillContract(contract *AgentSkillContract, declaredActions []
 		declared[strings.TrimSpace(action)] = struct{}{}
 	}
 	seen := make(map[string]struct{}, len(contract.Operations))
+	seenActions := make(map[string]struct{}, len(contract.Operations))
+	readCount := 0
 	for i := range contract.Operations {
 		op := &contract.Operations[i]
 		op.Key, op.Action, op.Effect = strings.TrimSpace(op.Key), strings.TrimSpace(op.Action), strings.ToLower(strings.TrimSpace(op.Effect))
@@ -90,12 +106,21 @@ func ValidateAgentSkillContract(contract *AgentSkillContract, declaredActions []
 			return fmt.Errorf("duplicate agentSkill operation %q", op.Key)
 		}
 		seen[op.Key] = struct{}{}
+		if _, exists := seenActions[op.Action]; exists {
+			return fmt.Errorf("duplicate agentSkill action %q", op.Action)
+		}
+		seenActions[op.Action] = struct{}{}
 		switch op.Effect {
 		case "read", "create", "update", "delete", "execute":
 		default:
 			return fmt.Errorf("operation %q has unsupported effect", op.Key)
 		}
-		if op.Effect != "read" {
+		if op.Effect == "read" {
+			readCount++
+			if _, declaredAsWrite := declared[op.Action]; declaredAsWrite {
+				return fmt.Errorf("read operation %q action %q must not be declared in manifest.actions", op.Key, op.Action)
+			}
+		} else {
 			if _, ok := declared[op.Action]; !ok {
 				return fmt.Errorf("operation %q action %q is not declared", op.Key, op.Action)
 			}
@@ -123,6 +148,9 @@ func ValidateAgentSkillContract(contract *AgentSkillContract, declaredActions []
 				return fmt.Errorf("operation %q enum field %q has no values", op.Key, field.Key)
 			}
 		}
+	}
+	if readCount == 0 {
+		return errors.New("agentSkill must include at least one read operation")
 	}
 	sort.Slice(contract.Operations, func(i, j int) bool { return contract.Operations[i].Key < contract.Operations[j].Key })
 	return nil

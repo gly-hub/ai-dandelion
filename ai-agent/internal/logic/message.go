@@ -19,6 +19,7 @@ import (
 	aiagent "github.com/gly-hub/ai-dandelion/proto/ai-agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/agent"
 	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	claudeagentsdk "github.com/gly-hub/claude-agent-sdk-go"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -302,26 +303,31 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 	}
 	engineConfig.Skills = append(engineConfig.Skills, setup.SkillNames...)
 	engineConfig.AddDirs = append(engineConfig.AddDirs, setup.AddDirs...)
-	if engineConfig.MCPServers == nil {
-		engineConfig.MCPServers = make(map[string]agent.MCPServerConfig, len(setup.MCPServers))
+	if engineConfig.SDKMCPServers == nil {
+		engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig, len(setup.SDKMCPServers))
 	}
-	for id, server := range setup.MCPServers {
-		engineConfig.MCPServers[id] = server
+	for id, server := range setup.SDKMCPServers {
+		engineConfig.SDKMCPServers[id] = server
 	}
 	engineConfig.Cleanup = setup.Cleanup
 	basePermission := engineConfig.ToolPermission
 	engineConfig.ToolPermission = m.functionSkillToolPermissionHandler(sessionID, setup, basePermission)
-	engineConfig.ForceToolPermission = setup.IsProtectedTool
+	engineConfig.ForceToolPermission = setup.IsFunctionTool
 	return engineConfig, nil
 }
 
 func (m *MessageLogic) functionSkillToolPermissionHandler(_ string, setup *FunctionSkillSetup, fallback agent.ToolPermissionHandler) agent.ToolPermissionHandler {
 	return func(ctx context.Context, req agent.ToolPermissionRequest, emit func(agent.Event) bool) (agent.ToolPermissionDecision, error) {
-		if setup != nil && setup.IsAutoTool(req.ToolName) {
-			return agent.ToolPermissionDecision{Allow: true}, nil
-		}
-		if setup == nil || !setup.IsProtectedTool(req.ToolName) {
+		if setup == nil || !setup.IsFunctionTool(req.ToolName) {
 			return fallback(ctx, req, emit)
+		}
+		updated := make(map[string]any, len(req.Input)+1)
+		for key, value := range req.Input {
+			updated[key] = value
+		}
+		updated[functionSkillToolUseIDInputKey] = req.ToolID
+		if setup.IsAutoTool(req.ToolName) {
+			return agent.ToolPermissionDecision{Allow: true, UpdatedInput: updated}, nil
 		}
 		decision, err := fallback(ctx, req, emit)
 		if err != nil || !decision.Allow {
@@ -331,11 +337,7 @@ func (m *MessageLogic) functionSkillToolPermissionHandler(_ string, setup *Funct
 		if err != nil {
 			return agent.ToolPermissionDecision{}, err
 		}
-		updated := make(map[string]any, len(req.Input)+1)
-		for key, value := range req.Input {
-			updated[key] = value
-		}
-		updated["__function_skill_approval"] = approval
+		updated[functionSkillApprovalInputKey] = approval
 		decision.UpdatedInput = updated
 		return decision, nil
 	}

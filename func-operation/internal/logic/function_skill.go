@@ -43,6 +43,14 @@ func (l *FunctionSkillLogic) SyncPublished(ctx context.Context, function *model.
 	if l == nil || function == nil || release == nil {
 		return nil
 	}
+	// A FunctionSkillRelease is an immutable snapshot of the published function.
+	// Keep an existing snapshot available when validation rules evolve; the new
+	// contract is enforced only while creating a snapshot for a new release.
+	if _, err := l.releases.ActiveByFunctionRelease(ctx, release.UUID); err == nil {
+		return nil
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
 	contract, actions, err := generatedapp.ParseAgentSkillManifest(release.ManifestJSON)
 	if err != nil || contract == nil {
 		_ = l.RevokeFunction(ctx, function.UUID)
@@ -78,11 +86,6 @@ func (l *FunctionSkillLogic) SyncPublished(ctx context.Context, function *model.
 	}
 	contractRaw, err := json.Marshal(contract)
 	if err != nil {
-		return err
-	}
-	if _, err := l.releases.ActiveByFunctionRelease(ctx, release.UUID); err == nil {
-		return nil
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 	return l.releases.Create(ctx, &model.FunctionSkillRelease{UUID: uuid.NewString(), SkillID: item.UUID, FunctionID: function.UUID, FunctionReleaseID: release.UUID, AppID: release.AppID, ArtifactSHA256: release.ArtifactSHA256, ContractJSON: string(contractRaw), Status: model.FunctionSkillReleaseStatusActive, CreatedAt: now, UpdatedAt: now})
@@ -126,7 +129,7 @@ func (l *FunctionSkillLogic) List(ctx context.Context, _ *funcoperation.ListFunc
 		if err != nil {
 			continue
 		}
-		contract, err := generatedapp.ParseAgentSkillContract(release.ContractJSON)
+		contract, err := generatedapp.ParseAgentSkillSnapshot(release.ContractJSON)
 		if err != nil {
 			continue
 		}
@@ -165,7 +168,7 @@ func (l *FunctionSkillLogic) SetEnabled(ctx context.Context, req *funcoperation.
 	release, _ := l.releases.ActiveBySkill(ctx, item.UUID)
 	var contract *generatedapp.AgentSkillContract
 	if release != nil {
-		contract, _ = generatedapp.ParseAgentSkillContract(release.ContractJSON)
+		contract, _ = generatedapp.ParseAgentSkillSnapshot(release.ContractJSON)
 	}
 	return functionSkillToProto(item, release, contract), nil
 }
@@ -211,7 +214,7 @@ func (l *FunctionSkillLogic) GetTools(ctx context.Context, req *funcoperation.Ge
 		if err != nil {
 			continue
 		}
-		contract, err := generatedapp.ParseAgentSkillContract(release.ContractJSON)
+		contract, err := generatedapp.ParseAgentSkillSnapshot(release.ContractJSON)
 		if err != nil {
 			continue
 		}
@@ -301,12 +304,10 @@ func (l *FunctionSkillLogic) Execute(ctx context.Context, req *funcoperation.Exe
 	if err := l.apps.requireRuntimeAccess(userCtx, function, action); err != nil {
 		return nil, err
 	}
-	payload := make(map[string]any, len(input)+1)
-	payload["action"] = resolved.operation.Action
-	for key, value := range input {
-		payload[key] = value
+	payloadRaw, err := functionSkillInvokePayload(resolved.operation.Action, input)
+	if err != nil {
+		return nil, err
 	}
-	payloadRaw, _ := json.Marshal(payload)
 	invokeOut, invokeErr := l.apps.Invoke(userCtx, &funcoperation.InvokeGeneratedAppReq{Id: resolved.release.AppID, Payload: string(payloadRaw), UserId: grant.UserID})
 	response := &funcoperation.ExecuteFunctionSkillResp{}
 	if invokeErr != nil {
@@ -366,7 +367,7 @@ func (l *FunctionSkillLogic) resolveOperation(ctx context.Context, grant *model.
 		if err != nil {
 			continue
 		}
-		contract, err := generatedapp.ParseAgentSkillContract(release.ContractJSON)
+		contract, err := generatedapp.ParseAgentSkillSnapshot(release.ContractJSON)
 		if err != nil {
 			continue
 		}
@@ -459,6 +460,13 @@ func operationToProto(op generatedapp.AgentSkillOperation) *funcoperation.Functi
 func functionSkillToolName(prefix, key string) string {
 	return strings.TrimSpace(prefix) + "__" + strings.TrimSpace(key)
 }
+
+// Generated app backends receive business parameters through InvokeRequest.Data.
+// MCP tool inputs stay flat; this adapter creates the generated app envelope.
+func functionSkillInvokePayload(action string, input map[string]any) ([]byte, error) {
+	return json.Marshal(map[string]any{"action": action, "data": input})
+}
+
 func requiresFunctionSkillApproval(op generatedapp.AgentSkillOperation) bool {
 	return op.Effect != "read" && !(op.Effect == "create" && op.AutoExecute)
 }

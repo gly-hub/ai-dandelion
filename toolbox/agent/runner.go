@@ -154,8 +154,11 @@ func (r *ClaudeRunner) options(
 	if len(streamOptions.AddDirs) > 0 {
 		options.AddDirs = append(options.AddDirs, streamOptions.AddDirs...)
 	}
-	if len(streamOptions.MCPServers) > 0 {
+	if len(streamOptions.MCPServers) > 0 || len(streamOptions.SDKMCPServers) > 0 {
 		options.MCPServers = sdkMCPServers(streamOptions.MCPServers)
+		for id, server := range streamOptions.SDKMCPServers {
+			options.MCPServers[id] = server
+		}
 	}
 	if streamOptions.AskUserQuestion != nil || streamOptions.ToolPermission != nil {
 		options.CanUseTool = func(req claudeagentsdk.ToolPermissionRequest) (claudeagentsdk.PermissionDecision, error) {

@@ -3,6 +3,8 @@ package agent
 import (
 	"context"
 	"log/slog"
+
+	claudeagentsdk "github.com/gly-hub/claude-agent-sdk-go"
 )
 
 type Config struct {
@@ -81,13 +83,14 @@ type ToolPermissionHandler func(
 ) (ToolPermissionDecision, error)
 
 type StreamOptions struct {
-	Skills          []string
-	AddDirs         []string
-	MCPServers      map[string]MCPServerConfig
-	AskUserQuestion AskUserQuestionHandler
-	ToolPermission  ToolPermissionHandler
+	Skills              []string
+	AddDirs             []string
+	MCPServers          map[string]MCPServerConfig
+	SDKMCPServers       map[string]claudeagentsdk.MCPServerConfig
+	AskUserQuestion     AskUserQuestionHandler
+	ToolPermission      ToolPermissionHandler
 	ForceToolPermission func(string) bool
-	UserContent     any
+	UserContent         any
 }
 
 type MCPServerConfig struct {
