@@ -28,6 +28,7 @@ func Boot(confPath string) (err error) {
 		quickgo.ConfigOptionWithApp(cfg.AppConfig),
 		quickgo.ConfigOptionWithLogger(cfg.LoggerConfig),
 		quickgo.ConfigOptionWithGrpcServer(&cfg.GrpcServerConfig),
+		quickgo.ConfigOptionWithGrpcClient(&cfg.GrpcClientConfig),
 		quickgo.ConfigOptionWithGorm(&cfg.GormConfig),
 		quickgo.ConfigOptionWithRedis(&cfg.RedisConfig),
 		quickgo.ConfigOptionWithTracing(&cfg.TracingConfig),

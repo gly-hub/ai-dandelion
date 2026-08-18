@@ -3,6 +3,7 @@ syntax = "proto3";
 package funcoperation;
 option go_package = "./;funcoperation";
 import "function.proto";
+import "function_skill.proto";
 
 service FuncOperationService {
   rpc ListFunctions(func_operation_proto.ListFunctionsReq) returns (func_operation_proto.ListFunctionsResp);
@@ -52,6 +53,13 @@ service FuncOperationService {
   rpc GetGeneratedAppFrontend(func_operation_proto.GetGeneratedAppFrontendReq) returns (func_operation_proto.GetGeneratedAppFrontendResp);
   rpc GetGeneratedAppFrontendBundle(func_operation_proto.GetGeneratedAppFrontendBundleReq) returns (func_operation_proto.GetGeneratedAppFrontendBundleResp);
   rpc InvokeGeneratedApp(func_operation_proto.InvokeGeneratedAppReq) returns (func_operation_proto.InvokeGeneratedAppResp);
+  rpc ListFunctionSkills(func_operation_proto.ListFunctionSkillsReq) returns (func_operation_proto.ListFunctionSkillsResp);
+  rpc SetFunctionSkillEnabled(func_operation_proto.SetFunctionSkillEnabledReq) returns (func_operation_proto.SetFunctionSkillEnabledResp);
+  rpc IssueFunctionSkillGrant(func_operation_proto.IssueFunctionSkillGrantReq) returns (func_operation_proto.IssueFunctionSkillGrantResp);
+  rpc GetFunctionSkillTools(func_operation_proto.GetFunctionSkillToolsReq) returns (func_operation_proto.GetFunctionSkillToolsResp);
+  rpc CreateFunctionSkillApproval(func_operation_proto.CreateFunctionSkillApprovalReq) returns (func_operation_proto.CreateFunctionSkillApprovalResp);
+  rpc ExecuteFunctionSkill(func_operation_proto.ExecuteFunctionSkillReq) returns (func_operation_proto.ExecuteFunctionSkillResp);
+  rpc ListFunctionSkillExecutions(func_operation_proto.ListFunctionSkillExecutionsReq) returns (func_operation_proto.ListFunctionSkillExecutionsResp);
   rpc ListOutboxEvents(func_operation_proto.ListOutboxEventsReq) returns (func_operation_proto.ListOutboxEventsResp);
   rpc ReplayOutboxEvents(func_operation_proto.ReplayOutboxEventsReq) returns (func_operation_proto.ReplayOutboxEventsResp);
 }

@@ -10,18 +10,19 @@ import (
 )
 
 const (
-	functionPermissionCreate       = "func-operation.functions.create"
-	functionPermissionEdit         = "func-operation.functions.edit"
-	functionPermissionPublish      = "func-operation.functions.publish"
-	functionPermissionUnpublish    = "func-operation.functions.unpublish"
-	functionPermissionDelete       = "func-operation.functions.delete"
-	publicConfigPermissionView     = "func-operation.configs.view"
-	publicConfigPermissionCreate   = "func-operation.configs.create"
-	publicConfigPermissionUpdate   = "func-operation.configs.update"
-	publicConfigPermissionRollback = "func-operation.configs.rollback"
-	externalAPIPermissionView      = "func-operation.external-apis.view"
-	externalAPIPermissionCreate    = "func-operation.external-apis.create"
-	externalAPIPermissionUpdate    = "func-operation.external-apis.update"
+	functionPermissionCreate         = "func-operation.functions.create"
+	functionPermissionEdit           = "func-operation.functions.edit"
+	functionPermissionPublish        = "func-operation.functions.publish"
+	functionPermissionUnpublish      = "func-operation.functions.unpublish"
+	functionPermissionDelete         = "func-operation.functions.delete"
+	functionPermissionSkillConfigure = "func-operation.functions.skill.configure"
+	publicConfigPermissionView       = "func-operation.configs.view"
+	publicConfigPermissionCreate     = "func-operation.configs.create"
+	publicConfigPermissionUpdate     = "func-operation.configs.update"
+	publicConfigPermissionRollback   = "func-operation.configs.rollback"
+	externalAPIPermissionView        = "func-operation.external-apis.view"
+	externalAPIPermissionCreate      = "func-operation.external-apis.create"
+	externalAPIPermissionUpdate      = "func-operation.external-apis.update"
 )
 
 // FunctionAuthorizer keeps authorization in the service boundary. The browser

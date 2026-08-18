@@ -3,19 +3,21 @@ package service
 import "github.com/gly-hub/ai-dandelion/func-operation/internal/logic"
 
 type FuncOperationService struct {
-	functionLogic     *logic.FunctionLogic
-	appLogic          *logic.GeneratedAppLogic
-	outboxLogic       *logic.OutboxManagementLogic
-	publicConfigLogic *logic.PublicConfigLogic
-	externalAPILogic  *logic.ExternalAPILogic
+	functionLogic      *logic.FunctionLogic
+	appLogic           *logic.GeneratedAppLogic
+	outboxLogic        *logic.OutboxManagementLogic
+	publicConfigLogic  *logic.PublicConfigLogic
+	externalAPILogic   *logic.ExternalAPILogic
+	functionSkillLogic *logic.FunctionSkillLogic
 }
 
-func NewFuncOperationService(functionLogic *logic.FunctionLogic, appLogic *logic.GeneratedAppLogic, outboxLogic *logic.OutboxManagementLogic, publicConfigLogic *logic.PublicConfigLogic, externalAPILogic *logic.ExternalAPILogic) *FuncOperationService {
+func NewFuncOperationService(functionLogic *logic.FunctionLogic, appLogic *logic.GeneratedAppLogic, outboxLogic *logic.OutboxManagementLogic, publicConfigLogic *logic.PublicConfigLogic, externalAPILogic *logic.ExternalAPILogic, functionSkillLogic *logic.FunctionSkillLogic) *FuncOperationService {
 	return &FuncOperationService{
-		functionLogic:     functionLogic,
-		appLogic:          appLogic,
-		outboxLogic:       outboxLogic,
-		publicConfigLogic: publicConfigLogic,
-		externalAPILogic:  externalAPILogic,
+		functionLogic:      functionLogic,
+		appLogic:           appLogic,
+		outboxLogic:        outboxLogic,
+		publicConfigLogic:  publicConfigLogic,
+		externalAPILogic:   externalAPILogic,
+		functionSkillLogic: functionSkillLogic,
 	}
 }

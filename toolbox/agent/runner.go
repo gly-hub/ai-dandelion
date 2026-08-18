@@ -176,7 +176,7 @@ func (r *ClaudeRunner) options(
 				}, nil
 			}
 
-			if usesBypassPermissions(r.config.PermissionMode) {
+			if usesBypassPermissions(r.config.PermissionMode) && (streamOptions.ForceToolPermission == nil || !streamOptions.ForceToolPermission(req.ToolName)) {
 				return claudeagentsdk.PermissionDecision{
 					Behavior:     string(claudeagentsdk.PermissionBehaviorAllow),
 					UpdatedInput: req.Input,
@@ -203,9 +203,13 @@ func (r *ClaudeRunner) options(
 				return claudeagentsdk.PermissionDecision{}, err
 			}
 			if decision.Allow {
+				updatedInput := req.Input
+				if decision.UpdatedInput != nil {
+					updatedInput = decision.UpdatedInput
+				}
 				return claudeagentsdk.PermissionDecision{
 					Behavior:     string(claudeagentsdk.PermissionBehaviorAllow),
-					UpdatedInput: req.Input,
+					UpdatedInput: updatedInput,
 				}, nil
 			}
 			message := strings.TrimSpace(decision.Message)

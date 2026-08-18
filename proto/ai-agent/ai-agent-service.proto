@@ -22,6 +22,7 @@ service AiAgentService {
     rpc SubmitToolPermission(message_proto.SubmitToolPermissionReq)returns(message_proto.SubmitToolPermissionResp);
     rpc ListAgentModels(agent_model_proto.ListAgentModelsReq)returns(agent_model_proto.ListAgentModelsResp);
     rpc ListSkills(skill_proto.ListSkillsReq)returns(skill_proto.ListSkillsResp);
+    rpc ListFunctionSkills(skill_proto.ListFunctionSkillsReq)returns(skill_proto.ListFunctionSkillsResp);
     rpc ImportSkillPackage(skill_proto.ImportSkillPackageReq)returns(skill_proto.ImportSkillPackageResp);
     rpc UpdateSkill(skill_proto.UpdateSkillReq)returns(skill_proto.UpdateSkillResp);
     rpc DeleteSkill(skill_proto.DeleteSkillReq)returns(skill_proto.DeleteSkillResp);

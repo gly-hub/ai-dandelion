@@ -26,6 +26,22 @@ func (a *AIAgentServerController) ListSkills(ctx *fiber.Ctx) error {
 	return a.baseHandler.GRPCCall(ctx, rpcParam, handler)
 }
 
+// ListFunctionSkills returns functions that the current user can operate through Agent.
+// @tags AI Agent
+// @summary 获取可用功能技能
+// @router /ai-agent/function-skills [GET]
+func (a *AIAgentServerController) ListFunctionSkills(ctx *fiber.Ctx) error {
+	rpcParam := &aiagent.ListFunctionSkillsReq{}
+	handler := func(rpcCtx context.Context, req *aiagent.ListFunctionSkillsReq) (interface{}, error) {
+		client, err := a.getAiAgentClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.ListFunctionSkills(rpcCtx, req)
+	}
+	return a.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
 // ImportSkillPackage
 // @tags AI Agent
 // @summary 导入用户技能包

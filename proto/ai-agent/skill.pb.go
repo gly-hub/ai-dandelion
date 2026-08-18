@@ -204,6 +204,186 @@ func (m *ListSkillsResp) GetSkills() []*AgentSkill {
 	return nil
 }
 
+type AgentFunctionSkill struct {
+	Id          string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	FunctionId  string `protobuf:"bytes,2,opt,name=function_id,json=functionId,proto3" json:"functionId"`
+	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name"`
+	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description"`
+	ToolPrefix  string `protobuf:"bytes,5,opt,name=tool_prefix,json=toolPrefix,proto3" json:"toolPrefix"`
+	UpdatedAt   int64  `protobuf:"varint,6,opt,name=updated_at,json=updatedAt,proto3" json:"updatedAt"`
+}
+
+func (m *AgentFunctionSkill) Reset()         { *m = AgentFunctionSkill{} }
+func (m *AgentFunctionSkill) String() string { return proto.CompactTextString(m) }
+func (*AgentFunctionSkill) ProtoMessage()    {}
+func (*AgentFunctionSkill) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dd709e691a520876, []int{3}
+}
+func (m *AgentFunctionSkill) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AgentFunctionSkill) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AgentFunctionSkill.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AgentFunctionSkill) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AgentFunctionSkill.Merge(m, src)
+}
+func (m *AgentFunctionSkill) XXX_Size() int {
+	return m.Size()
+}
+func (m *AgentFunctionSkill) XXX_DiscardUnknown() {
+	xxx_messageInfo_AgentFunctionSkill.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AgentFunctionSkill proto.InternalMessageInfo
+
+func (m *AgentFunctionSkill) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *AgentFunctionSkill) GetFunctionId() string {
+	if m != nil {
+		return m.FunctionId
+	}
+	return ""
+}
+
+func (m *AgentFunctionSkill) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *AgentFunctionSkill) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+func (m *AgentFunctionSkill) GetToolPrefix() string {
+	if m != nil {
+		return m.ToolPrefix
+	}
+	return ""
+}
+
+func (m *AgentFunctionSkill) GetUpdatedAt() int64 {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return 0
+}
+
+type ListFunctionSkillsReq struct {
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"userId"`
+}
+
+func (m *ListFunctionSkillsReq) Reset()         { *m = ListFunctionSkillsReq{} }
+func (m *ListFunctionSkillsReq) String() string { return proto.CompactTextString(m) }
+func (*ListFunctionSkillsReq) ProtoMessage()    {}
+func (*ListFunctionSkillsReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dd709e691a520876, []int{4}
+}
+func (m *ListFunctionSkillsReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ListFunctionSkillsReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ListFunctionSkillsReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ListFunctionSkillsReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListFunctionSkillsReq.Merge(m, src)
+}
+func (m *ListFunctionSkillsReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *ListFunctionSkillsReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListFunctionSkillsReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListFunctionSkillsReq proto.InternalMessageInfo
+
+func (m *ListFunctionSkillsReq) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
+type ListFunctionSkillsResp struct {
+	CommonResp *grpcep.CommonResp    `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
+	Skills     []*AgentFunctionSkill `protobuf:"bytes,2,rep,name=skills,proto3" json:"skills"`
+}
+
+func (m *ListFunctionSkillsResp) Reset()         { *m = ListFunctionSkillsResp{} }
+func (m *ListFunctionSkillsResp) String() string { return proto.CompactTextString(m) }
+func (*ListFunctionSkillsResp) ProtoMessage()    {}
+func (*ListFunctionSkillsResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dd709e691a520876, []int{5}
+}
+func (m *ListFunctionSkillsResp) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ListFunctionSkillsResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ListFunctionSkillsResp.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ListFunctionSkillsResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListFunctionSkillsResp.Merge(m, src)
+}
+func (m *ListFunctionSkillsResp) XXX_Size() int {
+	return m.Size()
+}
+func (m *ListFunctionSkillsResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListFunctionSkillsResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListFunctionSkillsResp proto.InternalMessageInfo
+
+func (m *ListFunctionSkillsResp) GetCommonResp() *grpcep.CommonResp {
+	if m != nil {
+		return m.CommonResp
+	}
+	return nil
+}
+
+func (m *ListFunctionSkillsResp) GetSkills() []*AgentFunctionSkill {
+	if m != nil {
+		return m.Skills
+	}
+	return nil
+}
+
 type ImportSkillPackageReq struct {
 	UserId   string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"userId"`
 	FileName string `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"fileName"`
@@ -214,7 +394,7 @@ func (m *ImportSkillPackageReq) Reset()         { *m = ImportSkillPackageReq{} }
 func (m *ImportSkillPackageReq) String() string { return proto.CompactTextString(m) }
 func (*ImportSkillPackageReq) ProtoMessage()    {}
 func (*ImportSkillPackageReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{3}
+	return fileDescriptor_dd709e691a520876, []int{6}
 }
 func (m *ImportSkillPackageReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -273,7 +453,7 @@ func (m *ImportSkillPackageResp) Reset()         { *m = ImportSkillPackageResp{}
 func (m *ImportSkillPackageResp) String() string { return proto.CompactTextString(m) }
 func (*ImportSkillPackageResp) ProtoMessage()    {}
 func (*ImportSkillPackageResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{4}
+	return fileDescriptor_dd709e691a520876, []int{7}
 }
 func (m *ImportSkillPackageResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -325,7 +505,7 @@ func (m *UpdateSkillReq) Reset()         { *m = UpdateSkillReq{} }
 func (m *UpdateSkillReq) String() string { return proto.CompactTextString(m) }
 func (*UpdateSkillReq) ProtoMessage()    {}
 func (*UpdateSkillReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{5}
+	return fileDescriptor_dd709e691a520876, []int{8}
 }
 func (m *UpdateSkillReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -377,7 +557,7 @@ func (m *UpdateSkillResp) Reset()         { *m = UpdateSkillResp{} }
 func (m *UpdateSkillResp) String() string { return proto.CompactTextString(m) }
 func (*UpdateSkillResp) ProtoMessage()    {}
 func (*UpdateSkillResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{6}
+	return fileDescriptor_dd709e691a520876, []int{9}
 }
 func (m *UpdateSkillResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -429,7 +609,7 @@ func (m *DeleteSkillReq) Reset()         { *m = DeleteSkillReq{} }
 func (m *DeleteSkillReq) String() string { return proto.CompactTextString(m) }
 func (*DeleteSkillReq) ProtoMessage()    {}
 func (*DeleteSkillReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{7}
+	return fileDescriptor_dd709e691a520876, []int{10}
 }
 func (m *DeleteSkillReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -481,7 +661,7 @@ func (m *DeleteSkillResp) Reset()         { *m = DeleteSkillResp{} }
 func (m *DeleteSkillResp) String() string { return proto.CompactTextString(m) }
 func (*DeleteSkillResp) ProtoMessage()    {}
 func (*DeleteSkillResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dd709e691a520876, []int{8}
+	return fileDescriptor_dd709e691a520876, []int{11}
 }
 func (m *DeleteSkillResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -528,6 +708,9 @@ func init() {
 	proto.RegisterType((*AgentSkill)(nil), "skill_proto.AgentSkill")
 	proto.RegisterType((*ListSkillsReq)(nil), "skill_proto.ListSkillsReq")
 	proto.RegisterType((*ListSkillsResp)(nil), "skill_proto.ListSkillsResp")
+	proto.RegisterType((*AgentFunctionSkill)(nil), "skill_proto.AgentFunctionSkill")
+	proto.RegisterType((*ListFunctionSkillsReq)(nil), "skill_proto.ListFunctionSkillsReq")
+	proto.RegisterType((*ListFunctionSkillsResp)(nil), "skill_proto.ListFunctionSkillsResp")
 	proto.RegisterType((*ImportSkillPackageReq)(nil), "skill_proto.ImportSkillPackageReq")
 	proto.RegisterType((*ImportSkillPackageResp)(nil), "skill_proto.ImportSkillPackageResp")
 	proto.RegisterType((*UpdateSkillReq)(nil), "skill_proto.UpdateSkillReq")
@@ -539,42 +722,47 @@ func init() {
 func init() { proto.RegisterFile("skill.proto", fileDescriptor_dd709e691a520876) }
 
 var fileDescriptor_dd709e691a520876 = []byte{
-	// 545 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0xed, 0x3a, 0x6d, 0x9a, 0x8c, 0xdb, 0x44, 0x5a, 0x89, 0x62, 0x55, 0xc8, 0x8e, 0x0c, 0x48,
-	0x41, 0xa2, 0xb6, 0x08, 0x1c, 0x90, 0x7a, 0x6a, 0xe8, 0xa5, 0x12, 0x20, 0x64, 0xc4, 0x85, 0x4b,
-	0xb4, 0xf1, 0x6e, 0xcd, 0x2a, 0xb6, 0xd7, 0xf5, 0xc7, 0x4f, 0xe0, 0x0e, 0xe2, 0xc2, 0x4f, 0xe2,
-	0xd8, 0x23, 0x27, 0x0b, 0x25, 0x37, 0x1f, 0xf8, 0x0d, 0xc8, 0xbb, 0x6e, 0xea, 0x22, 0x40, 0x05,
-	0xf5, 0xc0, 0xc5, 0x33, 0xf3, 0xf6, 0x4d, 0x66, 0xe7, 0xbd, 0x68, 0x41, 0xcf, 0x16, 0x3c, 0x0c,
-	0x9d, 0x24, 0x15, 0xb9, 0xc0, 0xaa, 0x98, 0xc9, 0x62, 0xff, 0x20, 0xe0, 0xf9, 0xbb, 0x62, 0xee,
-	0xf8, 0x22, 0x72, 0x03, 0x11, 0x08, 0x57, 0xc2, 0xf3, 0xe2, 0x54, 0x56, 0xb2, 0x90, 0x99, 0xea,
-	0xdd, 0x9f, 0xb4, 0xe8, 0x39, 0x23, 0xd1, 0x01, 0x25, 0x31, 0x65, 0x21, 0x17, 0xb1, 0x7b, 0x56,
-	0x70, 0x7f, 0x11, 0x08, 0x37, 0x48, 0x13, 0x9f, 0x25, 0x6e, 0xc8, 0xe7, 0xaa, 0xc7, 0xfe, 0x8e,
-	0x00, 0x8e, 0x02, 0x16, 0xe7, 0xaf, 0xeb, 0xb9, 0x78, 0x0f, 0x34, 0x4e, 0x0d, 0x34, 0x42, 0xe3,
-	0xfe, 0xb4, 0x5b, 0x95, 0x96, 0xc6, 0xa9, 0xa7, 0x71, 0x8a, 0xef, 0xc0, 0x66, 0x4c, 0x22, 0x66,
-	0x68, 0xf2, 0xa4, 0x57, 0x95, 0x96, 0xac, 0x3d, 0xf9, 0xc5, 0x8f, 0x40, 0xa7, 0x2c, 0xf3, 0x53,
-	0x9e, 0xe4, 0x5c, 0xc4, 0x46, 0x47, 0x92, 0x86, 0x55, 0x69, 0xb5, 0x61, 0xaf, 0x5d, 0x60, 0x1b,
-	0xba, 0x99, 0x28, 0x52, 0x9f, 0x19, 0x9b, 0x92, 0x0d, 0x55, 0x69, 0x35, 0x88, 0xd7, 0x44, 0x7c,
-	0x1f, 0xb6, 0x59, 0x4c, 0xe6, 0x21, 0xa3, 0xc6, 0xd6, 0x08, 0x8d, 0x7b, 0x53, 0xbd, 0x2a, 0xad,
-	0x0b, 0xc8, 0xbb, 0x48, 0xf0, 0x43, 0x80, 0x22, 0xa1, 0x24, 0x67, 0x74, 0x46, 0x72, 0xa3, 0x3b,
-	0x42, 0xe3, 0xce, 0x74, 0xb7, 0x2a, 0xad, 0x7e, 0x83, 0x1e, 0xe5, 0xde, 0x65, 0x6a, 0x3f, 0x81,
-	0xdd, 0xe7, 0x3c, 0x53, 0xeb, 0x66, 0x1e, 0x3b, 0xc3, 0x77, 0x61, 0xbb, 0xc8, 0x58, 0x3a, 0x5b,
-	0xef, 0x2d, 0xaf, 0x52, 0x43, 0x27, 0xd4, 0x6b, 0xa2, 0xfd, 0x09, 0xc1, 0xa0, 0xdd, 0x96, 0x25,
-	0xf8, 0x18, 0x74, 0x5f, 0x44, 0x91, 0x88, 0x67, 0x29, 0xcb, 0x12, 0xd9, 0xab, 0x4f, 0xb0, 0xa3,
-	0x14, 0x76, 0x9e, 0xc9, 0xa3, 0x9a, 0xa8, 0x84, 0x68, 0x51, 0x3d, 0xf0, 0xd7, 0x87, 0xf8, 0x10,
-	0xba, 0xd2, 0xf1, 0xcc, 0xd0, 0x46, 0x9d, 0xb1, 0x3e, 0xb9, 0xed, 0xb4, 0xfe, 0x00, 0xce, 0xa5,
-	0x33, 0x8d, 0x40, 0x6a, 0x7c, 0x13, 0xed, 0xf7, 0x08, 0x6e, 0x9d, 0x44, 0x89, 0x48, 0x15, 0xe7,
-	0x15, 0xf1, 0x17, 0x24, 0x60, 0xd7, 0x5d, 0x0a, 0x3f, 0x80, 0xfe, 0x29, 0x0f, 0xd9, 0xac, 0xe5,
-	0xec, 0x4e, 0x55, 0x5a, 0xbd, 0x1a, 0x7c, 0x59, 0xbb, 0xbb, 0xce, 0x6a, 0xff, 0x29, 0xc9, 0x89,
-	0xb4, 0x76, 0x47, 0xf9, 0x5f, 0xd7, 0x9e, 0xfc, 0xda, 0x9f, 0x11, 0xec, 0xfd, 0xea, 0x1e, 0x37,
-	0xa6, 0xd2, 0x53, 0xd8, 0x92, 0x2b, 0xcb, 0x5b, 0xfe, 0x41, 0xa4, 0x7e, 0x55, 0x5a, 0x8a, 0xe9,
-	0xa9, 0x60, 0x0b, 0x18, 0xbc, 0x91, 0xde, 0x4b, 0xc2, 0xb5, 0xa5, 0xf9, 0xf7, 0x81, 0x1f, 0x11,
-	0x0c, 0xaf, 0x4c, 0xfc, 0x0f, 0x44, 0x78, 0x01, 0x83, 0x63, 0x16, 0xb2, 0xbf, 0x15, 0x41, 0x3d,
-	0x06, 0xda, 0xcf, 0x8f, 0x81, 0x2d, 0x60, 0x78, 0xe5, 0xe7, 0x6e, 0x6c, 0xc3, 0xdf, 0x0c, 0x9c,
-	0xde, 0xfb, 0xb2, 0x34, 0xd1, 0xf9, 0xd2, 0x44, 0xdf, 0x96, 0x26, 0xfa, 0xb0, 0x32, 0x37, 0xce,
-	0x57, 0xe6, 0xc6, 0xd7, 0x95, 0xb9, 0xf1, 0x16, 0x1c, 0xf7, 0x90, 0x70, 0x52, 0x2f, 0x3f, 0xef,
-	0x4a, 0x25, 0x1e, 0xff, 0x08, 0x00, 0x00, 0xff, 0xff, 0x40, 0x86, 0x9c, 0x89, 0x50, 0x05, 0x00,
-	0x00,
+	// 640 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x94, 0xcf, 0x6b, 0xd4, 0x40,
+	0x14, 0xc7, 0x3b, 0xd9, 0x76, 0xdb, 0x7d, 0x69, 0xb7, 0x30, 0xd0, 0x1a, 0x8a, 0x6c, 0x96, 0xa8,
+	0xb0, 0xa2, 0x4d, 0xb0, 0x7a, 0x10, 0xea, 0xa5, 0xdb, 0x22, 0x14, 0x54, 0xca, 0x88, 0x17, 0x2f,
+	0x4b, 0x36, 0x99, 0x4d, 0x87, 0x66, 0x77, 0xd2, 0xfc, 0x00, 0xfd, 0x03, 0x3c, 0x0a, 0x8a, 0x17,
+	0xef, 0xfe, 0x33, 0x1e, 0x7b, 0xf4, 0x14, 0xa4, 0xbd, 0xe5, 0xe0, 0xdf, 0x20, 0x33, 0x93, 0x6e,
+	0xb3, 0xb5, 0x96, 0xad, 0xec, 0xc1, 0xcb, 0xce, 0x7b, 0x6f, 0xbe, 0xb3, 0x6f, 0xde, 0xf7, 0x93,
+	0x04, 0xf4, 0xe4, 0x88, 0x85, 0xa1, 0x1d, 0xc5, 0x3c, 0xe5, 0x58, 0x25, 0x3d, 0x99, 0x6c, 0x6c,
+	0x06, 0x2c, 0x3d, 0xcc, 0xfa, 0xb6, 0xc7, 0x87, 0x4e, 0xc0, 0x03, 0xee, 0xc8, 0x72, 0x3f, 0x1b,
+	0xc8, 0x4c, 0x26, 0x32, 0x52, 0x67, 0x37, 0x1e, 0x54, 0xe5, 0xe1, 0xfb, 0xcd, 0xc3, 0xac, 0xef,
+	0x1c, 0x67, 0xcc, 0x3b, 0x0a, 0xb8, 0x13, 0xc4, 0x91, 0x47, 0x23, 0x27, 0x64, 0x7d, 0x25, 0xb6,
+	0x7e, 0x21, 0x80, 0x9d, 0x80, 0x8e, 0xd2, 0xd7, 0xa2, 0x21, 0x5e, 0x07, 0x8d, 0xf9, 0x06, 0x6a,
+	0xa3, 0x4e, 0xa3, 0x5b, 0x2f, 0x72, 0x53, 0x63, 0x3e, 0xd1, 0x98, 0x8f, 0x6f, 0xc3, 0xfc, 0xc8,
+	0x1d, 0x52, 0x43, 0x93, 0x3b, 0x4b, 0x45, 0x6e, 0xca, 0x9c, 0xc8, 0x5f, 0xfc, 0x08, 0x74, 0x9f,
+	0x26, 0x5e, 0xcc, 0xa2, 0x94, 0xf1, 0x91, 0x51, 0x93, 0xa2, 0xd5, 0x22, 0x37, 0xab, 0x65, 0x52,
+	0x4d, 0xb0, 0x05, 0xf5, 0x84, 0x67, 0xb1, 0x47, 0x8d, 0x79, 0xa9, 0x86, 0x22, 0x37, 0xcb, 0x0a,
+	0x29, 0x57, 0x7c, 0x0f, 0x16, 0xe9, 0xc8, 0xed, 0x87, 0xd4, 0x37, 0x16, 0xda, 0xa8, 0xb3, 0xd4,
+	0xd5, 0x8b, 0xdc, 0x3c, 0x2f, 0x91, 0xf3, 0x00, 0x3f, 0x04, 0xc8, 0x22, 0xdf, 0x4d, 0xa9, 0xdf,
+	0x73, 0x53, 0xa3, 0xde, 0x46, 0x9d, 0x5a, 0x77, 0xa5, 0xc8, 0xcd, 0x46, 0x59, 0xdd, 0x49, 0xc9,
+	0x45, 0x68, 0x3d, 0x81, 0x95, 0x17, 0x2c, 0x51, 0xe3, 0x26, 0x84, 0x1e, 0xe3, 0x3b, 0xb0, 0x98,
+	0x25, 0x34, 0xee, 0x8d, 0xe7, 0x96, 0x57, 0x11, 0xa5, 0x7d, 0x9f, 0x94, 0xab, 0xf5, 0x05, 0x41,
+	0xb3, 0x7a, 0x2c, 0x89, 0xf0, 0x1e, 0xe8, 0x1e, 0x1f, 0x0e, 0xf9, 0xa8, 0x17, 0xd3, 0x24, 0x92,
+	0x67, 0xf5, 0x2d, 0x6c, 0x2b, 0x87, 0xed, 0x5d, 0xb9, 0x25, 0x84, 0xca, 0x88, 0x8a, 0x94, 0x80,
+	0x37, 0xde, 0xc4, 0xdb, 0x50, 0x97, 0xa8, 0x13, 0x43, 0x6b, 0xd7, 0x3a, 0xfa, 0xd6, 0x2d, 0xbb,
+	0x42, 0xde, 0xbe, 0x20, 0x53, 0x1a, 0xa4, 0xda, 0x97, 0xab, 0xf5, 0x51, 0x03, 0x2c, 0x25, 0xcf,
+	0xb3, 0x91, 0x27, 0x6c, 0xbd, 0x1e, 0xa2, 0x03, 0xfa, 0xa0, 0x14, 0x8a, 0x69, 0x15, 0xcb, 0x66,
+	0x91, 0x9b, 0x70, 0x5e, 0xde, 0xf7, 0x49, 0x25, 0x1e, 0x53, 0xaf, 0x4d, 0x43, 0x7d, 0x7e, 0x0a,
+	0xea, 0x0e, 0xe8, 0x29, 0xe7, 0x62, 0x3a, 0x3a, 0x60, 0xef, 0x24, 0xd5, 0xf2, 0x06, 0xa2, 0x7c,
+	0x20, 0xab, 0xa4, 0x12, 0xdf, 0x90, 0xed, 0x33, 0x58, 0x13, 0x90, 0x26, 0xdc, 0x98, 0x9e, 0xf1,
+	0x37, 0x04, 0xeb, 0x57, 0x1d, 0x9f, 0x19, 0xeb, 0xdd, 0x4b, 0xac, 0xcd, 0x3f, 0x59, 0x4f, 0xf4,
+	0xbe, 0x92, 0xf9, 0x07, 0x04, 0x6b, 0xfb, 0xc3, 0x88, 0xc7, 0xea, 0xb9, 0x38, 0x70, 0xbd, 0x23,
+	0x37, 0xa0, 0xd3, 0x0e, 0x89, 0xef, 0x43, 0x63, 0xc0, 0x42, 0xda, 0xab, 0xbc, 0xcd, 0xcb, 0x45,
+	0x6e, 0x2e, 0x89, 0xe2, 0x2b, 0xc1, 0x76, 0x1c, 0x09, 0xfa, 0xbe, 0x9b, 0xba, 0x92, 0xfe, 0xb2,
+	0xa2, 0x2f, 0x72, 0x22, 0x7f, 0xad, 0xaf, 0x08, 0xd6, 0xaf, 0xba, 0xc7, 0xcc, 0xdc, 0x7a, 0x0a,
+	0x0b, 0x72, 0x64, 0x79, 0xcb, 0x6b, 0x5e, 0x8c, 0x46, 0x91, 0x9b, 0x4a, 0x49, 0xd4, 0x62, 0x71,
+	0x68, 0xbe, 0x91, 0xcf, 0x84, 0x14, 0x4c, 0x6d, 0xcd, 0xbf, 0x37, 0xfc, 0x8c, 0x60, 0x75, 0xa2,
+	0xe3, 0x7f, 0x60, 0xc2, 0x4b, 0x68, 0xee, 0xd1, 0x90, 0xde, 0xd4, 0x04, 0xf5, 0xed, 0xd0, 0x2e,
+	0x7f, 0x3b, 0x2c, 0x0e, 0xab, 0x13, 0x7f, 0x37, 0xb3, 0x09, 0xff, 0xd2, 0xb0, 0x7b, 0xf7, 0xfb,
+	0x69, 0x0b, 0x9d, 0x9c, 0xb6, 0xd0, 0xcf, 0xd3, 0x16, 0xfa, 0x74, 0xd6, 0x9a, 0x3b, 0x39, 0x6b,
+	0xcd, 0xfd, 0x38, 0x6b, 0xcd, 0xbd, 0x05, 0xdb, 0xd9, 0x76, 0x99, 0x2b, 0x86, 0xef, 0xd7, 0xa5,
+	0x13, 0x8f, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0x6a, 0x56, 0x02, 0x2e, 0x3d, 0x07, 0x00, 0x00,
 }
 
 func (m *AgentSkill) Marshal() (dAtA []byte, err error) {
@@ -689,6 +877,148 @@ func (m *ListSkillsResp) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *ListSkillsResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Skills) > 0 {
+		for iNdEx := len(m.Skills) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Skills[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintSkill(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.CommonResp != nil {
+		{
+			size, err := m.CommonResp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintSkill(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *AgentFunctionSkill) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AgentFunctionSkill) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AgentFunctionSkill) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.UpdatedAt != 0 {
+		i = encodeVarintSkill(dAtA, i, uint64(m.UpdatedAt))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.ToolPrefix) > 0 {
+		i -= len(m.ToolPrefix)
+		copy(dAtA[i:], m.ToolPrefix)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.ToolPrefix)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Description) > 0 {
+		i -= len(m.Description)
+		copy(dAtA[i:], m.Description)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.Description)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Name) > 0 {
+		i -= len(m.Name)
+		copy(dAtA[i:], m.Name)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.Name)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.FunctionId) > 0 {
+		i -= len(m.FunctionId)
+		copy(dAtA[i:], m.FunctionId)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.FunctionId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Id) > 0 {
+		i -= len(m.Id)
+		copy(dAtA[i:], m.Id)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ListFunctionSkillsReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ListFunctionSkillsReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ListFunctionSkillsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.UserId) > 0 {
+		i -= len(m.UserId)
+		copy(dAtA[i:], m.UserId)
+		i = encodeVarintSkill(dAtA, i, uint64(len(m.UserId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ListFunctionSkillsResp) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ListFunctionSkillsResp) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ListFunctionSkillsResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1037,6 +1367,70 @@ func (m *ListSkillsReq) Size() (n int) {
 }
 
 func (m *ListSkillsResp) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.CommonResp != nil {
+		l = m.CommonResp.Size()
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	if len(m.Skills) > 0 {
+		for _, e := range m.Skills {
+			l = e.Size()
+			n += 1 + l + sovSkill(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *AgentFunctionSkill) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Id)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	l = len(m.FunctionId)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	l = len(m.Name)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	l = len(m.Description)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	l = len(m.ToolPrefix)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	if m.UpdatedAt != 0 {
+		n += 1 + sovSkill(uint64(m.UpdatedAt))
+	}
+	return n
+}
+
+func (m *ListFunctionSkillsReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.UserId)
+	if l > 0 {
+		n += 1 + l + sovSkill(uint64(l))
+	}
+	return n
+}
+
+func (m *ListFunctionSkillsResp) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1561,6 +1955,437 @@ func (m *ListSkillsResp) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Skills = append(m.Skills, &AgentSkill{})
+			if err := m.Skills[len(m.Skills)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipSkill(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AgentFunctionSkill) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowSkill
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AgentFunctionSkill: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AgentFunctionSkill: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Id = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FunctionId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FunctionId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Description", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Description = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ToolPrefix", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ToolPrefix = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpdatedAt", wireType)
+			}
+			m.UpdatedAt = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.UpdatedAt |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipSkill(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ListFunctionSkillsReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowSkill
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ListFunctionSkillsReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ListFunctionSkillsReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UserId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UserId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipSkill(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ListFunctionSkillsResp) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowSkill
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ListFunctionSkillsResp: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ListFunctionSkillsResp: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CommonResp", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CommonResp == nil {
+				m.CommonResp = &grpcep.CommonResp{}
+			}
+			if err := m.CommonResp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Skills", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowSkill
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthSkill
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthSkill
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Skills = append(m.Skills, &AgentFunctionSkill{})
 			if err := m.Skills[len(m.Skills)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
