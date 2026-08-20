@@ -8,6 +8,7 @@ import (
 	"github.com/gly-hub/ai-dandelion/system/global"
 	"github.com/gly-hub/ai-dandelion/system/internal/dao"
 	"github.com/gly-hub/ai-dandelion/system/internal/logic"
+	"github.com/gly-hub/ai-dandelion/system/internal/migration"
 	"github.com/gly-hub/ai-dandelion/system/internal/service"
 	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
@@ -18,6 +19,9 @@ import (
 func RegisterHandler(s *rpc.Server) {
 	db, err := global.GetApp().GormManager().GetDB("ai-dandelion")
 	if err != nil {
+		panic(err)
+	}
+	if err := migration.EnsureUploadOwnership(db); err != nil {
 		panic(err)
 	}
 

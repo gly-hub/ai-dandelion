@@ -11,8 +11,9 @@ func init() { boot.Register(&Upload{}) }
 
 type Upload struct {
 	UUID        string `gorm:"column:uuid;type:varchar(100);primaryKey"`
+	UserID      string `gorm:"column:user_id;type:varchar(128);not null;default:'';uniqueIndex:uk_upload_user_md5;index"`
 	UploadID    string `gorm:"column:upload_id;type:varchar(255);not null;default:'';index"`
-	MD5         string `gorm:"column:md5;type:char(32);not null;uniqueIndex"`
+	MD5         string `gorm:"column:md5;type:char(32);not null;uniqueIndex:uk_upload_user_md5"`
 	FileName    string `gorm:"column:file_name;type:varchar(255);not null;default:''"`
 	ContentType string `gorm:"column:content_type;type:varchar(255);not null;default:''"`
 	FileSize    int64  `gorm:"column:file_size;not null;default:0"`

@@ -1,16 +1,10 @@
 package logic
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"mime"
-	"net/http"
-	"path"
 	"strings"
 	"time"
 
@@ -43,6 +37,7 @@ type MessageLogic struct {
 	skillLogic            *SkillLogic
 	mcpLogic              *MCPLogic
 	functionSkillRuntime  *FunctionSkillRuntime
+	attachmentResolver    *AttachmentResolver
 	askUserQuestionBroker *AskUserQuestionBroker
 	toolPermissionBroker  *ToolPermissionBroker
 }
@@ -86,6 +81,12 @@ func NewMessageLogic(
 		functionSkillRuntime:  functionSkillRuntime,
 		askUserQuestionBroker: NewAskUserQuestionBroker(),
 		toolPermissionBroker:  NewToolPermissionBroker(),
+	}
+}
+
+func (m *MessageLogic) SetAttachmentResolver(resolver *AttachmentResolver) {
+	if m != nil {
+		m.attachmentResolver = resolver
 	}
 }
 
@@ -148,7 +149,12 @@ func (m *MessageLogic) StreamMessage(
 	if err != nil {
 		return err
 	}
-	userContent, err := m.buildAgentUserContent(ctx, userParts, prompt)
+	preparedAttachments, err := m.prepareAttachments(ctx, sessionID, userParts)
+	if err != nil {
+		return err
+	}
+	prompt = attachmentPrompt(prompt, preparedAttachments)
+	userContent, err := m.buildAgentUserContent(userParts, prompt, preparedAttachments)
 	if err != nil {
 		return err
 	}
@@ -172,6 +178,9 @@ func (m *MessageLogic) StreamMessage(
 	}
 	if engineConfig.Cleanup != nil {
 		defer engineConfig.Cleanup()
+	}
+	if preparedAttachments != nil && preparedAttachments.Dir != "" {
+		engineConfig.AddDirs = append(engineConfig.AddDirs, preparedAttachments.Dir)
 	}
 	engineConfig.UserContent = userContent
 	events, errs, err := m.agentEngine.Stream(ctx, agentSessionID, prompt, resume, engineConfig)
@@ -640,7 +649,17 @@ func promptFromParts(parts []*aiagent.MessagePart) string {
 	return strings.TrimSpace(builder.String())
 }
 
-func (m *MessageLogic) buildAgentUserContent(ctx context.Context, parts []*aiagent.MessagePart, prompt string) (any, error) {
+func (m *MessageLogic) prepareAttachments(ctx context.Context, sessionID string, parts []*aiagent.MessagePart) (*PreparedAttachments, error) {
+	if len(attachmentParts(parts)) == 0 {
+		return &PreparedAttachments{}, nil
+	}
+	if m.attachmentResolver == nil {
+		return nil, errors.New("attachment resolver is not configured")
+	}
+	return m.attachmentResolver.Prepare(ctx, sessionID, parts)
+}
+
+func (m *MessageLogic) buildAgentUserContent(parts []*aiagent.MessagePart, prompt string, prepared *PreparedAttachments) (any, error) {
 	content := make([]map[string]any, 0, len(parts)+1)
 	if strings.TrimSpace(prompt) != "" {
 		content = append(content, map[string]any{"type": "text", "text": prompt})
@@ -649,78 +668,19 @@ func (m *MessageLogic) buildAgentUserContent(ctx context.Context, parts []*aiage
 		if part == nil || (part.GetType() != "image" && part.GetType() != "file" && part.GetType() != "document") {
 			continue
 		}
-		partContent, err := m.resolveAttachmentContent(ctx, part)
-		if err != nil {
-			return nil, err
+		if prepared == nil {
+			continue
 		}
-		content = append(content, partContent)
+		if item, ok := prepared.Items[part.GetFileUuid()]; ok {
+			if partContent, ok := nativeAttachmentContent(item); ok {
+				content = append(content, partContent)
+			}
+		}
 	}
 	if len(content) == 0 {
 		return nil, nil
 	}
 	return content, nil
-}
-
-func (m *MessageLogic) resolveAttachmentContent(ctx context.Context, part *aiagent.MessagePart) (map[string]any, error) {
-	name := strings.TrimSpace(part.GetFileName())
-	if name == "" {
-		name = part.GetFileUuid()
-	}
-	contentType := strings.ToLower(strings.TrimSpace(part.GetContentType()))
-	if contentType == "" {
-		contentType = mime.TypeByExtension(path.Ext(name))
-	}
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-	data, err := downloadAttachment(ctx, part.GetFileUrl(), 16*1024*1024)
-	if err != nil {
-		return nil, err
-	}
-	encoded := base64.StdEncoding.EncodeToString(data)
-	if strings.HasPrefix(contentType, "image/") {
-		return map[string]any{"type": "image", "source": map[string]any{"type": "base64", "media_type": contentType, "data": encoded}}, nil
-	}
-	if contentType == "application/pdf" {
-		return map[string]any{"type": "document", "source": map[string]any{"type": "base64", "media_type": contentType, "data": encoded}}, nil
-	}
-	if strings.HasPrefix(contentType, "text/") {
-		return map[string]any{"type": "text", "text": fmt.Sprintf("附件 %s 内容：\n%s", name, string(data))}, nil
-	}
-	return map[string]any{"type": "text", "text": fmt.Sprintf("附件 %s（%s）已上传，但当前不支持直接解析该文件类型。", name, contentType)}, nil
-}
-
-func downloadAttachment(ctx context.Context, rawURL string, limit int64) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("attachment url is invalid: %w", err)
-	}
-	resp, err := (&http.Client{Timeout: 30 * time.Second}).Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("download attachment: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("download attachment: %s", resp.Status)
-	}
-	if resp.ContentLength > limit {
-		return nil, errors.New("attachment exceeds analysis limit")
-	}
-	buffer := bytes.NewBuffer(make([]byte, 0, minInt64(resp.ContentLength, limit)))
-	if _, err := buffer.ReadFrom(io.LimitReader(resp.Body, limit+1)); err != nil {
-		return nil, err
-	}
-	if int64(buffer.Len()) > limit {
-		return nil, errors.New("attachment exceeds analysis limit")
-	}
-	return buffer.Bytes(), nil
-}
-
-func minInt64(left, right int64) int {
-	if left < 0 || left > right {
-		return int(right)
-	}
-	return int(left)
 }
 
 func formatPromptMarker(kind string, name string, id string) string {

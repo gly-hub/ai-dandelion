@@ -67,5 +67,6 @@ service SystemService {
   rpc CompleteUpload(system_proto.CompleteUploadReq) returns (system_proto.CompleteUploadResp);
   rpc GetUploadPreviewURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
   rpc GetUploadDownloadURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
+  rpc ResolveUploadForAgent(system_proto.ResolveUploadForAgentReq) returns (system_proto.ResolveUploadForAgentResp);
 
 }

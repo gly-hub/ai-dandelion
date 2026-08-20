@@ -27,3 +27,15 @@ message CompleteUploadReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; stri
 message CompleteUploadResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; }
 message GetUploadURLReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; int64 expires_seconds = 2 [(gogoproto.jsontag) = 'expiresSeconds']; string file_name = 3 [(gogoproto.jsontag) = 'fileName']; }
 message GetUploadURLResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; }
+
+// ResolveUploadForAgent is an internal RPC. The caller identity in gRPC metadata
+// must own the completed upload; clients must never supply an arbitrary URL.
+message ResolveUploadForAgentReq { string uuid = 1 [(gogoproto.jsontag) = 'uuid']; }
+message AgentUpload {
+  string uuid = 1 [(gogoproto.jsontag) = 'uuid'];
+  string file_name = 2 [(gogoproto.jsontag) = 'fileName'];
+  string content_type = 3 [(gogoproto.jsontag) = 'contentType'];
+  int64 file_size = 4 [(gogoproto.jsontag) = 'fileSize'];
+  string url = 5 [(gogoproto.jsontag) = 'url'];
+}
+message ResolveUploadForAgentResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; AgentUpload upload = 2 [(gogoproto.jsontag) = 'upload']; }

@@ -95,3 +95,5 @@ agent:
     display: "summarized"
     max_thinking_tokens: 0
   skill_storage_dir: "data/user-skills"
+  # Session-scoped copies of validated chat attachments for the Agent to read.
+  attachment_storage_dir: "data/agent-attachments"
