@@ -11,6 +11,7 @@ import (
 	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
 	"github.com/gly-hub/ai-dandelion/system/internal/dao"
 	"github.com/gly-hub/ai-dandelion/system/internal/model"
+	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
 	uploader_minio "github.com/gly-hub/ai-dandelion/toolbox/uploader-minio"
 	"github.com/gly-hub/ai-dandelion/toolbox/uploader-minio/minio_ext"
 )
@@ -55,6 +56,10 @@ func (l *UploadLogic) Create(ctx context.Context, req *systemproto.CreateUploadR
 	if err := l.ready(); err != nil {
 		return nil, err
 	}
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if req == nil || req.FileSize <= 0 || req.FileSize > minio_ext.MaxMultipartPutObjectSize {
 		return nil, errors.New("file_size is illegal")
 	}
@@ -69,7 +74,7 @@ func (l *UploadLogic) Create(ctx context.Context, req *systemproto.CreateUploadR
 		return nil, err
 	}
 	md5 := strings.ToLower(strings.TrimSpace(req.Md5))
-	if item, findErr := l.dao.FindReusable(ctx, md5); findErr == nil {
+	if item, findErr := l.dao.FindReusable(ctx, userID, md5); findErr == nil {
 		session := uploadSession(item, item.Status == model.UploadStatusCompleted, "")
 		if item.Status == model.UploadStatusCompleted {
 			session.Url, err = l.previewURL(item.UUID, expires)
@@ -90,7 +95,7 @@ func (l *UploadLogic) Create(ctx context.Context, req *systemproto.CreateUploadR
 		return nil, err
 	}
 	now := nowUnixMicro()
-	item := &model.Upload{UUID: created.UUID, UploadID: created.UploadID, MD5: md5, FileName: req.FileName, ContentType: created.ContentType, FileSize: req.FileSize, Mode: created.Mode, PartSize: created.PartSize, TotalParts: created.TotalParts, Status: model.UploadStatusPending, CreatedAt: now, UpdatedAt: now}
+	item := &model.Upload{UUID: created.UUID, UserID: userID, UploadID: created.UploadID, MD5: md5, FileName: req.FileName, ContentType: created.ContentType, FileSize: req.FileSize, Mode: created.Mode, PartSize: created.PartSize, TotalParts: created.TotalParts, Status: model.UploadStatusPending, CreatedAt: now, UpdatedAt: now}
 	if err := l.dao.Create(ctx, item); err != nil {
 		return nil, err
 	}
@@ -103,7 +108,11 @@ func (l *UploadLogic) PartURL(ctx context.Context, req *systemproto.GetUploadPar
 	if req == nil || strings.TrimSpace(req.Uuid) == "" || strings.TrimSpace(req.UploadId) == "" || req.PartNumber < 1 || req.PartNumber > minio_ext.MaxPartsCount || req.FileSize <= 0 || req.FileSize > minio_ext.MinPartSize {
 		return "", errors.New("multipart upload parameters are illegal")
 	}
-	item, err := l.dao.Get(ctx, req.Uuid)
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return "", err
+	}
+	item, err := l.dao.GetOwned(ctx, userID, req.Uuid)
 	if err != nil || item.Status != model.UploadStatusPending || item.UploadID != req.UploadId || req.PartNumber > int32(item.TotalParts) {
 		return "", errors.New("upload session is invalid")
 	}
@@ -120,7 +129,11 @@ func (l *UploadLogic) Complete(ctx context.Context, req *systemproto.CompleteUpl
 	if err != nil {
 		return "", err
 	}
-	item, err := l.dao.Get(ctx, req.Uuid)
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return "", err
+	}
+	item, err := l.dao.GetOwned(ctx, userID, req.Uuid)
 	if err != nil || item.Status != model.UploadStatusPending {
 		return "", errors.New("upload session is invalid")
 	}
@@ -160,7 +173,11 @@ func (l *UploadLogic) objectURL(ctx context.Context, req *systemproto.GetUploadU
 	if req == nil || strings.TrimSpace(req.Uuid) == "" {
 		return "", errors.New("uuid is illegal")
 	}
-	item, err := l.dao.Get(ctx, req.Uuid)
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return "", err
+	}
+	item, err := l.dao.GetOwned(ctx, userID, req.Uuid)
 	if err != nil || item.Status != model.UploadStatusCompleted {
 		return "", errors.New("uploaded file is not completed")
 	}
@@ -176,6 +193,28 @@ func (l *UploadLogic) objectURL(ctx context.Context, req *systemproto.GetUploadU
 		return l.uploader.PresignedDownloadURL(item.UUID, expires, req.FileName)
 	}
 	return l.previewURL(item.UUID, expires)
+}
+
+func (l *UploadLogic) ResolveForAgent(ctx context.Context, req *systemproto.ResolveUploadForAgentReq) (*systemproto.AgentUpload, error) {
+	if err := l.ready(); err != nil {
+		return nil, err
+	}
+	if req == nil || strings.TrimSpace(req.GetUuid()) == "" {
+		return nil, errors.New("uuid is illegal")
+	}
+	userID, err := authctx.RequireUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	item, err := l.dao.GetOwned(ctx, userID, req.GetUuid())
+	if err != nil || item.Status != model.UploadStatusCompleted {
+		return nil, errors.New("uploaded file is not available")
+	}
+	url, err := l.previewURL(item.UUID, uploader_minio.DefaultPresignedPreviewExpireTime)
+	if err != nil {
+		return nil, err
+	}
+	return &systemproto.AgentUpload{Uuid: item.UUID, FileName: item.FileName, ContentType: item.ContentType, FileSize: item.FileSize, Url: url}, nil
 }
 
 func (l *UploadLogic) previewURL(uuid string, expires time.Duration) (string, error) {

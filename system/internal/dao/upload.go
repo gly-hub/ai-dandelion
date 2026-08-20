@@ -11,9 +11,9 @@ type Upload struct{ db *gorm.DB }
 
 func NewUpload(db *gorm.DB) *Upload { return &Upload{db: db} }
 
-func (d *Upload) FindReusable(ctx context.Context, md5 string) (*model.Upload, error) {
+func (d *Upload) FindReusable(ctx context.Context, userID, md5 string) (*model.Upload, error) {
 	var item model.Upload
-	err := d.db.WithContext(ctx).Where("md5 = ?", md5).Order("updated_at DESC").First(&item).Error
+	err := d.db.WithContext(ctx).Where("user_id = ? AND md5 = ?", userID, md5).Order("updated_at DESC").First(&item).Error
 	return &item, err
 }
 func (d *Upload) Create(ctx context.Context, item *model.Upload) error {
@@ -22,6 +22,11 @@ func (d *Upload) Create(ctx context.Context, item *model.Upload) error {
 func (d *Upload) Get(ctx context.Context, uuid string) (*model.Upload, error) {
 	var item model.Upload
 	err := d.db.WithContext(ctx).Where("uuid = ?", uuid).First(&item).Error
+	return &item, err
+}
+func (d *Upload) GetOwned(ctx context.Context, userID, uuid string) (*model.Upload, error) {
+	var item model.Upload
+	err := d.db.WithContext(ctx).Where("uuid = ? AND user_id = ?", uuid, userID).First(&item).Error
 	return &item, err
 }
 func (d *Upload) MarkCompleted(ctx context.Context, uuid string, completedAt int64) error {

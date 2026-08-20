@@ -32,3 +32,8 @@ func (s *SystemService) GetUploadDownloadURL(ctx context.Context, req *systempro
 	out.Url, err = s.uploadLogic.DownloadURL(ctx, req)
 	return
 }
+func (s *SystemService) ResolveUploadForAgent(ctx context.Context, req *systemproto.ResolveUploadForAgentReq) (out *systemproto.ResolveUploadForAgentResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Upload, err = s.uploadLogic.ResolveForAgent(ctx, req)
+	return
+}

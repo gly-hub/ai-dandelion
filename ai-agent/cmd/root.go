@@ -43,9 +43,11 @@ var rootCmd = &cobra.Command{
 			global.ErrChan <- fmt.Errorf("grpc client init failed")
 			return
 		}
-		if err := global.GetApp().GrpcClientManager().RegisterService("func-operation"); err != nil {
-			global.ErrChan <- fmt.Errorf("register func-operation service err: %v", err)
-			return
+		for _, serviceName := range []string{"func-operation", "system"} {
+			if err := global.GetApp().GrpcClientManager().RegisterService(serviceName); err != nil {
+				global.ErrChan <- fmt.Errorf("register %s service err: %v", serviceName, err)
+				return
+			}
 		}
 
 		err := global.GetApp().GrpcServer().RegisterService(index.RegisterHandler)

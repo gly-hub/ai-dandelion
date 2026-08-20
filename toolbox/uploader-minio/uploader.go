@@ -115,10 +115,7 @@ func (u *MinioUploader) NewMultipart(totalChunkCounts int, fileSize int64, fileN
 	if err != nil {
 		return
 	}
-	postfix := path.Ext(fileName)
-	if contentType == "" {
-		contentType = u.getContentType(postfix)
-	}
+	contentType = u.getContentType(path.Ext(fileName))
 
 	uploadID, err = u.newMultiPartUpload(uuid, contentType)
 	if err != nil {
@@ -140,9 +137,7 @@ func (u *MinioUploader) CreateUpload(fileSize int64, fileName, contentType strin
 	if expires <= 0 {
 		expires = DefaultPresignedUploadExpireTime
 	}
-	if contentType == "" {
-		contentType = u.getContentType(path.Ext(fileName))
-	}
+	contentType = u.getContentType(path.Ext(fileName))
 
 	uuid, err := u.newObjectUUID(fileName)
 	if err != nil {
@@ -177,6 +172,7 @@ func (u *MinioUploader) newObjectUUID(fileName string) (string, error) {
 }
 
 func (u *MinioUploader) getContentType(postfix string) (contentType string) {
+	postfix = strings.ToLower(postfix)
 	switch postfix {
 	case ".jpg", ".jpeg":
 		contentType = "image/jpeg"
@@ -214,7 +210,7 @@ func (u *MinioUploader) getContentType(postfix string) (contentType string) {
 		contentType = "video/x-flv"
 	case ".mkv":
 		contentType = "video/x-matroska"
-	case ".ts":
+	case ".mts", ".m2ts":
 		contentType = "video/mp2t"
 	case ".3gp":
 		contentType = "video/3gpp"
@@ -239,6 +235,26 @@ func (u *MinioUploader) getContentType(postfix string) (contentType string) {
 	case ".pptx":
 		contentType = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 	case ".txt":
+		contentType = "text/plain"
+	case ".md", ".mdx":
+		contentType = "text/markdown"
+	case ".go":
+		contentType = "text/x-go"
+	case ".js", ".mjs", ".cjs", ".jsx":
+		contentType = "text/javascript"
+	case ".ts", ".tsx":
+		contentType = "text/typescript"
+	case ".py":
+		contentType = "text/x-python"
+	case ".java", ".c", ".cc", ".cpp", ".h", ".hpp", ".cs", ".rs", ".php", ".rb", ".sh", ".sql", ".css", ".vue", ".svelte":
+		contentType = "text/plain"
+	case ".csv":
+		contentType = "text/csv"
+	case ".json":
+		contentType = "application/json"
+	case ".yaml", ".yml":
+		contentType = "application/x-yaml"
+	case ".toml", ".ini", ".env":
 		contentType = "text/plain"
 	case ".html":
 		contentType = "text/html"

@@ -9,6 +9,7 @@ AGENTS.md
 /func-operation/config/configs_local.yaml
 /func-operation/generated_apps/
 
+ai-agent/data/
 /data/*
 !/data/user-skills/
 /data/user-skills/*
