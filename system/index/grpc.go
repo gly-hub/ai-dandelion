@@ -2,6 +2,7 @@ package index
 
 import (
 	"context"
+	"time"
 
 	systemproto "github.com/gly-hub/ai-dandelion/proto/system"
 	"github.com/gly-hub/ai-dandelion/system/boot"
@@ -42,13 +43,26 @@ func RegisterHandler(s *rpc.Server) {
 		}
 	}
 	authConfig := global.GetConfig().AuthConfig
+	redisClient, redisErr := global.GetApp().RedisManager().GetRedisClient("ai-dandelion")
+	if redisErr != nil || redisClient == nil {
+		panic("redis is required for auth token storage")
+	}
+	authTokenStore := dao.NewAuthTokenStore(redisClient)
 	operationLogLogic := logic.NewOperationLogLogic(operationLogDao)
 	var notificationBus eventbus.Bus
 	if redisClient, redisErr := global.GetApp().RedisManager().GetRedisClient("ai-dandelion"); redisErr == nil && redisClient != nil {
 		notificationBus, _ = eventbus.NewRedisStreams(redisClient)
 	}
 	notificationLogic := logic.NewNotificationLogic(notificationDao, userDao, notificationBus)
-	userLogic := logic.NewUserLogic(userDao, roleDao, authConfig.TokenSecret, authctx.ParseTTL(authConfig.TokenTTL), operationLogLogic)
+	userLogic := logic.NewUserLogicWithTokenStore(
+		userDao,
+		roleDao,
+		authTokenStore,
+		authConfig.AccessTokenSecret,
+		authctx.ParseTTLWithDefault(authConfig.AccessTokenTTL, 4*time.Hour),
+		authctx.ParseTTLWithDefault(authConfig.RefreshTokenTTL, 7*24*time.Hour),
+		operationLogLogic,
+	)
 	menuLogic := logic.NewMenuLogic(menuDao, roleDao, operationLogLogic)
 	roleLogic := logic.NewRoleLogic(roleDao, menuDao, operationLogLogic)
 	agentModelLogic := logic.NewAgentModelLogic(agentModelDao)

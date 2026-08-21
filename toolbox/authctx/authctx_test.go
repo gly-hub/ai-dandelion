@@ -2,6 +2,7 @@ package authctx
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +14,9 @@ func TestSignAndVerifyToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("sign token: %v", err)
 	}
+	if got := len(strings.Split(token, ".")); got != 3 {
+		t.Fatalf("JWT segment count = %d, want 3", got)
+	}
 	user, err := VerifyToken("secret", token)
 	if err != nil {
 		t.Fatalf("verify token: %v", err)
@@ -22,6 +26,20 @@ func TestSignAndVerifyToken(t *testing.T) {
 	}
 	if _, err := VerifyToken("other", token); err == nil {
 		t.Fatal("expected invalid token with wrong secret")
+	}
+}
+
+func TestSignAndVerifyAccessTokenIncludesSessionAndJTI(t *testing.T) {
+	token, tokenID, err := SignAccessToken("secret", User{ID: "u1", Username: "admin"}, "session-1", time.Hour)
+	if err != nil {
+		t.Fatalf("sign access token: %v", err)
+	}
+	claims, err := VerifyAccessToken("secret", token)
+	if err != nil {
+		t.Fatalf("verify access token: %v", err)
+	}
+	if claims.ID != tokenID || claims.SessionID != "session-1" || claims.TokenType != "access" {
+		t.Fatalf("unexpected claims: %#v", claims)
 	}
 }
 

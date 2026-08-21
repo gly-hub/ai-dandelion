@@ -65,7 +65,7 @@ cp system/config/configs_example.yaml system/config/configs_local.yaml
 cp inner-gateway/config/configs_example.yaml inner-gateway/config/configs_local.yaml
 ```
 
-根据本机环境修改复制后的数据库路径、基础设施地址、允许的前端来源和凭据。`system` 与 `inner-gateway` 的 JWT 签名密钥必须完全一致。
+根据本机环境修改复制后的数据库路径、基础设施地址、允许的前端来源和凭据。access JWT 由 `system.auth.access_token_secret` 签发，`inner-gateway` 将其校验委托给 `system`。
 
 ### 2. 启动后端服务
 

@@ -14,6 +14,8 @@ import "upload.proto";
 
 service SystemService {
   rpc Login(system_proto.LoginReq) returns (system_proto.LoginResp);
+  rpc RefreshToken(system_proto.RefreshTokenReq) returns (system_proto.RefreshTokenResp);
+  rpc Logout(system_proto.LogoutReq) returns (system_proto.LogoutResp);
   rpc ValidateToken(system_proto.ValidateTokenReq) returns (system_proto.ValidateTokenResp);
 
   rpc ListUsers(system_proto.ListUsersReq) returns (system_proto.ListUsersResp);

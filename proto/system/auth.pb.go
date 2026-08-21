@@ -80,8 +80,13 @@ type LoginResp struct {
 	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
 	User       *User              `protobuf:"bytes,2,opt,name=user,proto3" json:"user"`
 	Roles      []*Role            `protobuf:"bytes,3,rep,name=roles,proto3" json:"roles"`
-	Token      string             `protobuf:"bytes,4,opt,name=token,proto3" json:"token"`
-	ExpiresIn  int64              `protobuf:"varint,5,opt,name=expires_in,json=expiresIn,proto3" json:"expiresIn"`
+	// Deprecated compatibility aliases. New clients should use access_token and access_expires_in.
+	Token            string `protobuf:"bytes,4,opt,name=token,proto3" json:"token"`
+	ExpiresIn        int64  `protobuf:"varint,5,opt,name=expires_in,json=expiresIn,proto3" json:"expiresIn"`
+	AccessToken      string `protobuf:"bytes,6,opt,name=access_token,json=accessToken,proto3" json:"accessToken"`
+	RefreshToken     string `protobuf:"bytes,7,opt,name=refresh_token,json=refreshToken,proto3" json:"refreshToken"`
+	AccessExpiresIn  int64  `protobuf:"varint,8,opt,name=access_expires_in,json=accessExpiresIn,proto3" json:"accessExpiresIn"`
+	RefreshExpiresIn int64  `protobuf:"varint,9,opt,name=refresh_expires_in,json=refreshExpiresIn,proto3" json:"refreshExpiresIn"`
 }
 
 func (m *LoginResp) Reset()         { *m = LoginResp{} }
@@ -152,6 +157,258 @@ func (m *LoginResp) GetExpiresIn() int64 {
 	return 0
 }
 
+func (m *LoginResp) GetAccessToken() string {
+	if m != nil {
+		return m.AccessToken
+	}
+	return ""
+}
+
+func (m *LoginResp) GetRefreshToken() string {
+	if m != nil {
+		return m.RefreshToken
+	}
+	return ""
+}
+
+func (m *LoginResp) GetAccessExpiresIn() int64 {
+	if m != nil {
+		return m.AccessExpiresIn
+	}
+	return 0
+}
+
+func (m *LoginResp) GetRefreshExpiresIn() int64 {
+	if m != nil {
+		return m.RefreshExpiresIn
+	}
+	return 0
+}
+
+type RefreshTokenReq struct {
+	RefreshToken string `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refreshToken"`
+}
+
+func (m *RefreshTokenReq) Reset()         { *m = RefreshTokenReq{} }
+func (m *RefreshTokenReq) String() string { return proto.CompactTextString(m) }
+func (*RefreshTokenReq) ProtoMessage()    {}
+func (*RefreshTokenReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8bbd6f3875b0e874, []int{2}
+}
+func (m *RefreshTokenReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RefreshTokenReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RefreshTokenReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RefreshTokenReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RefreshTokenReq.Merge(m, src)
+}
+func (m *RefreshTokenReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *RefreshTokenReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_RefreshTokenReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RefreshTokenReq proto.InternalMessageInfo
+
+func (m *RefreshTokenReq) GetRefreshToken() string {
+	if m != nil {
+		return m.RefreshToken
+	}
+	return ""
+}
+
+type RefreshTokenResp struct {
+	CommonResp       *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
+	User             *User              `protobuf:"bytes,2,opt,name=user,proto3" json:"user"`
+	Roles            []*Role            `protobuf:"bytes,3,rep,name=roles,proto3" json:"roles"`
+	AccessToken      string             `protobuf:"bytes,4,opt,name=access_token,json=accessToken,proto3" json:"accessToken"`
+	RefreshToken     string             `protobuf:"bytes,5,opt,name=refresh_token,json=refreshToken,proto3" json:"refreshToken"`
+	AccessExpiresIn  int64              `protobuf:"varint,6,opt,name=access_expires_in,json=accessExpiresIn,proto3" json:"accessExpiresIn"`
+	RefreshExpiresIn int64              `protobuf:"varint,7,opt,name=refresh_expires_in,json=refreshExpiresIn,proto3" json:"refreshExpiresIn"`
+}
+
+func (m *RefreshTokenResp) Reset()         { *m = RefreshTokenResp{} }
+func (m *RefreshTokenResp) String() string { return proto.CompactTextString(m) }
+func (*RefreshTokenResp) ProtoMessage()    {}
+func (*RefreshTokenResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8bbd6f3875b0e874, []int{3}
+}
+func (m *RefreshTokenResp) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RefreshTokenResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RefreshTokenResp.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RefreshTokenResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RefreshTokenResp.Merge(m, src)
+}
+func (m *RefreshTokenResp) XXX_Size() int {
+	return m.Size()
+}
+func (m *RefreshTokenResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_RefreshTokenResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RefreshTokenResp proto.InternalMessageInfo
+
+func (m *RefreshTokenResp) GetCommonResp() *grpcep.CommonResp {
+	if m != nil {
+		return m.CommonResp
+	}
+	return nil
+}
+
+func (m *RefreshTokenResp) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+func (m *RefreshTokenResp) GetRoles() []*Role {
+	if m != nil {
+		return m.Roles
+	}
+	return nil
+}
+
+func (m *RefreshTokenResp) GetAccessToken() string {
+	if m != nil {
+		return m.AccessToken
+	}
+	return ""
+}
+
+func (m *RefreshTokenResp) GetRefreshToken() string {
+	if m != nil {
+		return m.RefreshToken
+	}
+	return ""
+}
+
+func (m *RefreshTokenResp) GetAccessExpiresIn() int64 {
+	if m != nil {
+		return m.AccessExpiresIn
+	}
+	return 0
+}
+
+func (m *RefreshTokenResp) GetRefreshExpiresIn() int64 {
+	if m != nil {
+		return m.RefreshExpiresIn
+	}
+	return 0
+}
+
+type LogoutReq struct {
+	RefreshToken string `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refreshToken"`
+}
+
+func (m *LogoutReq) Reset()         { *m = LogoutReq{} }
+func (m *LogoutReq) String() string { return proto.CompactTextString(m) }
+func (*LogoutReq) ProtoMessage()    {}
+func (*LogoutReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8bbd6f3875b0e874, []int{4}
+}
+func (m *LogoutReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LogoutReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LogoutReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LogoutReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogoutReq.Merge(m, src)
+}
+func (m *LogoutReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *LogoutReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogoutReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LogoutReq proto.InternalMessageInfo
+
+func (m *LogoutReq) GetRefreshToken() string {
+	if m != nil {
+		return m.RefreshToken
+	}
+	return ""
+}
+
+type LogoutResp struct {
+	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
+}
+
+func (m *LogoutResp) Reset()         { *m = LogoutResp{} }
+func (m *LogoutResp) String() string { return proto.CompactTextString(m) }
+func (*LogoutResp) ProtoMessage()    {}
+func (*LogoutResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8bbd6f3875b0e874, []int{5}
+}
+func (m *LogoutResp) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LogoutResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LogoutResp.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LogoutResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LogoutResp.Merge(m, src)
+}
+func (m *LogoutResp) XXX_Size() int {
+	return m.Size()
+}
+func (m *LogoutResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_LogoutResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LogoutResp proto.InternalMessageInfo
+
+func (m *LogoutResp) GetCommonResp() *grpcep.CommonResp {
+	if m != nil {
+		return m.CommonResp
+	}
+	return nil
+}
+
 type ValidateTokenReq struct {
 	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token"`
 }
@@ -160,7 +417,7 @@ func (m *ValidateTokenReq) Reset()         { *m = ValidateTokenReq{} }
 func (m *ValidateTokenReq) String() string { return proto.CompactTextString(m) }
 func (*ValidateTokenReq) ProtoMessage()    {}
 func (*ValidateTokenReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8bbd6f3875b0e874, []int{2}
+	return fileDescriptor_8bbd6f3875b0e874, []int{6}
 }
 func (m *ValidateTokenReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -206,7 +463,7 @@ func (m *ValidateTokenResp) Reset()         { *m = ValidateTokenResp{} }
 func (m *ValidateTokenResp) String() string { return proto.CompactTextString(m) }
 func (*ValidateTokenResp) ProtoMessage()    {}
 func (*ValidateTokenResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8bbd6f3875b0e874, []int{3}
+	return fileDescriptor_8bbd6f3875b0e874, []int{7}
 }
 func (m *ValidateTokenResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -259,6 +516,10 @@ func (m *ValidateTokenResp) GetRoles() []*Role {
 func init() {
 	proto.RegisterType((*LoginReq)(nil), "system_proto.LoginReq")
 	proto.RegisterType((*LoginResp)(nil), "system_proto.LoginResp")
+	proto.RegisterType((*RefreshTokenReq)(nil), "system_proto.RefreshTokenReq")
+	proto.RegisterType((*RefreshTokenResp)(nil), "system_proto.RefreshTokenResp")
+	proto.RegisterType((*LogoutReq)(nil), "system_proto.LogoutReq")
+	proto.RegisterType((*LogoutResp)(nil), "system_proto.LogoutResp")
 	proto.RegisterType((*ValidateTokenReq)(nil), "system_proto.ValidateTokenReq")
 	proto.RegisterType((*ValidateTokenResp)(nil), "system_proto.ValidateTokenResp")
 }
@@ -266,32 +527,41 @@ func init() {
 func init() { proto.RegisterFile("auth.proto", fileDescriptor_8bbd6f3875b0e874) }
 
 var fileDescriptor_8bbd6f3875b0e874 = []byte{
-	// 399 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x90, 0xbf, 0xae, 0xd3, 0x30,
-	0x14, 0xc6, 0xeb, 0xfe, 0x41, 0x8d, 0x5b, 0x04, 0x78, 0x8a, 0x3a, 0x24, 0x55, 0x58, 0x3a, 0xd0,
-	0x04, 0xb5, 0x23, 0x5b, 0x60, 0x41, 0x62, 0xb2, 0x80, 0x81, 0x81, 0x2a, 0x7f, 0x0e, 0xa9, 0xd5,
-	0xc4, 0x4e, 0xed, 0x44, 0xc0, 0x13, 0xb0, 0xf2, 0x48, 0x8c, 0x8c, 0x1d, 0x99, 0x22, 0xd4, 0x6e,
-	0x79, 0x0a, 0x14, 0xa7, 0x4d, 0x2b, 0xee, 0x7d, 0x81, 0xbb, 0xd8, 0xdf, 0x39, 0xfe, 0x7d, 0xe7,
-	0xb3, 0x8d, 0x71, 0x50, 0x16, 0x5b, 0x37, 0x97, 0xa2, 0x10, 0x64, 0xaa, 0xbe, 0xab, 0x02, 0xb2,
-	0x8d, 0xae, 0x66, 0xcb, 0x84, 0x15, 0xdb, 0x32, 0x74, 0x23, 0x91, 0x79, 0x89, 0x48, 0x84, 0xa7,
-	0xdb, 0x61, 0xf9, 0x45, 0x57, 0xba, 0xd0, 0xaa, 0x35, 0xcf, 0x56, 0x37, 0x78, 0x01, 0x41, 0xb6,
-	0x8c, 0x03, 0x1e, 0x43, 0xca, 0x04, 0xf7, 0xf6, 0x25, 0x8b, 0x76, 0x89, 0xf0, 0x12, 0x99, 0x47,
-	0x90, 0x7b, 0x29, 0x0b, 0xcf, 0x1e, 0x5c, 0x2a, 0x90, 0x17, 0x2d, 0x45, 0x0a, 0xad, 0x76, 0x3e,
-	0xe3, 0xf1, 0x3b, 0x91, 0x30, 0x4e, 0x61, 0x4f, 0x16, 0x78, 0xdc, 0x50, 0x3c, 0xc8, 0xc0, 0x44,
-	0x73, 0xb4, 0x30, 0xfc, 0x69, 0x5d, 0xd9, 0x5d, 0x8f, 0x76, 0xaa, 0x21, 0xf3, 0x40, 0xa9, 0xaf,
-	0x42, 0xc6, 0x66, 0xff, 0x4a, 0x5e, 0x7a, 0xb4, 0x53, 0xce, 0x8f, 0x3e, 0x36, 0xce, 0x01, 0x2a,
-	0x27, 0x6f, 0xf0, 0x24, 0x12, 0x59, 0x26, 0xf8, 0x46, 0x82, 0xca, 0x75, 0xc8, 0x64, 0x45, 0xdc,
-	0xf6, 0xb6, 0xee, 0x6b, 0x7d, 0xd4, 0x80, 0xfe, 0x93, 0xba, 0xb2, 0x6f, 0x51, 0x8a, 0xa3, 0xee,
-	0x90, 0xbc, 0xc4, 0xc3, 0xe6, 0x26, 0x3a, 0xb9, 0xb1, 0xdf, 0xfe, 0xa5, 0xfb, 0x41, 0x81, 0xf4,
-	0xc7, 0x75, 0x65, 0x6b, 0x86, 0xea, 0x95, 0xac, 0xf1, 0xa8, 0x79, 0xb3, 0x32, 0x07, 0xf3, 0xc1,
-	0x5d, 0x0b, 0x15, 0x29, 0xf8, 0x46, 0x5d, 0xd9, 0x2d, 0x44, 0xdb, 0x8d, 0xd8, 0x78, 0x54, 0x88,
-	0x1d, 0x70, 0x73, 0xa8, 0x5f, 0xa8, 0x01, 0xdd, 0xa0, 0xed, 0x46, 0x5e, 0x60, 0x0c, 0xdf, 0x72,
-	0x26, 0x41, 0x6d, 0x18, 0x37, 0x47, 0x73, 0xb4, 0x18, 0xf8, 0x8f, 0xeb, 0xca, 0x36, 0xce, 0xdd,
-	0xb7, 0x9c, 0x5e, 0xa5, 0xb3, 0xc6, 0x4f, 0x3f, 0x06, 0x29, 0x8b, 0x83, 0x02, 0xde, 0xeb, 0x29,
-	0xb0, 0xbf, 0x46, 0xa0, 0xfb, 0x23, 0x9c, 0x5f, 0x08, 0x3f, 0xfb, 0xcf, 0xf5, 0xc0, 0xbe, 0xd1,
-	0x7f, 0xfe, 0xfb, 0x68, 0xa1, 0xc3, 0xd1, 0x42, 0x7f, 0x8f, 0x16, 0xfa, 0x79, 0xb2, 0x7a, 0x87,
-	0x93, 0xd5, 0xfb, 0x73, 0xb2, 0x7a, 0x9f, 0x0c, 0xd7, 0x7b, 0xd5, 0x4e, 0x08, 0x1f, 0xe9, 0x11,
-	0xeb, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xf5, 0x29, 0x87, 0x50, 0x24, 0x03, 0x00, 0x00,
+	// 542 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x53, 0x3f, 0x6f, 0xd3, 0x50,
+	0x10, 0x8f, 0xc9, 0x9f, 0xc6, 0xd7, 0x54, 0x49, 0x1f, 0x0c, 0x51, 0x07, 0x3b, 0x32, 0x4b, 0x24,
+	0xa8, 0x8d, 0x1a, 0x31, 0x31, 0x20, 0x19, 0x90, 0x40, 0x62, 0x7a, 0x02, 0x06, 0x06, 0x22, 0xc7,
+	0x7d, 0x75, 0xac, 0x26, 0x7e, 0x8e, 0x9f, 0x2d, 0xe8, 0xb7, 0xe0, 0x9b, 0xf0, 0x15, 0x18, 0x19,
+	0x3b, 0x32, 0x59, 0x28, 0xd9, 0xfc, 0x05, 0x58, 0x91, 0xef, 0x39, 0x8e, 0x9b, 0x30, 0x40, 0xdb,
+	0xa5, 0x8b, 0xdf, 0xdd, 0xef, 0x7e, 0xf7, 0xbb, 0x3b, 0xdf, 0x7b, 0x00, 0x4e, 0x12, 0x4f, 0xcd,
+	0x30, 0xe2, 0x31, 0x27, 0x1d, 0x71, 0x21, 0x62, 0x36, 0x1f, 0xa3, 0x77, 0x74, 0xec, 0xf9, 0xf1,
+	0x34, 0x99, 0x98, 0x2e, 0x9f, 0x5b, 0x1e, 0xf7, 0xb8, 0x85, 0xf0, 0x24, 0x39, 0x43, 0x0f, 0x1d,
+	0xb4, 0x64, 0xf2, 0xd1, 0xa3, 0x2a, 0x7d, 0x76, 0x71, 0x3c, 0x4d, 0x26, 0xd6, 0x22, 0xf1, 0xdd,
+	0x73, 0x8f, 0x5b, 0x5e, 0x14, 0xba, 0x2c, 0xb4, 0x66, 0xfe, 0xa4, 0x20, 0x43, 0x22, 0x58, 0xb4,
+	0xb6, 0x23, 0x3e, 0x63, 0xd2, 0x36, 0x3e, 0x41, 0xfb, 0x2d, 0xf7, 0xfc, 0x80, 0xb2, 0x05, 0x19,
+	0x42, 0x3b, 0x67, 0x05, 0xce, 0x9c, 0xf5, 0x95, 0x81, 0x32, 0x54, 0xed, 0x4e, 0x96, 0xea, 0x25,
+	0x46, 0x4b, 0x2b, 0x67, 0x86, 0x8e, 0x10, 0x9f, 0x79, 0x74, 0xda, 0xbf, 0xb7, 0x61, 0xae, 0x31,
+	0x5a, 0x5a, 0xc6, 0xef, 0x3a, 0xa8, 0x45, 0x01, 0x11, 0x92, 0x97, 0xb0, 0xef, 0xf2, 0xf9, 0x9c,
+	0x07, 0xe3, 0x88, 0x89, 0x10, 0x8b, 0xec, 0x9f, 0x10, 0x53, 0x76, 0x6b, 0xbe, 0xc0, 0x50, 0x4e,
+	0xb4, 0xbb, 0x59, 0xaa, 0x57, 0xa9, 0x14, 0xdc, 0x32, 0x48, 0x9e, 0x40, 0x23, 0xef, 0x04, 0x2b,
+	0xe7, 0xe9, 0xd5, 0x9f, 0x68, 0xbe, 0x17, 0x2c, 0xb2, 0xdb, 0x59, 0xaa, 0x23, 0x87, 0xe2, 0x97,
+	0x8c, 0xa0, 0x99, 0xcf, 0x2c, 0xfa, 0xf5, 0x41, 0x7d, 0x37, 0x85, 0xf2, 0x19, 0xb3, 0xd5, 0x2c,
+	0xd5, 0x25, 0x89, 0xca, 0x83, 0xe8, 0xd0, 0x8c, 0xf9, 0x39, 0x0b, 0xfa, 0x0d, 0x9c, 0x10, 0x09,
+	0x08, 0x50, 0x79, 0x90, 0xc7, 0x00, 0xec, 0x4b, 0xe8, 0x47, 0x4c, 0x8c, 0xfd, 0xa0, 0xdf, 0x1c,
+	0x28, 0xc3, 0xba, 0x7d, 0x90, 0xa5, 0xba, 0x5a, 0xa0, 0x6f, 0x02, 0xba, 0x31, 0xc9, 0x09, 0x74,
+	0x1c, 0xd7, 0x65, 0x42, 0x8c, 0xa5, 0x6a, 0x0b, 0x55, 0x71, 0x50, 0x89, 0xbf, 0x43, 0xed, 0xaa,
+	0x43, 0x9e, 0xc2, 0x41, 0xc4, 0xce, 0x22, 0x26, 0xa6, 0x45, 0xd2, 0x1e, 0x26, 0xf5, 0xb2, 0x54,
+	0xef, 0x14, 0x01, 0x99, 0x75, 0xc5, 0x23, 0xcf, 0xe1, 0xb0, 0x28, 0x55, 0xe9, 0xaf, 0x8d, 0xfd,
+	0xdd, 0xcf, 0x52, 0xbd, 0x2b, 0x83, 0xaf, 0xca, 0x2e, 0xb7, 0x01, 0x62, 0x03, 0x59, 0xd7, 0xad,
+	0x28, 0xa8, 0xa8, 0xf0, 0x20, 0x4b, 0xf5, 0x5e, 0x11, 0xdd, 0x48, 0xec, 0x20, 0xc6, 0x6b, 0xe8,
+	0xd2, 0x6a, 0x8b, 0x6c, 0xb1, 0x3b, 0x8e, 0xf2, 0x2f, 0xe3, 0x18, 0xdf, 0xea, 0xd0, 0xbb, 0x2a,
+	0x75, 0xd7, 0xae, 0xd2, 0xf6, 0xee, 0x1b, 0xd7, 0xd9, 0x7d, 0xf3, 0xfa, 0xbb, 0x6f, 0xdd, 0x78,
+	0xf7, 0x7b, 0xff, 0xb5, 0x7b, 0x1b, 0x1f, 0x3d, 0x4f, 0xe2, 0x1b, 0x6c, 0x9d, 0x02, 0xac, 0x35,
+	0x6e, 0x6b, 0xdd, 0xc6, 0x08, 0x7a, 0x1f, 0x9c, 0x99, 0x7f, 0xea, 0xc4, 0xac, 0xbc, 0x94, 0xe5,
+	0x33, 0x57, 0xfe, 0xfe, 0xcc, 0x8d, 0xef, 0x0a, 0x1c, 0x6e, 0x65, 0xdd, 0xb1, 0xfb, 0x67, 0x3f,
+	0xfc, 0xb1, 0xd4, 0x94, 0xcb, 0xa5, 0xa6, 0xfc, 0x5a, 0x6a, 0xca, 0xd7, 0x95, 0x56, 0xbb, 0x5c,
+	0x69, 0xb5, 0x9f, 0x2b, 0xad, 0xf6, 0x51, 0x35, 0xad, 0x67, 0x52, 0x61, 0xd2, 0x42, 0x89, 0xd1,
+	0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x43, 0xba, 0x8a, 0xc1, 0xa1, 0x06, 0x00, 0x00,
 }
 
 func (m *LoginReq) Marshal() (dAtA []byte, err error) {
@@ -351,6 +621,30 @@ func (m *LoginResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.RefreshExpiresIn != 0 {
+		i = encodeVarintAuth(dAtA, i, uint64(m.RefreshExpiresIn))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.AccessExpiresIn != 0 {
+		i = encodeVarintAuth(dAtA, i, uint64(m.AccessExpiresIn))
+		i--
+		dAtA[i] = 0x40
+	}
+	if len(m.RefreshToken) > 0 {
+		i -= len(m.RefreshToken)
+		copy(dAtA[i:], m.RefreshToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.RefreshToken)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.AccessToken) > 0 {
+		i -= len(m.AccessToken)
+		copy(dAtA[i:], m.AccessToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.AccessToken)))
+		i--
+		dAtA[i] = 0x32
+	}
 	if m.ExpiresIn != 0 {
 		i = encodeVarintAuth(dAtA, i, uint64(m.ExpiresIn))
 		i--
@@ -389,6 +683,186 @@ func (m *LoginResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
+	if m.CommonResp != nil {
+		{
+			size, err := m.CommonResp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAuth(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RefreshTokenReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RefreshTokenReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RefreshTokenReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RefreshToken) > 0 {
+		i -= len(m.RefreshToken)
+		copy(dAtA[i:], m.RefreshToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.RefreshToken)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RefreshTokenResp) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RefreshTokenResp) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RefreshTokenResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.RefreshExpiresIn != 0 {
+		i = encodeVarintAuth(dAtA, i, uint64(m.RefreshExpiresIn))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.AccessExpiresIn != 0 {
+		i = encodeVarintAuth(dAtA, i, uint64(m.AccessExpiresIn))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.RefreshToken) > 0 {
+		i -= len(m.RefreshToken)
+		copy(dAtA[i:], m.RefreshToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.RefreshToken)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.AccessToken) > 0 {
+		i -= len(m.AccessToken)
+		copy(dAtA[i:], m.AccessToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.AccessToken)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Roles) > 0 {
+		for iNdEx := len(m.Roles) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Roles[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintAuth(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.User != nil {
+		{
+			size, err := m.User.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAuth(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.CommonResp != nil {
+		{
+			size, err := m.CommonResp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAuth(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LogoutReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LogoutReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LogoutReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RefreshToken) > 0 {
+		i -= len(m.RefreshToken)
+		copy(dAtA[i:], m.RefreshToken)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.RefreshToken)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *LogoutResp) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LogoutResp) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LogoutResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
 	if m.CommonResp != nil {
 		{
 			size, err := m.CommonResp.MarshalToSizedBuffer(dAtA[:i])
@@ -549,6 +1023,96 @@ func (m *LoginResp) Size() (n int) {
 	}
 	if m.ExpiresIn != 0 {
 		n += 1 + sovAuth(uint64(m.ExpiresIn))
+	}
+	l = len(m.AccessToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	l = len(m.RefreshToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	if m.AccessExpiresIn != 0 {
+		n += 1 + sovAuth(uint64(m.AccessExpiresIn))
+	}
+	if m.RefreshExpiresIn != 0 {
+		n += 1 + sovAuth(uint64(m.RefreshExpiresIn))
+	}
+	return n
+}
+
+func (m *RefreshTokenReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.RefreshToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	return n
+}
+
+func (m *RefreshTokenResp) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.CommonResp != nil {
+		l = m.CommonResp.Size()
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	if m.User != nil {
+		l = m.User.Size()
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	if len(m.Roles) > 0 {
+		for _, e := range m.Roles {
+			l = e.Size()
+			n += 1 + l + sovAuth(uint64(l))
+		}
+	}
+	l = len(m.AccessToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	l = len(m.RefreshToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	if m.AccessExpiresIn != 0 {
+		n += 1 + sovAuth(uint64(m.AccessExpiresIn))
+	}
+	if m.RefreshExpiresIn != 0 {
+		n += 1 + sovAuth(uint64(m.RefreshExpiresIn))
+	}
+	return n
+}
+
+func (m *LogoutReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.RefreshToken)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	return n
+}
+
+func (m *LogoutResp) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.CommonResp != nil {
+		l = m.CommonResp.Size()
+		n += 1 + l + sovAuth(uint64(l))
 	}
 	return n
 }
@@ -895,6 +1459,616 @@ func (m *LoginResp) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccessToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AccessToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RefreshToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccessExpiresIn", wireType)
+			}
+			m.AccessExpiresIn = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AccessExpiresIn |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshExpiresIn", wireType)
+			}
+			m.RefreshExpiresIn = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RefreshExpiresIn |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAuth(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RefreshTokenReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAuth
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RefreshTokenReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RefreshTokenReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RefreshToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAuth(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RefreshTokenResp) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAuth
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RefreshTokenResp: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RefreshTokenResp: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CommonResp", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CommonResp == nil {
+				m.CommonResp = &grpcep.CommonResp{}
+			}
+			if err := m.CommonResp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field User", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.User == nil {
+				m.User = &User{}
+			}
+			if err := m.User.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Roles", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Roles = append(m.Roles, &Role{})
+			if err := m.Roles[len(m.Roles)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccessToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AccessToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RefreshToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AccessExpiresIn", wireType)
+			}
+			m.AccessExpiresIn = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AccessExpiresIn |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshExpiresIn", wireType)
+			}
+			m.RefreshExpiresIn = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RefreshExpiresIn |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAuth(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LogoutReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAuth
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogoutReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogoutReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RefreshToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RefreshToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAuth(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LogoutResp) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAuth
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LogoutResp: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LogoutResp: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CommonResp", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CommonResp == nil {
+				m.CommonResp = &grpcep.CommonResp{}
+			}
+			if err := m.CommonResp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipAuth(dAtA[iNdEx:])

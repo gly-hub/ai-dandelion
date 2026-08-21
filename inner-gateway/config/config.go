@@ -20,8 +20,6 @@ type Config struct {
 }
 
 type AuthConfig struct {
-	TokenSecret string `json:"token_secret" yaml:"token_secret"`
-	TokenTTL    string `json:"token_ttl" yaml:"token_ttl"`
 	BridgeToken string `json:"bridge_token" yaml:"bridge_token"`
 }
 

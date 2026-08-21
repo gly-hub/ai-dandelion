@@ -65,7 +65,7 @@ cp system/config/configs_example.yaml system/config/configs_local.yaml
 cp inner-gateway/config/configs_example.yaml inner-gateway/config/configs_local.yaml
 ```
 
-Update the copied files with local database paths, infrastructure endpoints, allowed browser origins, and credentials. The JWT signing secret in `system` and `inner-gateway` must be identical.
+Update the copied files with local database paths, infrastructure endpoints, allowed browser origins, and credentials. `system.auth.access_token_secret` signs access JWTs; `inner-gateway` delegates their validation to `system`.
 
 ### 2. Start backend services
 

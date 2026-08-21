@@ -18,6 +18,8 @@ func RouteHandler(fiberApp *fiber.App) {
 	authRouter := baseRouter.Group("/auth")
 	{
 		authRouter.Post("/login", controller.Login)
+		authRouter.Post("/refresh", controller.RefreshToken)
+		authRouter.Post("/logout", controller.Logout)
 	}
 
 	userRouter := baseRouter.Group("/users")
