@@ -16,8 +16,6 @@ func (s *SystemService) Login(ctx context.Context, req *systemproto.LoginReq) (
 	}
 	out.User = result.User
 	out.Roles = result.Roles
-	out.Token = result.AccessToken
-	out.ExpiresIn = result.AccessExpiresIn
 	out.AccessToken = result.AccessToken
 	out.RefreshToken = result.RefreshToken
 	out.AccessExpiresIn = result.AccessExpiresIn
