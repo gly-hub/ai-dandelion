@@ -66,9 +66,6 @@ mongodb:
       minPoolSize: 5
 
 auth:
-  # Generate independent high-entropy values for every environment.
-  token_secret: "REPLACE_WITH_A_RANDOM_JWT_SIGNING_SECRET"
-  token_ttl: "24h"
   bridge_token: "REPLACE_WITH_A_RANDOM_CHANNEL_BRIDGE_TOKEN"
 
 realtime:

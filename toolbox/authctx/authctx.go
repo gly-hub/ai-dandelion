@@ -2,16 +2,16 @@ package authctx
 
 import (
 	"context"
-	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -21,7 +21,7 @@ const (
 	MetadataRoleIDs  = "x-role-ids"
 )
 
-const defaultTokenTTL = 24 * time.Hour
+const defaultTokenTTL = 4 * time.Hour
 
 var (
 	ErrInvalidToken = errors.New("invalid token")
@@ -38,69 +38,121 @@ type Claims struct {
 	UserID    string   `json:"uid"`
 	Username  string   `json:"un"`
 	RoleIDs   []string `json:"rids,omitempty"`
-	ExpiresAt int64    `json:"exp"`
+	SessionID string   `json:"sid,omitempty"`
+	TokenType string   `json:"typ,omitempty"`
+	jwt.RegisteredClaims
 }
 
 func SignToken(secret string, user User, ttl time.Duration) (string, error) {
+	token, _, err := SignAccessToken(secret, user, "", ttl)
+	return token, err
+}
+
+func SignAccessToken(secret string, user User, sessionID string, ttl time.Duration) (string, string, error) {
 	secret = strings.TrimSpace(secret)
 	if secret == "" {
-		return "", errors.New("auth token secret is required")
+		return "", "", errors.New("auth token secret is required")
 	}
 	user.ID = strings.TrimSpace(user.ID)
 	user.Username = strings.TrimSpace(user.Username)
 	if user.ID == "" {
-		return "", errors.New("user id is required")
+		return "", "", errors.New("user id is required")
 	}
 	if ttl <= 0 {
 		ttl = defaultTokenTTL
 	}
+	tokenID, err := NewOpaqueToken(18)
+	if err != nil {
+		return "", "", err
+	}
+	now := time.Now()
 	claims := Claims{
 		UserID:    user.ID,
 		Username:  user.Username,
 		RoleIDs:   normalizeRoleIDs(user.RoleIDs),
-		ExpiresAt: time.Now().Add(ttl).Unix(),
+		SessionID: strings.TrimSpace(sessionID),
+		TokenType: "access",
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        tokenID,
+			Subject:   user.ID,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
+		},
 	}
-	payload, err := json.Marshal(claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signed, err := token.SignedString([]byte(secret))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	payloadPart := base64.RawURLEncoding.EncodeToString(payload)
-	return payloadPart + "." + sign(payloadPart, secret), nil
+	return signed, tokenID, nil
 }
 
 func VerifyToken(secret string, token string) (User, error) {
+	claims, err := VerifyAccessToken(secret, token)
+	if err != nil {
+		return User{}, err
+	}
+	return userFromClaims(claims)
+}
+
+func VerifyAccessToken(secret string, token string) (*Claims, error) {
 	secret = strings.TrimSpace(secret)
 	if secret == "" {
-		return User{}, errors.New("auth token secret is required")
+		return nil, errors.New("auth token secret is required")
 	}
-	parts := strings.Split(strings.TrimSpace(token), ".")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return User{}, ErrInvalidToken
+	if strings.TrimSpace(token) == "" {
+		return nil, ErrInvalidToken
 	}
-	expected := sign(parts[0], secret)
-	if !hmac.Equal([]byte(expected), []byte(parts[1])) {
-		return User{}, ErrInvalidToken
-	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[0])
+	claims := &Claims{}
+	parsed, err := jwt.ParseWithClaims(token, claims, func(parsed *jwt.Token) (interface{}, error) {
+		if parsed.Method != jwt.SigningMethodHS256 {
+			return nil, ErrInvalidToken
+		}
+		return []byte(secret), nil
+	})
 	if err != nil {
-		return User{}, ErrInvalidToken
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, ErrExpiredToken
+		}
+		return nil, ErrInvalidToken
 	}
-	var claims Claims
-	if err := json.Unmarshal(payload, &claims); err != nil {
-		return User{}, ErrInvalidToken
+	if !parsed.Valid || claims.ExpiresAt == nil || claims.ExpiresAt.Time.IsZero() {
+		return nil, ErrInvalidToken
 	}
-	if claims.ExpiresAt <= 0 || time.Now().Unix() > claims.ExpiresAt {
-		return User{}, ErrExpiredToken
+	if claims.TokenType != "" && claims.TokenType != "access" {
+		return nil, ErrInvalidToken
 	}
-	claims.UserID = strings.TrimSpace(claims.UserID)
-	if claims.UserID == "" {
+	if claims.UserID == "" || claims.ID == "" || (claims.Subject != "" && claims.Subject != claims.UserID) {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+func userFromClaims(claims *Claims) (User, error) {
+	if claims == nil || strings.TrimSpace(claims.UserID) == "" {
 		return User{}, ErrInvalidToken
 	}
 	return User{
-		ID:       claims.UserID,
+		ID:       strings.TrimSpace(claims.UserID),
 		Username: strings.TrimSpace(claims.Username),
 		RoleIDs:  normalizeRoleIDs(claims.RoleIDs),
 	}, nil
+}
+
+func NewOpaqueToken(size int) (string, error) {
+	if size < 32 {
+		size = 32
+	}
+	buf := make([]byte, size)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(buf), nil
+}
+
+func HashToken(token string) string {
+	sum := sha256.Sum256([]byte(strings.TrimSpace(token)))
+	return fmt.Sprintf("%x", sum[:])
 }
 
 func ContextWithUser(ctx context.Context, user User) context.Context {
@@ -154,12 +206,6 @@ func TokenTTLSeconds(ttl time.Duration) int64 {
 	return int64(ttl / time.Second)
 }
 
-func sign(payload string, secret string) string {
-	mac := hmac.New(sha256.New, []byte(secret))
-	_, _ = mac.Write([]byte(payload))
-	return base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
-}
-
 func normalizeRoleIDs(roleIDs []string) []string {
 	out := make([]string, 0, len(roleIDs))
 	seen := make(map[string]struct{}, len(roleIDs))
@@ -207,16 +253,23 @@ func ParseTTLSeconds(raw int64) time.Duration {
 }
 
 func ParseTTL(raw string) time.Duration {
+	return ParseTTLWithDefault(raw, defaultTokenTTL)
+}
+
+func ParseTTLWithDefault(raw string, fallback time.Duration) time.Duration {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return defaultTokenTTL
+		return fallback
 	}
 	if seconds, err := strconv.ParseInt(raw, 10, 64); err == nil {
-		return ParseTTLSeconds(seconds)
+		if seconds <= 0 {
+			return fallback
+		}
+		return time.Duration(seconds) * time.Second
 	}
 	ttl, err := time.ParseDuration(raw)
 	if err != nil || ttl <= 0 {
-		return defaultTokenTTL
+		return fallback
 	}
 	return ttl
 }

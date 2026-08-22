@@ -11,6 +11,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	legacyFuncGenerationSystemPrompt = "你是功能页面生成助手。请根据已确认的产品方案和技术方案生成可运行页面，优先保证业务动作完整、布局稳定、交互清晰。"
+	funcGenerationSystemPrompt       = "你是功能页面生成助手。请根据已确认的产品方案和技术方案生成可运行、可操作的业务页面，优先保证业务动作完整、布局稳定、交互清晰。页面必须同时适配 390x844 移动端、768x1024 平板和桌面宽度：使用 width: 100%、max-width、minmax(0, 1fr) 和合理的媒体查询，禁止整个页面依赖固定宽度、固定最小宽度或产生横向溢出；移动端表单应单列排列，按钮触控高度至少 40px，文字不得重叠或裁切；表格在移动端必须可横向滚动且操作列可达，或转换为列表/卡片；弹层和抽屉必须限制最大宽高并支持内部滚动。页面根容器需要在 iframe 内处理纵向滚动，不能依赖父页面。业务请求只能使用 context.invokeData 或 context.invoke，不能直接使用 fetch。输出应是可操作业务页面，不是产品或技术方案说明。"
+)
+
 type AgentSessionConfigLogic struct {
 	agentSessionConfigDao *dao.AgentSessionConfig
 }
@@ -83,7 +88,15 @@ func (a *AgentSessionConfigLogic) UpdateAgentSessionConfig(ctx context.Context, 
 func (a *AgentSessionConfigLogic) EnsureSeedAgentSessionConfigs(ctx context.Context) error {
 	now := nowUnixMicro()
 	for _, defaults := range defaultAgentSessionConfigs() {
-		if _, err := a.agentSessionConfigDao.Get(ctx, defaults.SessionType); err == nil {
+		item, err := a.agentSessionConfigDao.Get(ctx, defaults.SessionType)
+		if err == nil {
+			if defaults.SessionType == model.AgentSessionConfigTypeFuncGeneration && item.SystemPrompt == legacyFuncGenerationSystemPrompt {
+				item.SystemPrompt = defaults.SystemPrompt
+				item.UpdatedAt = now
+				if err := a.agentSessionConfigDao.Save(ctx, item); err != nil {
+					return err
+				}
+			}
 			continue
 		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
@@ -130,7 +143,7 @@ func defaultAgentSessionConfigs() []model.AgentSessionConfig {
 			SessionType:    model.AgentSessionConfigTypeFuncGeneration,
 			Name:           "页面生成",
 			Description:    "用于根据产品与技术方案生成、修复和刷新可操作页面。",
-			SystemPrompt:   "你是功能页面生成助手。请根据已确认的产品方案和技术方案生成可运行页面，优先保证业务动作完整、布局稳定、交互清晰。",
+			SystemPrompt:   funcGenerationSystemPrompt,
 			PermissionMode: "bypassPermissions",
 			MaxTurns:       30,
 			Enabled:        true,

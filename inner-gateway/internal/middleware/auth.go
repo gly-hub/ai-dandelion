@@ -88,7 +88,7 @@ func isPublicRequest(ctx *fiber.Ctx) bool {
 		return true
 	}
 	path := strings.TrimRight(ctx.Path(), "/")
-	if path == "/system/auth/login" {
+	if path == "/system/auth/login" || path == "/system/auth/refresh" || path == "/system/auth/logout" {
 		return true
 	}
 	if path == "/realtime/ws" {

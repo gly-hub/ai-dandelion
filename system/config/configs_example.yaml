@@ -54,9 +54,9 @@ redis:
       writeTimeout: "3s"
 
 auth:
-  # Must exactly match inner-gateway.auth.token_secret.
-  token_secret: "REPLACE_WITH_THE_SAME_RANDOM_JWT_SIGNING_SECRET"
-  token_ttl: "24h"
+  access_token_secret: "REPLACE_WITH_A_RANDOM_JWT_SIGNING_SECRET"
+  access_token_ttl: "4h"
+  refresh_token_ttl: "168h"
 
 uploader:
   # Leave address or bucket empty to disable object uploads locally.

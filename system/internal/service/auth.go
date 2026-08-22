@@ -10,7 +10,39 @@ import (
 func (s *SystemService) Login(ctx context.Context, req *systemproto.LoginReq) (
 	out *systemproto.LoginResp, err error) {
 	grpcep.InitResponse(&out)
-	out.User, out.Roles, out.Token, out.ExpiresIn, err = s.userLogic.Login(ctx, req)
+	result, loginErr := s.userLogic.Login(ctx, req)
+	if loginErr != nil {
+		return out, loginErr
+	}
+	out.User = result.User
+	out.Roles = result.Roles
+	out.AccessToken = result.AccessToken
+	out.RefreshToken = result.RefreshToken
+	out.AccessExpiresIn = result.AccessExpiresIn
+	out.RefreshExpiresIn = result.RefreshExpiresIn
+	return
+}
+
+func (s *SystemService) RefreshToken(ctx context.Context, req *systemproto.RefreshTokenReq) (
+	out *systemproto.RefreshTokenResp, err error) {
+	grpcep.InitResponse(&out)
+	result, refreshErr := s.userLogic.RefreshToken(ctx, req)
+	if refreshErr != nil {
+		return out, refreshErr
+	}
+	out.User = result.User
+	out.Roles = result.Roles
+	out.AccessToken = result.AccessToken
+	out.RefreshToken = result.RefreshToken
+	out.AccessExpiresIn = result.AccessExpiresIn
+	out.RefreshExpiresIn = result.RefreshExpiresIn
+	return
+}
+
+func (s *SystemService) Logout(ctx context.Context, req *systemproto.LogoutReq) (
+	out *systemproto.LogoutResp, err error) {
+	grpcep.InitResponse(&out)
+	err = s.userLogic.Logout(ctx, req)
 	return
 }
 

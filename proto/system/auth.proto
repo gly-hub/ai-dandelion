@@ -16,8 +16,34 @@ message LoginResp {
   grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
   User user = 2 [(gogoproto.jsontag) = 'user'];
   repeated Role roles = 3 [(gogoproto.jsontag) = 'roles'];
-  string token = 4 [(gogoproto.jsontag) = 'token'];
-  int64 expires_in = 5 [(gogoproto.jsontag) = 'expiresIn'];
+  reserved 4, 5;
+  reserved "token", "expiresIn";
+  string access_token = 6 [(gogoproto.jsontag) = 'accessToken'];
+  string refresh_token = 7 [(gogoproto.jsontag) = 'refreshToken'];
+  int64 access_expires_in = 8 [(gogoproto.jsontag) = 'accessExpiresIn'];
+  int64 refresh_expires_in = 9 [(gogoproto.jsontag) = 'refreshExpiresIn'];
+}
+
+message RefreshTokenReq {
+  string refresh_token = 1 [(gogoproto.jsontag) = 'refreshToken'];
+}
+
+message RefreshTokenResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  User user = 2 [(gogoproto.jsontag) = 'user'];
+  repeated Role roles = 3 [(gogoproto.jsontag) = 'roles'];
+  string access_token = 4 [(gogoproto.jsontag) = 'accessToken'];
+  string refresh_token = 5 [(gogoproto.jsontag) = 'refreshToken'];
+  int64 access_expires_in = 6 [(gogoproto.jsontag) = 'accessExpiresIn'];
+  int64 refresh_expires_in = 7 [(gogoproto.jsontag) = 'refreshExpiresIn'];
+}
+
+message LogoutReq {
+  string refresh_token = 1 [(gogoproto.jsontag) = 'refreshToken'];
+}
+
+message LogoutResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
 }
 
 message ValidateTokenReq {

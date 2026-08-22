@@ -90,3 +90,19 @@ func TestSwaggerUploadIsPublicOnlyForPost(t *testing.T) {
 		t.Fatalf("Swagger upload GET route = %#v, %v", get, err)
 	}
 }
+
+func TestAuthTokenRoutesArePublic(t *testing.T) {
+	app := fiber.New()
+	app.Use(func(ctx *fiber.Ctx) error {
+		if !isPublicRequest(ctx) {
+			return ctx.SendStatus(fiber.StatusUnauthorized)
+		}
+		return ctx.SendStatus(fiber.StatusNoContent)
+	})
+	for _, path := range []string{"/system/auth/refresh", "/system/auth/logout"} {
+		resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, path, nil))
+		if err != nil || resp.StatusCode != fiber.StatusNoContent {
+			t.Fatalf("public auth route %s = %#v, %v", path, resp, err)
+		}
+	}
+}

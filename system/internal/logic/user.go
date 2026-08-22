@@ -22,62 +22,149 @@ var emailPattern = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 type UserLogic struct {
 	userDao           *dao.User
 	roleDao           *dao.Role
+	tokenStore        *dao.AuthTokenStore
 	operationLogLogic *OperationLogLogic
-	tokenSecret       string
-	tokenTTL          time.Duration
+	accessTokenSecret string
+	accessTokenTTL    time.Duration
+	refreshTokenTTL   time.Duration
 }
 
-func NewUserLogic(userDao *dao.User, roleDao *dao.Role, tokenSecret string, tokenTTL time.Duration, operationLogs ...*OperationLogLogic) *UserLogic {
-	logic := &UserLogic{userDao: userDao, roleDao: roleDao, tokenSecret: tokenSecret, tokenTTL: tokenTTL}
+type AuthResult struct {
+	User             *systemproto.User
+	Roles            []*systemproto.Role
+	AccessToken      string
+	RefreshToken     string
+	AccessExpiresIn  int64
+	RefreshExpiresIn int64
+}
+
+func NewUserLogic(userDao *dao.User, roleDao *dao.Role, accessTokenSecret string, accessTokenTTL time.Duration, operationLogs ...*OperationLogLogic) *UserLogic {
+	return newUserLogic(userDao, roleDao, nil, accessTokenSecret, accessTokenTTL, 7*24*time.Hour, operationLogs...)
+}
+
+func NewUserLogicWithTokenStore(userDao *dao.User, roleDao *dao.Role, tokenStore *dao.AuthTokenStore, accessTokenSecret string, accessTokenTTL, refreshTokenTTL time.Duration, operationLogs ...*OperationLogLogic) *UserLogic {
+	return newUserLogic(userDao, roleDao, tokenStore, accessTokenSecret, accessTokenTTL, refreshTokenTTL, operationLogs...)
+}
+
+func newUserLogic(userDao *dao.User, roleDao *dao.Role, tokenStore *dao.AuthTokenStore, accessTokenSecret string, accessTokenTTL, refreshTokenTTL time.Duration, operationLogs ...*OperationLogLogic) *UserLogic {
+	logic := &UserLogic{
+		userDao:           userDao,
+		roleDao:           roleDao,
+		tokenStore:        tokenStore,
+		accessTokenSecret: accessTokenSecret,
+		accessTokenTTL:    accessTokenTTL,
+		refreshTokenTTL:   refreshTokenTTL,
+	}
 	if len(operationLogs) > 0 {
 		logic.operationLogLogic = operationLogs[0]
 	}
 	return logic
 }
 
-func (u *UserLogic) Login(ctx context.Context, req *systemproto.LoginReq) (*systemproto.User, []*systemproto.Role, string, int64, error) {
+func (u *UserLogic) Login(ctx context.Context, req *systemproto.LoginReq) (*AuthResult, error) {
 	username, err := validateUsername(req.GetUsername())
 	if err != nil {
-		return nil, nil, "", 0, err
+		return nil, err
 	}
 	password, err := validatePassword(req.GetPassword(), true)
 	if err != nil {
-		return nil, nil, "", 0, err
+		return nil, err
 	}
 	user, err := u.userDao.GetByUsername(ctx, username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil, "", 0, errors.New("invalid username or password")
+			return nil, errors.New("invalid username or password")
 		}
-		return nil, nil, "", 0, err
+		return nil, err
 	}
 	if user.Status != model.UserStatusEnabled {
-		return nil, nil, "", 0, errors.New("user is disabled")
+		return nil, errors.New("user is disabled")
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return nil, nil, "", 0, errors.New("invalid username or password")
+		return nil, errors.New("invalid username or password")
 	}
 	roles, err := u.listUserRolesProto(ctx, user.ID)
 	if err != nil {
-		return nil, nil, "", 0, err
+		return nil, err
 	}
 	if !hasEnabledRoles(roles) {
-		return nil, nil, "", 0, errors.New("用户未分配角色，请联系管理员")
+		return nil, errors.New("用户未分配角色，请联系管理员")
 	}
-	roleIDs := roleIDsFromProto(roles)
-	token, err := authctx.SignToken(u.tokenSecret, authctx.User{ID: user.ID, Username: user.Username, RoleIDs: roleIDs}, u.tokenTTL)
+	return u.issueNewSessionTokens(ctx, user, roles)
+}
+
+func (u *UserLogic) RefreshToken(ctx context.Context, req *systemproto.RefreshTokenReq) (*AuthResult, error) {
+	if u.tokenStore == nil {
+		return nil, errors.New("auth token store is unavailable")
+	}
+	refreshToken := strings.TrimSpace(req.GetRefreshToken())
+	if refreshToken == "" {
+		return nil, errors.New("refresh token is required")
+	}
+	sessionID, err := u.tokenStore.ConsumeRefreshSessionID(ctx, refreshToken)
 	if err != nil {
-		return nil, nil, "", 0, err
+		return nil, errors.New("invalid or expired refresh token")
 	}
-	return modelUserToProto(user, roleIDs), roles, token, authctx.TokenTTLSeconds(u.tokenTTL), nil
+	session, err := u.tokenStore.GetSession(ctx, sessionID)
+	if err != nil {
+		return nil, errors.New("invalid or expired refresh token")
+	}
+	user, err := u.userDao.Get(ctx, session.UserID)
+	if err != nil {
+		return nil, wrapNotFoundError(err)
+	}
+	if user.Status != model.UserStatusEnabled {
+		return nil, errors.New("user is disabled")
+	}
+	roles, err := u.listUserRolesProto(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !hasEnabledRoles(roles) {
+		return nil, errors.New("用户未分配角色，请联系管理员")
+	}
+	remaining := time.Until(time.Unix(session.ExpiresAt, 0))
+	if remaining <= 0 {
+		return nil, errors.New("invalid or expired refresh token")
+	}
+	return u.issueRotatedTokens(ctx, user, roles, sessionID, remaining)
+}
+
+func (u *UserLogic) Logout(ctx context.Context, req *systemproto.LogoutReq) error {
+	if u.tokenStore == nil {
+		return errors.New("auth token store is unavailable")
+	}
+	refreshToken := strings.TrimSpace(req.GetRefreshToken())
+	if refreshToken == "" {
+		return nil
+	}
+	sessionID, err := u.tokenStore.ConsumeRefreshSessionID(ctx, refreshToken)
+	if err != nil {
+		return nil
+	}
+	return u.tokenStore.RevokeSession(ctx, sessionID)
 }
 
 func (u *UserLogic) ValidateToken(ctx context.Context, req *systemproto.ValidateTokenReq) (*systemproto.User, []*systemproto.Role, error) {
-	tokenUser, err := authctx.VerifyToken(u.tokenSecret, req.GetToken())
+	if u.tokenStore == nil {
+		return nil, nil, errors.New("auth token store is unavailable")
+	}
+	claims, err := authctx.VerifyAccessToken(u.accessTokenSecret, req.GetToken())
 	if err != nil {
 		return nil, nil, err
 	}
-	user, err := u.userDao.Get(ctx, tokenUser.ID)
+	sessionID, err := u.tokenStore.AccessSessionID(ctx, claims.ID)
+	if err != nil {
+		return nil, nil, authctx.ErrInvalidToken
+	}
+	if claims.SessionID == "" || claims.SessionID != sessionID {
+		return nil, nil, authctx.ErrInvalidToken
+	}
+	session, err := u.tokenStore.GetSession(ctx, sessionID)
+	if err != nil {
+		return nil, nil, authctx.ErrExpiredToken
+	}
+	user, err := u.userDao.Get(ctx, session.UserID)
 	if err != nil {
 		return nil, nil, wrapNotFoundError(err)
 	}
@@ -92,6 +179,76 @@ func (u *UserLogic) ValidateToken(ctx context.Context, req *systemproto.Validate
 		return nil, nil, errors.New("用户未分配角色，请联系管理员")
 	}
 	return modelUserToProto(user, roleIDsFromProto(roles)), roles, nil
+}
+
+func (u *UserLogic) issueNewSessionTokens(ctx context.Context, user *model.User, roles []*systemproto.Role) (*AuthResult, error) {
+	if u.tokenStore == nil {
+		return nil, errors.New("auth token store is unavailable")
+	}
+	refreshTTL := u.refreshTokenTTL
+	if refreshTTL <= 0 {
+		return nil, errors.New("refresh token ttl must be positive")
+	}
+	sessionID := uuid.NewString()
+	accessTTL := minDuration(u.accessTokenTTL, refreshTTL)
+	accessToken, accessJTI, err := authctx.SignAccessToken(u.accessTokenSecret, authctx.User{ID: user.ID, Username: user.Username}, sessionID, accessTTL)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := authctx.NewOpaqueToken(32)
+	if err != nil {
+		return nil, err
+	}
+	if err := u.tokenStore.CreateSession(ctx, dao.AuthTokenSession{ID: sessionID, UserID: user.ID, Username: user.Username, ExpiresAt: time.Now().Add(refreshTTL).Unix()}, accessJTI, refreshToken, accessTTL, refreshTTL); err != nil {
+		return nil, err
+	}
+	return &AuthResult{
+		User:             modelUserToProto(user, roleIDsFromProto(roles)),
+		Roles:            roles,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		AccessExpiresIn:  authctx.TokenTTLSeconds(accessTTL),
+		RefreshExpiresIn: authctx.TokenTTLSeconds(refreshTTL),
+	}, nil
+}
+
+func (u *UserLogic) issueRotatedTokens(ctx context.Context, user *model.User, roles []*systemproto.Role, sessionID string, refreshTTL time.Duration) (*AuthResult, error) {
+	if u.tokenStore == nil {
+		return nil, errors.New("auth token store is unavailable")
+	}
+	if refreshTTL <= 0 {
+		return nil, errors.New("refresh token ttl must be positive")
+	}
+	accessTTL := minDuration(u.accessTokenTTL, refreshTTL)
+	accessToken, accessJTI, err := authctx.SignAccessToken(u.accessTokenSecret, authctx.User{ID: user.ID, Username: user.Username}, sessionID, accessTTL)
+	if err != nil {
+		return nil, err
+	}
+	refreshToken, err := authctx.NewOpaqueToken(32)
+	if err != nil {
+		return nil, err
+	}
+	if err := u.tokenStore.SaveRotatedTokens(ctx, sessionID, accessJTI, refreshToken, accessTTL, refreshTTL); err != nil {
+		return nil, err
+	}
+	return &AuthResult{
+		User:             modelUserToProto(user, roleIDsFromProto(roles)),
+		Roles:            roles,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		AccessExpiresIn:  authctx.TokenTTLSeconds(accessTTL),
+		RefreshExpiresIn: authctx.TokenTTLSeconds(refreshTTL),
+	}, nil
+}
+
+func minDuration(left, right time.Duration) time.Duration {
+	if left <= 0 {
+		return right
+	}
+	if right <= 0 || left < right {
+		return left
+	}
+	return right
 }
 
 func (u *UserLogic) ListUsers(ctx context.Context, _ *systemproto.ListUsersReq) ([]*systemproto.User, error) {
