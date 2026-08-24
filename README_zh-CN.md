@@ -135,4 +135,4 @@ rtk bash proto/gogo.sh ai-agent session.proto
 
 ## 友链
 
-[linux.do](linux.do)
+[linux.do](https://linux.do/)

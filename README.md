@@ -133,4 +133,4 @@ API contract changes begin in `proto/`; regenerate Go code rather than editing `
 No license has been declared in this repository yet. Add a license, security-reporting policy, contribution guide, and CI workflow before public distribution.
 
 ## Friend links
-[linux.do](linux.do)
+[linux.do](https://linux.do/)
