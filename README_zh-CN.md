@@ -4,6 +4,10 @@ AI Dandelion 是面向 AI 辅助业务功能搭建与运行的多服务后端，
 
 English documentation: [README.md](README.md)
 
+演示视频：
+https://www.bilibili.com/video/BV1A78t68EVD/?vd_source=882e22f2f6123549d1c4813f927a00ea
+
+
 ## 关联仓库
 
 浏览器端位于独立仓库：[gly-hub/ai-dandelion-web](https://github.com/gly-hub/ai-dandelion-web)。前端负责 React 界面、浏览器端登录态、API 调用、流式对话展示和生成应用渲染。
@@ -128,3 +132,7 @@ rtk bash proto/gogo.sh ai-agent session.proto
 ## 许可证
 
 当前仓库尚未声明许可证。公开分发前请补齐许可证、安全漏洞报告方式、贡献指南和 CI 工作流。
+
+## 友链
+
+[linux.do](linux.do)

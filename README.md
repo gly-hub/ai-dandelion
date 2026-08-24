@@ -4,6 +4,9 @@ AI Dandelion is a multi-service backend for building and operating AI-assisted b
 
 Chinese documentation: [README_zh-CN.md](README_zh-CN.md)
 
+demonstration video：
+https://www.bilibili.com/video/BV1A78t68EVD/?vd_source=882e22f2f6123549d1c4813f927a00ea
+
 ## Related Repository
 
 The browser application lives in a separate repository: [gly-hub/ai-dandelion-web](https://github.com/gly-hub/ai-dandelion-web). It is responsible for the React user interface, browser authentication state, API calls, streaming chat presentation, and generated-app rendering.
@@ -128,3 +131,6 @@ API contract changes begin in `proto/`; regenerate Go code rather than editing `
 ## License
 
 No license has been declared in this repository yet. Add a license, security-reporting policy, contribution guide, and CI workflow before public distribution.
+
+## 友链
+[linux.do](linux.do)
