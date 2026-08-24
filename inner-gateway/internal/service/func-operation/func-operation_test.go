@@ -2,11 +2,15 @@ package funcoperation
 
 import (
 	"context"
+	"net/http/httptest"
 	"sync"
 	"testing"
 
+	"github.com/gly-hub/quickgo/grpcep"
+	"github.com/gofiber/fiber/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 type countingClientManager struct {
@@ -53,5 +57,27 @@ func TestGetFuncOperationClientUsesConnectionPoolForEveryRequest(t *testing.T) {
 
 	if got := manager.callCount(); got != requests {
 		t.Fatalf("GetConn calls = %d, want %d", got, requests)
+	}
+}
+
+func TestForwardGeneratedAppRequestIDPropagatesMiddlewareRequestID(t *testing.T) {
+	app := fiber.New()
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		ctx.Locals("request_id", "generated-request-id")
+		forwardGeneratedAppRequestID(ctx)
+		rpcCtx := (&grpcep.BaseHandler{}).RPCCtx(ctx)
+		metadata, _ := metadata.FromOutgoingContext(rpcCtx)
+		if got := metadata.Get("x-trace-id"); len(got) != 1 || got[0] != "generated-request-id" {
+			t.Fatalf("x-trace-id = %v, want generated request ID", got)
+		}
+		return ctx.SendStatus(fiber.StatusNoContent)
+	})
+
+	resp, err := app.Test(httptest.NewRequest(fiber.MethodGet, "/", nil))
+	if err != nil {
+		t.Fatalf("run request: %v", err)
+	}
+	if resp.StatusCode != fiber.StatusNoContent {
+		t.Fatalf("response status = %d, want %d", resp.StatusCode, fiber.StatusNoContent)
 	}
 }

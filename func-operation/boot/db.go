@@ -60,17 +60,11 @@ func migrate(stage string) bool {
 	}
 
 	for _, model := range models {
-		if dbIns.Migrator().HasTable(model) && stage == "production" {
-			continue
-		}
-		var err error
-		if stage == "production" {
-			err = dbIns.Migrator().AutoMigrate(model)
-			gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
-		} else {
-			err = dbIns.AutoMigrate(model)
-			gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
-		}
+		// AutoMigrate is additive for the models used here. Skipping existing
+		// production tables prevented newly introduced observability columns
+		// (such as request_id) from ever being created after a restart.
+		err := dbIns.AutoMigrate(model)
+		gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
 		if err != nil {
 			logger.Error(context.Background(), "Migrate Model Error:%v", err)
 		}

@@ -128,6 +128,7 @@ func (f *FuncOperationServerController) GetFunctionPreviewBundle(ctx *fiber.Ctx)
 }
 
 func (f *FuncOperationServerController) InvokeFunctionPreview(ctx *fiber.Ctx) error {
+	forwardGeneratedAppRequestID(ctx)
 	payload := "{}"
 	if len(ctx.Body()) > 0 {
 		var input struct {
@@ -151,6 +152,50 @@ func (f *FuncOperationServerController) InvokeFunctionPreview(ctx *fiber.Ctx) er
 	return f.baseHandler.Response(ctx, grpcep.JsonResponse{Data: resp}, nil)
 }
 
+func (f *FuncOperationServerController) StreamFunctionPreview(ctx *fiber.Ctx) error {
+	forwardGeneratedAppRequestID(ctx)
+	rpcParam := &funcoperation.StreamFunctionPreviewReq{Id: ctx.Params("id")}
+	if err := f.baseHandler.ParseJson(ctx, rpcParam); err != nil {
+		return f.baseHandler.Response(ctx, grpcep.JsonResponse{}, gerr.NewGErr(grpcep.ParamsErrCode, err.Error()))
+	}
+	rpcParam.Id = ctx.Params("id")
+	streamFunc := func(rpcCtx context.Context, req interface{}) (interface{}, error) {
+		client, err := f.getFuncOperationClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.StreamFunctionPreview(rpcCtx, req.(*funcoperation.StreamFunctionPreviewReq))
+	}
+	return f.baseHandler.RPCStream(ctx, rpcParam, streamFunc)
+}
+
+func (f *FuncOperationServerController) ListFunctionExecutionLogs(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.ListFunctionExecutionLogsReq{
+		FunctionId: ctx.Params("id"), Limit: int32(ctx.QueryInt("limit", 0)), Page: int32(ctx.QueryInt("page", 1)), Query: ctx.Query("query"), Status: ctx.Query("status"), InvocationType: ctx.Query("invocationType"),
+		StartTime: int64(ctx.QueryInt("startTime", 0)), EndTime: int64(ctx.QueryInt("endTime", 0)), RequestId: ctx.Query("requestId"),
+	}
+	handler := func(rpcCtx context.Context, req *funcoperation.ListFunctionExecutionLogsReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.ListFunctionExecutionLogs(rpcCtx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
+func (f *FuncOperationServerController) GetFunctionExecutionLog(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.GetFunctionExecutionLogReq{FunctionId: ctx.Params("id"), Id: ctx.Params("logId")}
+	handler := func(rpcCtx context.Context, req *funcoperation.GetFunctionExecutionLogReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(rpcCtx)
+		if err != nil {
+			return nil, err
+		}
+		return client.GetFunctionExecutionLog(rpcCtx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
 func (f *FuncOperationServerController) GetGeneratedAppFrontendBundle(ctx *fiber.Ctx) error {
 	param := &funcoperation.GetGeneratedAppFrontendBundleReq{Id: ctx.Params("id")}
 	handler := func(rpcCtx context.Context, req *funcoperation.GetGeneratedAppFrontendBundleReq) (interface{}, error) {
@@ -164,6 +209,7 @@ func (f *FuncOperationServerController) GetGeneratedAppFrontendBundle(ctx *fiber
 }
 
 func (f *FuncOperationServerController) InvokeGeneratedApp(ctx *fiber.Ctx) error {
+	forwardGeneratedAppRequestID(ctx)
 	rpcParam := &funcoperation.InvokeGeneratedAppReq{Id: ctx.Params("id")}
 	rpcParam.Payload = "{}"
 	if len(ctx.Body()) > 0 {
@@ -187,4 +233,16 @@ func (f *FuncOperationServerController) InvokeGeneratedApp(ctx *fiber.Ctx) error
 		return f.baseHandler.Response(ctx, grpcep.JsonResponse{}, gerr.NewGErr(grpcep.InternalErrCode, err.Error()))
 	}
 	return f.baseHandler.Response(ctx, grpcep.JsonResponse{Data: resp}, nil)
+}
+
+// TraceMiddleware assigns the external request ID to this local value. The
+// base gRPC adapter forwards request headers, so copy generated IDs into the
+// trace header when the caller did not provide one themselves.
+func forwardGeneratedAppRequestID(ctx *fiber.Ctx) {
+	if strings.TrimSpace(ctx.Get("X-Trace-ID")) != "" {
+		return
+	}
+	if requestID, ok := ctx.Locals("request_id").(string); ok && strings.TrimSpace(requestID) != "" {
+		ctx.Request().Header.Set("X-Trace-ID", requestID)
+	}
 }

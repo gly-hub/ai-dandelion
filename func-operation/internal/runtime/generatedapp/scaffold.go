@@ -114,6 +114,9 @@ func (s *Service) CreateAppScaffold(ctx context.Context, input ScaffoldInput) (*
 	if err := os.WriteFile(filepath.Join(backendDir, "platform.go"), []byte(backendPlatformTemplate()), 0o644); err != nil {
 		return nil, fmt.Errorf("write backend platform template: %w", err)
 	}
+	if err := os.WriteFile(filepath.Join(backendDir, "logger.go"), []byte(backendLoggerTemplate()), 0o644); err != nil {
+		return nil, fmt.Errorf("write backend logger template: %w", err)
+	}
 	if err := os.WriteFile(filepath.Join(backendDir, "models.go"), []byte(backendModelsTemplate()), 0o644); err != nil {
 		return nil, fmt.Errorf("write backend models template: %w", err)
 	}
@@ -291,9 +294,11 @@ func handle(reqPtr, reqLen uint32) uint64 {
 	var req InvokeRequest
 	if len(reqBytes) > 0 {
 		if err := json.Unmarshal(reqBytes, &req); err != nil {
+			logError("request decode failed: " + err.Error())
 			return storeResponse(InvokeResponse{Error: "JSON解析失败: " + err.Error()})
 		}
 	}
+	logInfo("handle action=" + req.Action)
 	return handleRequest(req)
 }
 
@@ -382,6 +387,9 @@ func hostDataRunQuery(reqPtr, reqLen uint32) uint64
 
 //go:wasmimport platform call_capability
 func hostCallCapability(reqPtr, reqLen uint32) uint64
+
+//go:wasmimport platform log
+func hostLog(level uint32, messagePtr uint32, messageLen uint32)
 
 //go:wasmimport platform result_len
 func resultLen(handle uint64) uint32
@@ -513,6 +521,35 @@ func callPlatformJSON(call func(uint32, uint32) uint64, req any, out any) {
 	buf := make([]byte, length)
 	resultRead(handle, uint32(uintptr(unsafe.Pointer(&buf[0]))))
 	_ = json.Unmarshal(buf, out)
+}
+`
+}
+
+func backendLoggerTemplate() string {
+	return `//go:build wasip1
+
+package main
+
+import "unsafe"
+
+const (
+	logLevelDebug uint32 = iota
+	logLevelInfo
+	logLevelWarn
+	logLevelError
+)
+
+func logDebug(message string) { writeLog(logLevelDebug, message) }
+func logInfo(message string)  { writeLog(logLevelInfo, message) }
+func logWarn(message string)  { writeLog(logLevelWarn, message) }
+func logError(message string) { writeLog(logLevelError, message) }
+
+func writeLog(level uint32, message string) {
+	raw := []byte(message)
+	if len(raw) == 0 {
+		return
+	}
+	hostLog(level, uint32(uintptr(unsafe.Pointer(&raw[0]))), uint32(len(raw)))
 }
 `
 }
