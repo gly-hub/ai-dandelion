@@ -13,6 +13,7 @@ type streamState struct {
 	lastAssistantText string
 	lastThinkingText  string
 	toolInputs        map[string]*strings.Builder
+	toolNames         map[string]string
 	toolIndex         map[int]string
 	blockTypes        map[int]string
 }
@@ -20,6 +21,7 @@ type streamState struct {
 func newStreamState() *streamState {
 	return &streamState{
 		toolInputs: make(map[string]*strings.Builder),
+		toolNames:  make(map[string]string),
 		toolIndex:  make(map[int]string),
 		blockTypes: make(map[int]string),
 	}
@@ -32,7 +34,7 @@ func (s *streamState) eventsFromMessage(msg claudeagentsdk.Message) []Event {
 	case *claudeagentsdk.AssistantMessage:
 		return s.eventsFromAssistant(m)
 	case *claudeagentsdk.UserMessage:
-		return eventsFromUser(m)
+		return s.eventsFromUser(m)
 	default:
 		return nil
 	}
@@ -87,6 +89,7 @@ func (s *streamState) contentBlockStart(rawEvent map[string]any) []Event {
 		}
 		s.toolIndex[index] = toolID
 		s.toolInputs[toolID] = &strings.Builder{}
+		s.toolNames[toolID] = stringFromAny(block["name"])
 		return []Event{{
 			Type:     "tool_start",
 			ToolID:   toolID,
@@ -195,6 +198,7 @@ func (s *streamState) eventsFromAssistant(message *claudeagentsdk.AssistantMessa
 			}
 			events = append(events, Event{Type: "thinking_stop"})
 		case claudeagentsdk.ToolUseBlock:
+			s.toolNames[b.ID] = b.Name
 			events = append(events, Event{
 				Type:      "tool_start",
 				ToolID:    b.ID,
@@ -211,7 +215,7 @@ func (s *streamState) eventsFromAssistant(message *claudeagentsdk.AssistantMessa
 	return events
 }
 
-func eventsFromUser(message *claudeagentsdk.UserMessage) []Event {
+func (s *streamState) eventsFromUser(message *claudeagentsdk.UserMessage) []Event {
 	blocks, ok := message.Content.([]claudeagentsdk.ContentBlock)
 	if !ok {
 		return nil
@@ -225,6 +229,7 @@ func eventsFromUser(message *claudeagentsdk.UserMessage) []Event {
 		events = append(events, Event{
 			Type:       "tool_result",
 			ToolID:     result.ToolUseID,
+			ToolName:   s.toolNames[result.ToolUseID],
 			IsError:    result.IsError,
 			ResultText: prettyAny(result.Content),
 		})

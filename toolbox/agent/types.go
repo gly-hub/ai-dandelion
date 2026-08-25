@@ -41,6 +41,7 @@ type Event struct {
 	ResultText      string `json:"resultText,omitempty"`
 	AgentSessionID  string `json:"agentSessionId,omitempty"`
 	Done            bool   `json:"done,omitempty"`
+	UIActionJSON    string `json:"uiActionJson,omitempty"`
 }
 
 // AskUserQuestionRequest is the native Claude AskUserQuestion tool request.

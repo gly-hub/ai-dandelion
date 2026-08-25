@@ -84,6 +84,7 @@ message StreamMessageResp {
   string agent_session_id = 11 [(gogoproto.jsontag) = 'agentSessionId,omitempty'];
   string tool_title = 12 [(gogoproto.jsontag) = 'toolTitle,omitempty'];
   string tool_description = 13 [(gogoproto.jsontag) = 'toolDescription,omitempty'];
+  string ui_action_json = 14 [(gogoproto.jsontag) = 'uiActionJson,omitempty'];
 }
 
 message SubmitAskUserQuestionReq {
