@@ -15,6 +15,7 @@ generated_apps/<uuid>/
   backend/
     main.go
     platform.go
+    logger.go
     models.go
     <business>_handlers.go
     validators.go
@@ -48,7 +49,8 @@ Do not create placeholder data models before the real schema is known. Do not de
 Backend source is a Go package built from `generated_apps/<uuid>/backend/`.
 
 - `main.go`: WASI entrypoint, request buffer, exported `alloc`, exported `handle`, request decoding, top-level dispatch call.
-- `platform.go`: host imports and helpers for `data_list`, `data_get`, `data_create`, `data_update`, `data_delete`, `data_join_query`, `data_run_query`, `result_len`, `result_read`, and `result_store`.
+- `platform.go`: host imports and helpers for `data_list`, `data_get`, `data_create`, `data_update`, `data_delete`, `data_join_query`, `data_run_query`, `log`, `result_len`, `result_read`, and `result_store`.
+- `logger.go`: the bounded guest logging helpers `logDebug`, `logInfo`, `logWarn`, and `logError`, backed by `platform.log`. Keep log messages single-line `key=value`; the host attaches the outer `request_id` and invocation metadata automatically.
 - `models.go`: request/response envelopes, row structs, form payload structs, logical model names, relation names, query names, and statuses. Do not define physical table constants.
 - `<business>_handlers.go`: action handlers such as list/create/update/delete/status transition.
 - `validators.go`: optional validation helpers for required fields, enum values, pagination bounds, and IDs.
@@ -73,6 +75,8 @@ After building, check that `../backend.wasm` is newer than every `*.go` file in 
 Use `-buildmode=c-shared` for generated app backends. On `wasip1`, this creates a WASI reactor/library whose `//go:wasmexport` functions can be called by the host. The default build mode creates an executable; calling exported functions from that shape can fail with `module closed with exit_code(0)` or `runtime.notInitialized()`.
 
 Use platform data capability APIs only. Do not write SQL strings or concatenate user input into SQL.
+
+Use `logger.go` for meaningful business diagnostics: validation rejection, critical branch decision, business operation boundary, failure exit, and final success outcome. The host already logs every `data_*` capability call with a logical model/query, aggregate result, duration, and safe error code; do not duplicate those low-level lines or log filters, IDs, records, or raw database errors. Do not write logs with `fmt.Println`, `println`, stdout, or stderr. Never include credentials, secrets, raw request/response bodies, or unredacted personal data in a log message.
 
 `data_list`, `data_join_query`, and `data_run_query` return row data:
 

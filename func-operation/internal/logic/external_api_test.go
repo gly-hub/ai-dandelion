@@ -41,8 +41,6 @@ func TestValidateExternalAPI(t *testing.T) {
 }
 
 func TestCallExternalAPIRejectsPrivateNetworkProxy(t *testing.T) {
-	server := httptest.NewServer(http.NotFoundHandler())
-	defer server.Close()
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +49,7 @@ func TestCallExternalAPIRejectsPrivateNetworkProxy(t *testing.T) {
 		t.Fatal(err)
 	}
 	store := dao.NewExternalAPI(db)
-	if err := store.CreateClient(context.Background(), &model.ExternalAPIClient{UUID: "client-id", ClientKey: "game-server", Name: "Game", BaseURL: server.URL, DefaultHeadersJSON: `{"X-Client":"platform"}`, Status: "enabled"}); err != nil {
+	if err := store.CreateClient(context.Background(), &model.ExternalAPIClient{UUID: "client-id", ClientKey: "game-server", Name: "Game", BaseURL: "http://127.0.0.1:1", DefaultHeadersJSON: `{"X-Client":"platform"}`, Status: "enabled"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := store.CreateAPI(context.Background(), &model.ExternalAPI{UUID: "api-id", ClientKey: "game-server", APIKey: "game.order.submit", Name: "Submit", Method: "POST", Path: "/v1/orders", HeadersJSON: `{"X-API":"submit"}`, RequestSchemaJSON: "{}", ResponseSchemaJSON: "{}", Status: "enabled"}); err != nil {

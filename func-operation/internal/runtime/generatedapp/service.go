@@ -1,6 +1,7 @@
 package generatedapp
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
 	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
+	"github.com/gly-hub/quickgo/logger"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
@@ -31,18 +33,32 @@ var ErrAppNotReady = errors.New("generated app not ready")
 
 const defaultMaxModuleBytes = 16 << 20
 const defaultMaxMemoryPages = 1024 // 64 MiB
+const defaultMaxLogBytes = 64 << 10
+const maxServerLogEventBytes = 4 << 10
+const maxGuestLogMessageBytes = 4 << 10
+
+type ExecutionLogEvent struct {
+	Stream    string `json:"stream"`
+	Content   string `json:"content"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+type ExecutionLogObserver func(ExecutionLogEvent)
 
 type InvokeResult struct {
-	AppID         string `json:"appId"`
-	Version       string `json:"version"`
-	Export        string `json:"export"`
-	Result        uint64 `json:"result"`
-	Response      string `json:"response,omitempty"`
-	Duration      string `json:"duration"`
-	Runtime       string `json:"runtime"`
-	ModuleLen     int    `json:"moduleLen"`
-	BackendSource string `json:"backendSource"`
-	BackendModule string `json:"backendModule"`
+	AppID          string              `json:"appId"`
+	Version        string              `json:"version"`
+	Export         string              `json:"export"`
+	Result         uint64              `json:"result"`
+	Response       string              `json:"response,omitempty"`
+	Duration       string              `json:"duration"`
+	Runtime        string              `json:"runtime"`
+	ModuleLen      int                 `json:"moduleLen"`
+	BackendSource  string              `json:"backendSource"`
+	BackendModule  string              `json:"backendModule"`
+	Logs           []ExecutionLogEvent `json:"logs,omitempty"`
+	LogsTruncated  bool                `json:"logsTruncated,omitempty"`
+	ExecutionLogID string              `json:"executionLogId,omitempty"`
 }
 
 type ArtifactSnapshot struct {
@@ -96,6 +112,7 @@ type Service struct {
 	invokeTimeout       time.Duration
 	maxResultBytes      int
 	maxModuleBytes      int
+	maxLogBytes         int
 	capabilityBroker    CapabilityBroker
 	externalAPIExecutor ExternalAPIExecutor
 	draftRuntime        bool
@@ -122,6 +139,15 @@ func WithMaxModuleBytes(limit int) Option {
 	return func(s *Service) {
 		if limit > 0 {
 			s.maxModuleBytes = limit
+		}
+	}
+}
+
+// WithMaxLogBytes bounds stdout and stderr retained for one invocation.
+func WithMaxLogBytes(limit int) Option {
+	return func(s *Service) {
+		if limit > 0 {
+			s.maxLogBytes = limit
 		}
 	}
 }
@@ -287,6 +313,7 @@ func NewService(ctx context.Context, rootDir string, store *dao.GeneratedApp, op
 		invokeTimeout:     5 * time.Second,
 		maxResultBytes:    1 << 20,
 		maxModuleBytes:    defaultMaxModuleBytes,
+		maxLogBytes:       defaultMaxLogBytes,
 	}
 	for _, option := range options {
 		if option != nil {
@@ -753,13 +780,43 @@ func (s *Service) HasApprovedArtifact(appID, artifactSHA string) bool {
 }
 
 func (s *Service) Invoke(ctx context.Context, appID string, payload json.RawMessage) (InvokeResult, error) {
+	return s.InvokeWithObserver(ctx, appID, payload, nil)
+}
+
+// InvokeWithObserver executes an app while forwarding bounded stdout/stderr
+// chunks to observer as they are written by the WASI module.
+func (s *Service) InvokeWithObserver(ctx context.Context, appID string, payload json.RawMessage, observer ExecutionLogObserver) (result InvokeResult, err error) {
+	if logger.GetTraceID(ctx) == "" {
+		ctx = logger.WithTraceID(ctx, logger.GenerateTraceID())
+	}
 	s.mu.RLock()
 	app, ok := s.apps[appID]
 	compiled := s.compiled[appID]
 	s.mu.RUnlock()
 	if !ok || compiled == nil {
-		return InvokeResult{}, ErrAppNotFound
+		return result, ErrAppNotFound
 	}
+	result = InvokeResult{
+		AppID: app.UUID, Version: app.Version, Export: app.Export, Runtime: "wazero",
+		ModuleLen: moduleSize(s.activeDir(appID), app), BackendSource: app.BackendSource, BackendModule: app.BackendModule,
+	}
+	logs := newExecutionLogCollector(s.maxLogBytes, func(event ExecutionLogEvent) {
+		s.logExecutionEvent(ctx, app, event)
+		if observer != nil {
+			observer(event)
+		}
+	})
+	started := time.Now()
+	s.logInvocation(ctx, app, "started", nil)
+	defer func() {
+		if err != nil {
+			s.logInvocation(ctx, app, "failed", err)
+		} else {
+			s.logInvocation(ctx, app, "completed", nil)
+		}
+		result.Duration = time.Since(started).String()
+		result.Logs, result.LogsTruncated = logs.Entries()
+	}()
 
 	if s.invokeTimeout > 0 {
 		var cancel context.CancelFunc
@@ -770,49 +827,217 @@ func (s *Service) Invoke(ctx context.Context, appID string, payload json.RawMess
 	invocationID := s.beginInvocation()
 	callCtx := context.WithValue(ctx, appIDContextKey{}, appID)
 	callCtx = context.WithValue(callCtx, invocationIDContextKey{}, invocationID)
+	callCtx = context.WithValue(callCtx, executionLogCollectorContextKey{}, logs)
+	action := invocationAction(payload)
+	callCtx = context.WithValue(callCtx, invocationActionContextKey{}, action)
+	emitRuntimeLog(callCtx, "INFO action="+action+" received")
 	defer s.cleanupInvocationResults(invocationID)
 
-	start := time.Now()
-	module, err := s.runtime.InstantiateModule(ctx, compiled, wazero.NewModuleConfig().WithStartFunctions())
+	module, err := s.runtime.InstantiateModule(callCtx, compiled, wazero.NewModuleConfig().WithStartFunctions().WithStdout(logs.Writer("stdout")).WithStderr(logs.Writer("stderr")))
 	if err != nil {
-		return InvokeResult{}, fmt.Errorf("instantiate generated app %q: %w", appID, err)
+		return result, fmt.Errorf("instantiate generated app %q: %w", appID, err)
 	}
-	defer module.Close(ctx)
+	defer module.Close(callCtx)
 
 	if initialize := module.ExportedFunction("_initialize"); initialize != nil {
-		if _, err := initialize.Call(ctx); err != nil {
-			return InvokeResult{}, fmt.Errorf("initialize generated app %q: %w", appID, err)
+		if _, err := initialize.Call(callCtx); err != nil {
+			return result, fmt.Errorf("initialize generated app %q: %w", appID, err)
 		}
 	}
 
 	handle := module.ExportedFunction(app.Export)
 	if handle == nil {
-		return InvokeResult{}, fmt.Errorf("generated app %q missing export %q", appID, app.Export)
+		return result, fmt.Errorf("generated app %q missing export %q", appID, app.Export)
 	}
 	results, err := s.callAppHandle(callCtx, module, handle, payload)
 	if err != nil {
-		return InvokeResult{}, fmt.Errorf("call generated app %q export %q: %w", appID, app.Export, err)
+		return result, fmt.Errorf("call generated app %q export %q: %w", appID, app.Export, err)
 	}
 	if len(results) == 0 {
-		return InvokeResult{}, fmt.Errorf("generated app %q export %q returned no result", appID, app.Export)
+		return result, fmt.Errorf("generated app %q export %q returned no result", appID, app.Export)
 	}
 	response, err := s.resultPayload(callCtx, results[0])
 	if err != nil {
-		return InvokeResult{}, fmt.Errorf("read generated app %q result: %w", appID, err)
+		return result, fmt.Errorf("read generated app %q result: %w", appID, err)
 	}
+	result.Result, result.Response = results[0], response
+	return result, nil
+}
 
-	return InvokeResult{
-		AppID:         app.UUID,
-		Version:       app.Version,
-		Export:        app.Export,
-		Result:        results[0],
-		Response:      response,
-		Duration:      time.Since(start).String(),
-		Runtime:       "wazero",
-		ModuleLen:     moduleSize(s.activeDir(appID), app),
-		BackendSource: app.BackendSource,
-		BackendModule: app.BackendModule,
-	}, nil
+func invocationAction(payload json.RawMessage) string {
+	var request struct {
+		Action string `json:"action"`
+	}
+	if json.Unmarshal(payload, &request) == nil && strings.TrimSpace(request.Action) != "" {
+		return strings.TrimSpace(request.Action)
+	}
+	return "handle"
+}
+
+func (s *Service) logInvocation(ctx context.Context, app model.GeneratedApp, status string, invokeErr error) {
+	invocationType, _ := ctx.Value(invocationTypeContextKey{}).(string)
+	fields := map[string]interface{}{
+		"component":         "generated_wasm",
+		"app_id":            app.UUID,
+		"app_version":       app.Version,
+		"wasm_export":       app.Export,
+		"invocation_type":   invocationType,
+		"invocation_status": status,
+		"request_id":        logger.GetTraceID(ctx),
+	}
+	entry := logger.WithFields(fields)
+	if invokeErr != nil {
+		entry.Error(ctx, "generated WASM invocation failed: %v", invokeErr)
+		return
+	}
+	entry.Info(ctx, "generated WASM invocation %s", status)
+}
+
+func (s *Service) logExecutionEvent(ctx context.Context, app model.GeneratedApp, event ExecutionLogEvent) {
+	message := strings.TrimSuffix(event.Content, "\r")
+	if strings.TrimSpace(message) == "" {
+		return
+	}
+	if len(message) > maxServerLogEventBytes {
+		message = message[:maxServerLogEventBytes] + " [truncated]"
+	}
+	invocationType, _ := ctx.Value(invocationTypeContextKey{}).(string)
+	fields := map[string]interface{}{
+		"component":       "generated_wasm",
+		"app_id":          app.UUID,
+		"app_version":     app.Version,
+		"wasm_export":     app.Export,
+		"wasm_stream":     event.Stream,
+		"invocation_type": invocationType,
+		"request_id":      logger.GetTraceID(ctx),
+	}
+	entry := logger.WithFields(fields)
+	if isWASMErrorLog(event.Stream, message) {
+		entry.Error(ctx, "generated WASM: %s", message)
+		return
+	}
+	entry.Info(ctx, "generated WASM: %s", message)
+}
+
+func isWASMErrorLog(stream, message string) bool {
+	if stream != "stderr" {
+		return false
+	}
+	normalized := strings.ToLower(strings.TrimSpace(message))
+	return strings.Contains(normalized, "panic:") ||
+		strings.HasPrefix(normalized, "[error]") ||
+		strings.HasPrefix(normalized, "error:") ||
+		strings.HasPrefix(normalized, "[fatal]") ||
+		strings.HasPrefix(normalized, "fatal:")
+}
+
+type executionLogCollector struct {
+	mu          sync.Mutex
+	remaining   int
+	entries     []ExecutionLogEvent
+	pending     map[string]string
+	streamOrder []string
+	truncated   bool
+	observer    ExecutionLogObserver
+}
+
+func newExecutionLogCollector(limit int, observer ExecutionLogObserver) *executionLogCollector {
+	return &executionLogCollector{remaining: limit, pending: make(map[string]string), observer: observer}
+}
+
+func (c *executionLogCollector) Writer(stream string) *executionLogWriter {
+	return &executionLogWriter{collector: c, stream: stream}
+}
+
+func (c *executionLogCollector) Emit(stream, content string) {
+	c.Append(stream, content+"\n")
+}
+
+// Append accepts arbitrary WASI write chunks and emits one event per console
+// line. WASI does not guarantee that a Write call aligns with a log line.
+func (c *executionLogCollector) Append(stream, content string) {
+	if content == "" {
+		return
+	}
+	c.mu.Lock()
+	if c.remaining <= 0 {
+		c.truncated = true
+		c.mu.Unlock()
+		return
+	}
+	if len(content) > c.remaining {
+		content = content[:c.remaining]
+		c.truncated = true
+	}
+	c.remaining -= len(content)
+	if _, exists := c.pending[stream]; !exists {
+		c.streamOrder = append(c.streamOrder, stream)
+	}
+	c.pending[stream] += content
+	events := c.drainLinesLocked(stream)
+	observer := c.observer
+	c.mu.Unlock()
+	if observer != nil {
+		for _, event := range events {
+			observer(event)
+		}
+	}
+}
+
+func (c *executionLogCollector) Entries() ([]ExecutionLogEvent, bool) {
+	c.mu.Lock()
+	events := c.flushLocked()
+	entries := make([]ExecutionLogEvent, len(c.entries))
+	copy(entries, c.entries)
+	truncated := c.truncated
+	observer := c.observer
+	c.mu.Unlock()
+	if observer != nil {
+		for _, event := range events {
+			observer(event)
+		}
+	}
+	return entries, truncated
+}
+
+func (c *executionLogCollector) drainLinesLocked(stream string) []ExecutionLogEvent {
+	content := c.pending[stream]
+	var events []ExecutionLogEvent
+	for {
+		index := strings.IndexByte(content, '\n')
+		if index < 0 {
+			break
+		}
+		event := ExecutionLogEvent{Stream: stream, Content: strings.TrimSuffix(content[:index], "\r"), Timestamp: time.Now().UnixMicro()}
+		c.entries = append(c.entries, event)
+		events = append(events, event)
+		content = content[index+1:]
+	}
+	c.pending[stream] = content
+	return events
+}
+
+func (c *executionLogCollector) flushLocked() []ExecutionLogEvent {
+	var events []ExecutionLogEvent
+	for _, stream := range c.streamOrder {
+		if content := c.pending[stream]; content != "" {
+			event := ExecutionLogEvent{Stream: stream, Content: strings.TrimSuffix(content, "\r"), Timestamp: time.Now().UnixMicro()}
+			c.entries = append(c.entries, event)
+			events = append(events, event)
+			c.pending[stream] = ""
+		}
+	}
+	return events
+}
+
+type executionLogWriter struct {
+	collector *executionLogCollector
+	stream    string
+}
+
+func (w *executionLogWriter) Write(data []byte) (int, error) {
+	w.collector.Append(w.stream, string(bytes.Clone(data)))
+	return len(data), nil
 }
 
 func (s *Service) FrontendCode(appID string, requestedPath string) (string, error) {

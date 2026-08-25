@@ -82,3 +82,10 @@ func classifyInvokeError(err error) invokeErrorDetail {
 		}
 	}
 }
+
+// ClassifyInvokeError exposes the stable diagnostic fields used by both unary
+// and streaming preview responses without leaking runtime-specific errors.
+func ClassifyInvokeError(err error) (errorCode, errorMessage, stage, hint string) {
+	detail := classifyInvokeError(err)
+	return detail.ErrorCode, detail.ErrorMessage, detail.Stage, detail.Hint
+}

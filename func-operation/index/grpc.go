@@ -29,6 +29,7 @@ func RegisterHandler(s *rpc.Server) {
 	functionDao := dao.NewFunction(db)
 	messageStore := dao.NewAiAgentMessageStore(db)
 	generatedAppDao := dao.NewGeneratedApp(db)
+	executionLogDao := dao.NewFunctionExecutionLog(db)
 	publicConfigDao := dao.NewPublicConfig(db)
 	externalAPIDao := dao.NewExternalAPI(db)
 	debugGeneratedAppDao := dao.NewGeneratedApp(debugDB)
@@ -129,7 +130,7 @@ func RegisterHandler(s *rpc.Server) {
 	artifactReconcileInterval := time.Duration(artifactMaintenance.ReconcileIntervalSeconds) * time.Second
 	StartArtifactRuntime(releaseLogic, artifactReconcileInterval, staleStagingAfter)
 	functionLogic := logic.NewFunctionLogic(functionDao, messageStore, generatedAppDao, appRuntime, previewRuntime, aiAgentClientProvider, menuSync, authorizer, releaseLogic)
-	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic)
+	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic, executionLogDao)
 	functionSkillLogic := logic.NewFunctionSkillLogic(functionSkillDao, functionSkillReleaseDao, functionSkillGrantDao, functionSkillApprovalDao, functionSkillExecutionDao, functionDao, appLogic, authorizer)
 	releaseLogic.SetFunctionSkillSynchronizer(functionSkillLogic)
 	// Reconcile skill snapshots for releases that were already published before

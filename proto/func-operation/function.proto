@@ -376,6 +376,25 @@ message InvokeFunctionPreviewResp {
   int32 module_len = 9 [(gogoproto.jsontag) = 'moduleLen'];
   string backend_source = 10 [(gogoproto.jsontag) = 'backendSource'];
   string backend_module = 11 [(gogoproto.jsontag) = 'backendModule'];
+	string execution_log_id = 12 [(gogoproto.jsontag) = 'executionLogId'];
+	string error_code = 13 [(gogoproto.jsontag) = 'errorCode'];
+	string error_message = 14 [(gogoproto.jsontag) = 'errorMessage'];
+	string stage = 15 [(gogoproto.jsontag) = 'stage'];
+	string hint = 16 [(gogoproto.jsontag) = 'hint'];
+}
+
+message StreamFunctionPreviewReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string payload = 2 [(gogoproto.jsontag) = 'payload'];
+}
+
+// content is intentionally present so the gateway's standard gRPC-to-SSE
+// adapter can forward each event without a custom transport implementation.
+message StreamFunctionPreviewResp {
+  string content = 1 [(gogoproto.jsontag) = 'content'];
+  string stream = 2 [(gogoproto.jsontag) = 'stream'];
+  bool done = 3 [(gogoproto.jsontag) = 'done'];
+  InvokeFunctionPreviewResp result = 4 [(gogoproto.jsontag) = 'result'];
 }
 
 message CleanupGeneratedFunctionMenusReq {
@@ -418,6 +437,59 @@ message InvokeGeneratedAppResp {
   string error_message = 13 [(gogoproto.jsontag) = 'errorMessage'];
   string stage = 14 [(gogoproto.jsontag) = 'stage'];
   string hint = 15 [(gogoproto.jsontag) = 'hint'];
+	string execution_log_id = 16 [(gogoproto.jsontag) = 'executionLogId'];
+}
+
+message ExecutionLogEvent {
+  string stream = 1 [(gogoproto.jsontag) = 'stream'];
+  string content = 2 [(gogoproto.jsontag) = 'content'];
+  int64 timestamp = 3 [(gogoproto.jsontag) = 'timestamp'];
+}
+
+message FunctionExecutionLog {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string app_id = 3 [(gogoproto.jsontag) = 'appId'];
+  string user_id = 4 [(gogoproto.jsontag) = 'userId'];
+  string invocation_type = 5 [(gogoproto.jsontag) = 'invocationType'];
+  string version = 6 [(gogoproto.jsontag) = 'version'];
+  string status = 7 [(gogoproto.jsontag) = 'status'];
+  string stage = 8 [(gogoproto.jsontag) = 'stage'];
+  string error_code = 9 [(gogoproto.jsontag) = 'errorCode'];
+  string error_message = 10 [(gogoproto.jsontag) = 'errorMessage'];
+  string input_json = 11 [(gogoproto.jsontag) = 'inputJson'];
+  string output_json = 12 [(gogoproto.jsontag) = 'outputJson'];
+  repeated ExecutionLogEvent logs = 13 [(gogoproto.jsontag) = 'logs'];
+  bool logs_truncated = 14 [(gogoproto.jsontag) = 'logsTruncated'];
+  int64 duration_ms = 15 [(gogoproto.jsontag) = 'durationMs'];
+  int64 created_at = 16 [(gogoproto.jsontag) = 'createdAt'];
+	string request_id = 17 [(gogoproto.jsontag) = 'requestId'];
+}
+
+message ListFunctionExecutionLogsReq {
+  string function_id = 1 [(gogoproto.jsontag) = 'functionId'];
+  int32 limit = 2 [(gogoproto.jsontag) = 'limit'];
+  string query = 3 [(gogoproto.jsontag) = 'query'];
+  string status = 4 [(gogoproto.jsontag) = 'status'];
+  string invocation_type = 5 [(gogoproto.jsontag) = 'invocationType'];
+  int64 start_time = 6 [(gogoproto.jsontag) = 'startTime'];
+	int64 end_time = 7 [(gogoproto.jsontag) = 'endTime'];
+	string request_id = 8 [(gogoproto.jsontag) = 'requestId'];
+	int32 page = 9 [(gogoproto.jsontag) = 'page'];
+}
+message ListFunctionExecutionLogsResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  repeated FunctionExecutionLog logs = 2 [(gogoproto.jsontag) = 'logs'];
+	int64 total = 3 [(gogoproto.jsontag) = 'total'];
+}
+
+message GetFunctionExecutionLogReq {
+  string function_id = 1 [(gogoproto.jsontag) = 'functionId'];
+  string id = 2 [(gogoproto.jsontag) = 'id'];
+}
+message GetFunctionExecutionLogResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionExecutionLog log = 2 [(gogoproto.jsontag) = 'log'];
 }
 
 message OutboxEvent {

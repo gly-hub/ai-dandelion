@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/gly-hub/ai-dandelion/func-operation/internal/dao"
 	"github.com/gly-hub/ai-dandelion/func-operation/internal/model"
 	"github.com/gly-hub/ai-dandelion/func-operation/internal/runtime/generatedapp"
 	funcoperation "github.com/gly-hub/ai-dandelion/proto/func-operation"
 	"github.com/gly-hub/ai-dandelion/toolbox/authctx"
+	"github.com/gly-hub/quickgo/logger"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -23,10 +26,11 @@ type GeneratedAppLogic struct {
 	releaseLogic      *ReleaseLogic
 	authorizer        *FunctionAuthorizer
 	publicConfigLogic *PublicConfigLogic
+	executionLogs     *dao.FunctionExecutionLog
 }
 
-func NewGeneratedAppLogic(runtime, previewRuntime *generatedapp.Service, functionDao *dao.Function, menuSync *FunctionMenuSync, generatedMenuDao *dao.GeneratedFunctionMenu, releaseLogic *ReleaseLogic, authorizer *FunctionAuthorizer, publicConfigLogic *PublicConfigLogic) *GeneratedAppLogic {
-	return &GeneratedAppLogic{runtime: runtime, previewRuntime: previewRuntime, functionDao: functionDao, menuSync: menuSync, generatedMenuDao: generatedMenuDao, releaseLogic: releaseLogic, authorizer: authorizer, publicConfigLogic: publicConfigLogic}
+func NewGeneratedAppLogic(runtime, previewRuntime *generatedapp.Service, functionDao *dao.Function, menuSync *FunctionMenuSync, generatedMenuDao *dao.GeneratedFunctionMenu, releaseLogic *ReleaseLogic, authorizer *FunctionAuthorizer, publicConfigLogic *PublicConfigLogic, executionLogs *dao.FunctionExecutionLog) *GeneratedAppLogic {
+	return &GeneratedAppLogic{runtime: runtime, previewRuntime: previewRuntime, functionDao: functionDao, menuSync: menuSync, generatedMenuDao: generatedMenuDao, releaseLogic: releaseLogic, authorizer: authorizer, publicConfigLogic: publicConfigLogic, executionLogs: executionLogs}
 }
 
 func (g *GeneratedAppLogic) PreviewFrontend(ctx context.Context, functionID, requestedPath string) (string, error) {
@@ -68,6 +72,14 @@ func (g *GeneratedAppLogic) PreviewBundle(ctx context.Context, functionID string
 }
 
 func (g *GeneratedAppLogic) PreviewInvoke(ctx context.Context, functionID string, payload json.RawMessage) (generatedapp.InvokeResult, error) {
+	return g.previewInvoke(ctx, functionID, payload, nil)
+}
+
+func (g *GeneratedAppLogic) PreviewInvokeWithObserver(ctx context.Context, functionID string, payload json.RawMessage, observer generatedapp.ExecutionLogObserver) (generatedapp.InvokeResult, error) {
+	return g.previewInvoke(ctx, functionID, payload, observer)
+}
+
+func (g *GeneratedAppLogic) previewInvoke(ctx context.Context, functionID string, payload json.RawMessage, observer generatedapp.ExecutionLogObserver) (generatedapp.InvokeResult, error) {
 	if err := g.authorizer.Require(ctx, functionPermissionEdit); err != nil {
 		return generatedapp.InvokeResult{}, err
 	}
@@ -81,11 +93,13 @@ func (g *GeneratedAppLogic) PreviewInvoke(ctx context.Context, functionID string
 	if _, err := g.previewRuntime.LoadDraftApp(ctx, functionItem.GeneratedAppID); err != nil {
 		return generatedapp.InvokeResult{}, err
 	}
+	ctx = ensureExecutionRequestID(ctx)
 	if configKeys, requested, requestErr := publicConfigRequestKeys(payload); requested {
 		if requestErr != nil {
 			return generatedapp.InvokeResult{}, requestErr
 		}
-		return g.resolvePublicConfigInvoke(ctx, functionItem.GeneratedAppID, configKeys)
+		result, invokeErr := g.resolvePublicConfigInvoke(ctx, functionItem.GeneratedAppID, configKeys)
+		return g.recordExecution(ctx, functionItem, "preview", payload, result, invokeErr), invokeErr
 	}
 	if err := g.previewRuntime.PrepareDraftDataModels(ctx, functionItem.GeneratedAppID); err != nil {
 		return generatedapp.InvokeResult{}, err
@@ -98,7 +112,9 @@ func (g *GeneratedAppLogic) PreviewInvoke(ctx context.Context, functionID string
 		}
 		ctx = generatedapp.WithAuthorizedAction(ctx, actionKey)
 	}
-	return g.previewRuntime.Invoke(ctx, functionItem.GeneratedAppID, payload)
+	ctx = generatedapp.WithInvocationType(ctx, "preview")
+	result, invokeErr := g.previewRuntime.InvokeWithObserver(ctx, functionItem.GeneratedAppID, payload, observer)
+	return g.recordExecution(ctx, functionItem, "preview", payload, result, invokeErr), invokeErr
 }
 
 func (g *GeneratedAppLogic) CallCapability(ctx context.Context, callerAppID string, req generatedapp.CapabilityCallRequest) (any, error) {
@@ -309,42 +325,151 @@ func (g *GeneratedAppLogic) Invoke(ctx context.Context, req *funcoperation.Invok
 			Hint:         runtimeAccessHint(checkAction),
 		}, nil
 	}
+	ctx = ensureExecutionRequestID(ctx)
 	if configKeys, requested, requestErr := publicConfigRequestKeys(payload); requested {
 		if requestErr != nil {
 			return &funcoperation.InvokeGeneratedAppResp{AppId: id, ErrorCode: "BAD_REQUEST", ErrorMessage: requestErr.Error(), Stage: "config"}, nil
 		}
 		resolved, resolveErr := g.resolvePublicConfigInvoke(ctx, id, configKeys)
+		resolved = g.recordExecution(ctx, functionItem, "published", payload, resolved, resolveErr)
 		if resolveErr != nil {
-			return &funcoperation.InvokeGeneratedAppResp{AppId: id, ErrorCode: "CONFIG_UNAVAILABLE", ErrorMessage: resolveErr.Error(), Stage: "config", Hint: "请检查公共配置是否存在且格式正确"}, nil
+			return &funcoperation.InvokeGeneratedAppResp{AppId: id, ErrorCode: "CONFIG_UNAVAILABLE", ErrorMessage: resolveErr.Error(), Stage: "config", Hint: "请检查公共配置是否存在且格式正确", ExecutionLogId: resolved.ExecutionLogID}, nil
 		}
-		return &funcoperation.InvokeGeneratedAppResp{AppId: id, Response: resolved.Response}, nil
+		return &funcoperation.InvokeGeneratedAppResp{AppId: id, Response: resolved.Response, ExecutionLogId: resolved.ExecutionLogID}, nil
 	}
 	if checkAction != "" {
 		ctx = generatedapp.WithAuthorizedAction(ctx, checkAction)
 	}
-	result, err := g.runtime.Invoke(ctx, id, payload)
-	if err != nil {
-		detail := classifyInvokeError(err)
+	ctx = generatedapp.WithInvocationType(ctx, "published")
+	result, invokeErr := g.runtime.Invoke(ctx, id, payload)
+	result = g.recordExecution(ctx, functionItem, "published", payload, result, invokeErr)
+	if invokeErr != nil {
+		detail := classifyInvokeError(invokeErr)
 		return &funcoperation.InvokeGeneratedAppResp{
-			AppId:        id,
-			ErrorCode:    detail.ErrorCode,
-			ErrorMessage: detail.ErrorMessage,
-			Stage:        detail.Stage,
-			Hint:         detail.Hint,
+			AppId:          id,
+			ErrorCode:      detail.ErrorCode,
+			ErrorMessage:   detail.ErrorMessage,
+			Stage:          detail.Stage,
+			Hint:           detail.Hint,
+			ExecutionLogId: result.ExecutionLogID,
 		}, nil
 	}
 	return &funcoperation.InvokeGeneratedAppResp{
-		AppId:         result.AppID,
-		Version:       result.Version,
-		Export:        result.Export,
-		Result:        result.Result,
-		Response:      result.Response,
-		Duration:      result.Duration,
-		Runtime:       result.Runtime,
-		ModuleLen:     int32(result.ModuleLen),
-		BackendSource: result.BackendSource,
-		BackendModule: result.BackendModule,
+		AppId:          result.AppID,
+		Version:        result.Version,
+		Export:         result.Export,
+		Result:         result.Result,
+		Response:       result.Response,
+		Duration:       result.Duration,
+		Runtime:        result.Runtime,
+		ModuleLen:      int32(result.ModuleLen),
+		BackendSource:  result.BackendSource,
+		BackendModule:  result.BackendModule,
+		ExecutionLogId: result.ExecutionLogID,
 	}, nil
+}
+
+func (g *GeneratedAppLogic) ListExecutionLogs(ctx context.Context, req *funcoperation.ListFunctionExecutionLogsReq) ([]*funcoperation.FunctionExecutionLog, int64, error) {
+	if err := g.authorizer.Require(ctx, functionPermissionEdit); err != nil {
+		return nil, 0, err
+	}
+	functionID := strings.TrimSpace(req.GetFunctionId())
+	if _, err := g.functionDao.Get(ctx, functionID); err != nil {
+		return nil, 0, err
+	}
+	if g.executionLogs == nil {
+		return nil, 0, errors.New("execution log store is not configured")
+	}
+	items, total, err := g.executionLogs.ListByFunctionID(ctx, functionID, dao.ExecutionLogFilter{
+		Limit: int(req.GetLimit()), Page: int(req.GetPage()), Query: req.GetQuery(), Status: req.GetStatus(), InvocationType: req.GetInvocationType(),
+		RequestID: req.GetRequestId(), StartTime: req.GetStartTime(), EndTime: req.GetEndTime(),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	out := make([]*funcoperation.FunctionExecutionLog, 0, len(items))
+	for i := range items {
+		out = append(out, executionLogProto(&items[i]))
+	}
+	return out, total, nil
+}
+
+func (g *GeneratedAppLogic) GetExecutionLog(ctx context.Context, functionID, id string) (*funcoperation.FunctionExecutionLog, error) {
+	if err := g.authorizer.Require(ctx, functionPermissionEdit); err != nil {
+		return nil, err
+	}
+	if _, err := g.functionDao.Get(ctx, strings.TrimSpace(functionID)); err != nil {
+		return nil, err
+	}
+	if g.executionLogs == nil {
+		return nil, errors.New("execution log store is not configured")
+	}
+	item, err := g.executionLogs.GetByFunctionID(ctx, strings.TrimSpace(functionID), strings.TrimSpace(id))
+	if err != nil {
+		return nil, err
+	}
+	return executionLogProto(item), nil
+}
+
+func (g *GeneratedAppLogic) recordExecution(ctx context.Context, functionItem *model.Function, invocationType string, payload json.RawMessage, result generatedapp.InvokeResult, invokeErr error) generatedapp.InvokeResult {
+	if g.executionLogs == nil || functionItem == nil {
+		return result
+	}
+	logsJSON, marshalErr := json.Marshal(result.Logs)
+	if marshalErr != nil {
+		logsJSON = []byte("[]")
+	}
+	status, stage, errorCode, errorMessage := "succeeded", "", "", ""
+	if invokeErr != nil {
+		detail := classifyInvokeError(invokeErr)
+		status, stage, errorCode, errorMessage = "failed", detail.Stage, detail.ErrorCode, detail.ErrorMessage
+	}
+	durationMS := int64(0)
+	if duration, parseErr := time.ParseDuration(result.Duration); parseErr == nil {
+		durationMS = duration.Milliseconds()
+	}
+	ctx = ensureExecutionRequestID(ctx)
+	userID, _ := authctx.RequireUserID(ctx)
+	item := &model.FunctionExecutionLog{
+		UUID: uuid.NewString(), FunctionID: functionItem.UUID, AppID: firstNonEmpty(result.AppID, functionItem.GeneratedAppID), UserID: userID,
+		RequestID:      logger.GetTraceID(ctx),
+		InvocationType: invocationType, Version: result.Version, Status: status, Stage: stage, ErrorCode: errorCode, ErrorMessage: errorMessage,
+		InputJSON: string(payload), OutputJSON: result.Response, LogsJSON: string(logsJSON), LogsTruncated: result.LogsTruncated,
+		DurationMS: durationMS, CreatedAt: time.Now().UnixMicro(),
+	}
+	// Observability must not make a successful function invocation fail.
+	if err := g.executionLogs.Create(ctx, item); err == nil {
+		result.ExecutionLogID = item.UUID
+	}
+	return result
+}
+
+// QuickGo uses one trace ID for the HTTP request ID and the distributed trace.
+// Direct/internal invocations still receive one so every execution can be
+// correlated with server-side logs.
+func ensureExecutionRequestID(ctx context.Context) context.Context {
+	if logger.GetTraceID(ctx) != "" {
+		return ctx
+	}
+	return logger.WithTraceID(ctx, logger.GenerateTraceID())
+}
+
+func executionLogProto(item *model.FunctionExecutionLog) *funcoperation.FunctionExecutionLog {
+	if item == nil {
+		return nil
+	}
+	var events []generatedapp.ExecutionLogEvent
+	_ = json.Unmarshal([]byte(item.LogsJSON), &events)
+	logs := make([]*funcoperation.ExecutionLogEvent, 0, len(events))
+	for _, event := range events {
+		logs = append(logs, &funcoperation.ExecutionLogEvent{Stream: event.Stream, Content: event.Content, Timestamp: event.Timestamp})
+	}
+	return &funcoperation.FunctionExecutionLog{
+		Id: item.UUID, FunctionId: item.FunctionID, AppId: item.AppID, UserId: item.UserID, RequestId: item.RequestID, InvocationType: item.InvocationType,
+		Version: item.Version, Status: item.Status, Stage: item.Stage, ErrorCode: item.ErrorCode, ErrorMessage: item.ErrorMessage,
+		InputJson: item.InputJSON, OutputJson: item.OutputJSON, Logs: logs, LogsTruncated: item.LogsTruncated,
+		DurationMs: item.DurationMS, CreatedAt: item.CreatedAt,
+	}
 }
 
 const publicConfigResolveAction = "__platform.config.get"

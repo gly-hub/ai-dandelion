@@ -1,6 +1,6 @@
 ---
 name: technical-doc-builder
-description: Build implementation-ready technical design documents for ai-dandelion func-operation features, including page layout, interaction flow, frontend modules, backend actions, manifest dataModels/relations/queries, states, and validation. Use when deriving implementation design from an applied product doc before code generation, when output must align with generated-app-builder contracts, or when writing to generated_apps documents with a completion tag.
+description: Build implementation-ready technical design documents for ai-dandelion func-operation features, including page layout, interaction flow, frontend modules, backend actions, manifest dataModels/relations/queries, states, validation, and WASM observability. Use when deriving implementation design from an applied product doc before code generation, when output must align with generated-app-builder contracts, or when writing to generated_apps documents with a completion tag.
 ---
 
 # Technical Doc Builder
@@ -66,13 +66,14 @@ generated_apps/<app-id>/documents/technical/applied/technical-doc.md
 - Read applied product doc before drafting.
 - Read generated-app-builder structure and style references before drafting when they exist.
 - No final code, generated files, or migration scripts.
-- Sections 2, 4, and 8-14 must be concrete enough that `generated-app-builder` can implement without redesigning layout, structure, data models, action names, frontend states, or visual style.
+- Sections 2, 4, and 8-16 must be concrete enough that `generated-app-builder` can implement without redesigning layout, structure, data models, action names, frontend states, visual style, or observability.
 - Overwrite draft with the latest complete document; never append partial content.
 - Do not produce generic architecture prose. Every page, component, action, state, and table must map to the requested feature.
 - Do not design a generated page that only renders document summaries, AI output, API notes, or implementation plans.
 - If the repository has `doc/func-operation/interaction-design.md`, follow its layout and workflow conventions for usage/design mode, preview behavior, recovery actions, and user-facing terminology.
 - Use the standard generated-app style guide when planning frontend layout. If available, refer to generated-app-builder `references/style-guide.md` for visual tokens, component sizes, scoped CSS, and responsive behavior.
 - Use one stable action naming scheme across Section 4, Section 10, Section 11, and Section 12. Do not mix names such as `createBook`, `book_create`, and `create` for the same operation.
+- Define a concrete WASM logging contract in Section 16 for every backend action. It must identify the diagnostic markers, severity, permitted fields, and sensitive-field redaction needed for incident investigation.
 - Do not leave placeholders such as `<business>`, `<entity>`, `待生成`, `根据情况`, or `TODO` in the final technical document.
 - Do not write unresolved questions, "待确认问题", assumptions needing confirmation, or implementation TBDs into the final technical document. Clarify first, then produce a complete implementation contract.
 
@@ -102,8 +103,9 @@ The technical document is the direct handoff to `generated-app-builder`. It must
 | App Skill | Tool key, action, effect, flat fields, exposure and confirmation policy | `manifest.json`, Function Skill runtime |
 | Data schema | Entity, dataModel, relation, query, indexes, enum values | `manifest.json`, `backend/models.go` |
 | Style contract | Root class, namespace, components, responsive behavior | `frontend/styles.js` |
+| Observability | Per-action log markers, levels, permitted fields, redaction | `backend/logger.go`, handlers, runtime execution logs |
 
-If non-critical details are absent, choose a conservative default and state the chosen behavior directly in the relevant section. If any row cannot be filled without changing scope or implementation contracts, ask the user before writing the draft. Do not leave implementation-critical gaps in Sections 8-15.
+If non-critical details are absent, choose a conservative default and state the chosen behavior directly in the relevant section. If any row cannot be filled without changing scope or implementation contracts, ask the user before writing the draft. Do not leave implementation-critical gaps in Sections 8-16.
 
 ## Required Structure
 
@@ -122,6 +124,7 @@ If non-critical details are absent, choose a conservative default and state the 
 13. 样式规范与视觉一致性
 14. 验收与自检清单
 15. App Skill 契约
+16. 可观测性与 WASM 日志
 
 Prefer actionable detail over abstract advice.
 
@@ -147,6 +150,7 @@ Use this section shape in the generated technical document. The content can be c
 ## 13. 样式规范与视觉一致性
 ## 14. 验收与自检清单
 ## 15. App Skill 契约
+## 16. 可观测性与 WASM 日志
 ```
 
 Do not add a "待确认问题" section. If the document would need that section, stop and ask the user before writing the draft.
@@ -321,13 +325,14 @@ Write implementation steps in generated-app-builder order:
 1. Write or update `manifest.json`.
 2. Implement backend models and logical model/relation/query constants.
 3. Implement backend action handlers and validators.
-4. Implement frontend API wrappers.
-5. Implement frontend state and normalization.
-6. Implement UI render functions and event bindings.
-7. Implement modal/toast helpers.
-8. Implement scoped styles from the style guide.
-9. Build `backend.wasm`.
-10. Run handoff self-checks.
+4. Implement the Section 16 per-action WASM log markers with the shared logger helpers.
+5. Implement frontend API wrappers.
+6. Implement frontend state and normalization.
+7. Implement UI render functions and event bindings.
+8. Implement modal/toast helpers.
+9. Implement scoped styles from the style guide.
+10. Build `backend.wasm`.
+11. Run handoff self-checks.
 
 ### Section 8: 代码目录与文件清单
 
@@ -388,8 +393,8 @@ Every action: name, request fields, response shape, data capability intent, vali
 
 Required table:
 
-| Action | Handler 文件 | Handler 函数 | Request | Response | Data capability 调用 | 校验 |
-| --- | --- | --- | --- | --- | --- | --- |
+| Action | Handler 文件 | Handler 函数 | Request | Response | Data capability 调用 | 校验 | 日志契约 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 Rules:
 
@@ -397,6 +402,7 @@ Rules:
 - Every handler here must be called by backend dispatch.
 - Data capability intent must name logical models, relations, or query names. Do not use SQL text or physical table names.
 - Validation must include required IDs and enum/status checks.
+- `日志契约` must reference the corresponding complete row in Section 16; it cannot be `无` for a business action.
 
 ### Section 11: 前端模块拆分
 
@@ -524,6 +530,8 @@ Must include:
 - Section 13 class names match components in Section 11.
 - Section 15 App Skill operations cover every primary list, visible detail flow, and Agent-exposed write action.
 - Section 15 field definitions match the backend request fields; read actions are absent from `manifest.actions`.
+- Every Section 10 action has a complete Section 16 logging row, and every listed marker has a concrete handler location.
+- Log messages contain no credentials, request/response bodies, or unredacted personal data.
 - Every required product action has UI, API, backend, validation, success, and failure handling.
 - No user-facing text exposes generated-app internals.
 - No placeholder content remains.
@@ -548,13 +556,37 @@ Rules:
 - Read actions use `read_default` and never enter `manifest.actions`; non-read actions are `button_controlled` and must enter `manifest.actions`.
 - The Function Skill runtime wraps flat tool arguments into the generated app request `{"action":"<action>","data":{...toolInput}}`; frontend and backend continue to use the same action name.
 
+### Section 16: 可观测性与 WASM 日志
+
+WASM execution logs are a troubleshooting contract, not user-facing page content. They are captured by the host runtime and queried from Function Management. The runtime automatically attaches the outer `request_id`, function/app/version/export metadata, timestamp, and invocation context. Guest code must never accept, construct, or print a `request_id` itself.
+
+For every Section 10 action, define the following complete table. One action may have several rows when its critical branches differ; do not replace business markers with only a generic `handle action=...` entry.
+
+| Action | Marker location | Level | Required message pattern | Permitted diagnostic fields | Redaction / exclusion | Expected branch |
+| --- | --- | --- | --- | --- | --- | --- |
+
+Required markers for every action:
+
+- `INFO` on action acceptance or validation start: `action=<action> phase=validate`.
+- `WARN` on validation rejection or prohibited state transition: `action=<action> phase=validate code=<safe_code>`.
+- `DEBUG` or `INFO` for each critical business branch where it affects the result: `action=<action> branch=<stable_name>`.
+- `INFO` immediately before a data capability, external API, or other meaningful business operation: `action=<action> operation=<stable_operation> model=<logical_model>`.
+- `ERROR` on a failed business operation or error exit: `action=<action> phase=execute code=<safe_code> error=<sanitized_message>`.
+- `INFO` for a successful final business result: `action=<action> result=success` with a safe result count, rows affected, or stable state when useful.
+
+Design log messages as single-line `key=value` console messages. Use the exact lower-snake-case action key from Sections 4 and 10. Record only values that aid diagnosis: logical model/query/capability name, stable branch name, safe error code, aggregate count, rows affected, or an explicitly approved non-sensitive business identifier. Do not log passwords, access tokens, API keys, cookies, authorization headers, secrets, raw request/response JSON, full form values, or unredacted personal data. If an identifier can be sensitive, document the masking rule or omit it. Error text must be sanitized and bounded; use a stable error code where the underlying message could expose data.
+
+The table must state where each marker belongs, such as `book_handlers.go: createBook before dataCreate` or `validators.go: validateBookPayload rejection`. Generated code uses the platform helpers `logDebug`, `logInfo`, `logWarn`, and `logError`; it must not use stdout/stderr as a response channel or try to manage correlation IDs. Keep the marker count focused: record state transitions and business boundaries, not every local variable or loop iteration.
+
+The host runtime also records every platform data capability call (`data_list`, `data_get`, `data_create`, `data_update`, `data_delete`, `data_join_query`, and `data_run_query`) with the logical model or query name, safe result count or affected rows, duration, and safe error code. It intentionally excludes filters, IDs, record fields, and raw database errors. Section 16 should therefore define business-intent and branch markers that complement these automatic data-operation logs instead of duplicating them.
+
 ## Workflow Position
 
 ```
 product-doc-builder → technical-doc (this skill) → generated-app-builder
 ```
 
-Sections 8-15 are the handoff contract to code generation. If non-critical details are ambiguous, resolve them with conservative defaults in the relevant section. If ambiguity changes layout, data models, validation, or action behavior, ask the user before writing the draft.
+Sections 8-16 are the handoff contract to code generation. If non-critical details are ambiguous, resolve them with conservative defaults in the relevant section. If ambiguity changes layout, data models, validation, action behavior, or safe observability, ask the user before writing the draft.
 
 ## Failure Contract
 

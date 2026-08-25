@@ -65,6 +65,12 @@ func TestScaffoldPlatformDoesNotExposeRawSQLImports(t *testing.T) {
 	if strings.Contains(platform, "db_query") || strings.Contains(platform, "db_exec") {
 		t.Fatalf("generated platform still exposes raw SQL imports: %s", platform)
 	}
+	if !strings.Contains(platform, "//go:wasmimport platform log") {
+		t.Fatalf("generated platform is missing the bounded WASM logging import: %s", platform)
+	}
+	if !strings.Contains(backendLoggerTemplate(), "func logError") {
+		t.Fatal("generated backend is missing log helper functions")
+	}
 }
 
 func TestArtifactSnapshotRejectsFrontendSymlink(t *testing.T) {

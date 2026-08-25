@@ -98,6 +98,13 @@ func TestCreateAppScaffoldDoesNotInjectDefaultDataModels(t *testing.T) {
 	if len(actions) != 0 {
 		t.Fatalf("expected empty default actions, got %d", len(actions))
 	}
+	loggerSource, err := os.ReadFile(filepath.Join(root, appID, "backend", "logger.go"))
+	if err != nil {
+		t.Fatalf("read generated logger helper: %v", err)
+	}
+	if !strings.Contains(string(loggerSource), "func logInfo") || !strings.Contains(string(loggerSource), "hostLog") {
+		t.Fatalf("generated logger helper is incomplete: %s", loggerSource)
+	}
 	modelsValue, exists := manifest["dataModels"]
 	if !exists || modelsValue == nil {
 		return
@@ -108,6 +115,77 @@ func TestCreateAppScaffoldDoesNotInjectDefaultDataModels(t *testing.T) {
 	}
 	if len(models) != 0 {
 		t.Fatalf("expected no default data models, got %d", len(models))
+	}
+}
+
+func TestScaffoldBackendBuildsWithWASMLogger(t *testing.T) {
+	moduleRoot, err := filepath.Abs(filepath.Join("..", "..", "..", ".."))
+	if err != nil {
+		t.Fatalf("resolve module root: %v", err)
+	}
+	appDir, err := os.MkdirTemp(moduleRoot, ".scaffold-logger-")
+	if err != nil {
+		t.Fatalf("create scaffold test directory: %v", err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(appDir) })
+	backendDir := filepath.Join(appDir, "backend")
+	if err := os.MkdirAll(backendDir, 0o755); err != nil {
+		t.Fatalf("mkdir backend: %v", err)
+	}
+	for name, content := range map[string]string{
+		"main.go":     backendMainTemplate("Logger test"),
+		"models.go":   backendModelsTemplate(),
+		"platform.go": backendPlatformTemplate(),
+		"handlers.go": backendHandlersTemplate(),
+		"logger.go":   backendLoggerTemplate(),
+	} {
+		if err := os.WriteFile(filepath.Join(backendDir, name), []byte(content), 0o644); err != nil {
+			t.Fatalf("write %s: %v", name, err)
+		}
+	}
+	if err := buildScaffoldWASM(appDir); err != nil {
+		t.Fatalf("build scaffold with logger: %v", err)
+	}
+	if info, err := os.Stat(filepath.Join(appDir, "backend.wasm")); err != nil || info.Size() == 0 {
+		t.Fatalf("expected built backend.wasm, info=%v err=%v", info, err)
+	}
+}
+
+func TestScaffoldWASMLoggerFlowsIntoInvocationLogs(t *testing.T) {
+	root, err := os.MkdirTemp(filepath.Join("..", "..", "..", ".."), ".scaffold-runtime-log-")
+	if err != nil {
+		t.Fatalf("create scaffold runtime directory: %v", err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(root) })
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("open sqlite: %v", err)
+	}
+	if err := db.AutoMigrate(&model.GeneratedApp{}, &model.AppRecord{}); err != nil {
+		t.Fatalf("migrate generated app tables: %v", err)
+	}
+	service, err := NewService(context.Background(), root, dao.NewGeneratedApp(db), WithDraftRuntime())
+	if err != nil {
+		t.Fatalf("create runtime: %v", err)
+	}
+	t.Cleanup(func() { _ = service.Close(context.Background()) })
+	appID := "5133e05a-e3a3-4f43-a1f5-72c858a2ea0d"
+	if _, err := service.CreateAppScaffold(context.Background(), ScaffoldInput{AppID: appID, Name: "Logger test"}); err != nil {
+		t.Fatalf("create scaffold: %v", err)
+	}
+	if _, err := service.LoadDraftApp(context.Background(), appID); err != nil {
+		t.Fatalf("load draft app: %v", err)
+	}
+	result, err := service.Invoke(context.Background(), appID, json.RawMessage(`{"action":"status"}`))
+	if err != nil {
+		t.Fatalf("invoke scaffold: %v", err)
+	}
+	var messages []string
+	for _, event := range result.Logs {
+		messages = append(messages, event.Content)
+	}
+	if !strings.Contains(strings.Join(messages, "\n"), "INFO handle action=status") {
+		t.Fatalf("guest logger event missing from invocation logs: %#v", result.Logs)
 	}
 }
 

@@ -22,6 +22,7 @@ service FuncOperationService {
   rpc GetFunctionPreviewFrontend(func_operation_proto.GetFunctionPreviewFrontendReq) returns (func_operation_proto.GetFunctionPreviewFrontendResp);
   rpc GetFunctionPreviewBundle(func_operation_proto.GetFunctionPreviewBundleReq) returns (func_operation_proto.GetFunctionPreviewBundleResp);
   rpc InvokeFunctionPreview(func_operation_proto.InvokeFunctionPreviewReq) returns (func_operation_proto.InvokeFunctionPreviewResp);
+  rpc StreamFunctionPreview(func_operation_proto.StreamFunctionPreviewReq) returns (stream func_operation_proto.StreamFunctionPreviewResp);
 
   rpc ListPublicConfigs(func_operation_proto.ListPublicConfigsReq) returns (func_operation_proto.ListPublicConfigsResp);
   rpc CreatePublicConfig(func_operation_proto.CreatePublicConfigReq) returns (func_operation_proto.CreatePublicConfigResp);
@@ -53,6 +54,8 @@ service FuncOperationService {
   rpc GetGeneratedAppFrontend(func_operation_proto.GetGeneratedAppFrontendReq) returns (func_operation_proto.GetGeneratedAppFrontendResp);
   rpc GetGeneratedAppFrontendBundle(func_operation_proto.GetGeneratedAppFrontendBundleReq) returns (func_operation_proto.GetGeneratedAppFrontendBundleResp);
   rpc InvokeGeneratedApp(func_operation_proto.InvokeGeneratedAppReq) returns (func_operation_proto.InvokeGeneratedAppResp);
+  rpc ListFunctionExecutionLogs(func_operation_proto.ListFunctionExecutionLogsReq) returns (func_operation_proto.ListFunctionExecutionLogsResp);
+  rpc GetFunctionExecutionLog(func_operation_proto.GetFunctionExecutionLogReq) returns (func_operation_proto.GetFunctionExecutionLogResp);
   rpc ListFunctionSkills(func_operation_proto.ListFunctionSkillsReq) returns (func_operation_proto.ListFunctionSkillsResp);
   rpc SetFunctionSkillEnabled(func_operation_proto.SetFunctionSkillEnabledReq) returns (func_operation_proto.SetFunctionSkillEnabledResp);
   rpc IssueFunctionSkillGrant(func_operation_proto.IssueFunctionSkillGrantReq) returns (func_operation_proto.IssueFunctionSkillGrantResp);

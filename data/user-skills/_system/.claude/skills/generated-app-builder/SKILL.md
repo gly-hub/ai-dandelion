@@ -94,6 +94,7 @@ Before implementing permissions, actions, frontend controls, or backend dispatch
 - The generated frontend must be a real interactive business page, not a summary of Agent output, API design, or implementation notes.
 - The first screen must be usable. It should show the main records/work queue/dashboard with an obvious primary action, not a hero page or onboarding explanation.
 - Every primary action in the product doc must have an implemented frontend control, API wrapper, backend action, validation, success feedback, and error feedback.
+- Implement every applicable per-action log marker from Section 16 of the applied technical document. Business execution must be diagnosable from the WASM execution log rather than relying only on request/response payloads.
 - Every button-permission-controlled action must be declared in `manifest.actions`; read-only actions must not be declared there. For full frontend/backend permission behavior, follow `references/permissions.md`.
 - Never leave scaffold placeholder UI after real generation. Replace "功能页面正在生成" style fallback pages with the actual feature.
 - Follow the shared generated-app style guide. Do not invent a one-off visual system, custom palette, marketing page style, or decorative layout unless explicitly requested.
@@ -137,6 +138,7 @@ Every completed generated app should include:
 - `generated_apps/<app_id>/frontend/*.js` for non-trivial frontend modules such as API, state, UI, modal, and styles
 - `generated_apps/<app_id>/backend/main.go`
 - `generated_apps/<app_id>/backend/platform.go`
+- `generated_apps/<app_id>/backend/logger.go`
 - `generated_apps/<app_id>/backend/models.go`
 - `generated_apps/<app_id>/backend/<business>_handlers.go` or similarly named handler file
 - `generated_apps/<app_id>/backend.wasm`
@@ -361,7 +363,7 @@ Build the backend as TinyGo/WASI-compatible Go:
 - Build WASM with `GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o ../backend.wasm .` from the backend directory. The `-buildmode=c-shared` flag is required so `//go:wasmexport` functions are callable as a WASI reactor.
 - Decode a request envelope such as `{ "action": "...", "data": {...} }`.
 - Implement action handlers for all frontend operations.
-- Include `platform.go` host imports for `data_list`, `data_get`, `data_create`, `data_update`, `data_delete`, `data_join_query`, `data_run_query`, `result_len`, `result_read`, and `result_store`.
+- Include `platform.go` host imports for `data_list`, `data_get`, `data_create`, `data_update`, `data_delete`, `data_join_query`, `data_run_query`, `log`, `result_len`, `result_read`, and `result_store`.
 - `platform.go` import signatures must match the host exactly:
 
 ```go
@@ -391,10 +393,19 @@ func resultRead(handle uint64, outPtr uint32) uint32
 
 //go:wasmimport platform result_store
 func resultStore(reqPtr, reqLen uint32) uint64
+
+//go:wasmimport platform log
+func hostLog(level uint32, messagePtr uint32, messageLen uint32)
 ```
 
 - `result_read` must return `uint32` (bytes written). Do not declare it as `void`.
 - Return JSON through `storeResponse`, not stdout.
+- Keep `backend/logger.go` and its `logDebug`, `logInfo`, `logWarn`, and `logError` helpers when creating or repairing an app. Those helpers call `hostLog`; do not replace them with `fmt.Println`, `println`, or direct stdout/stderr writes.
+- Implement the applied technical document's Section 16 table at the listed validation exits, critical branches, data/capability operation boundaries, business failures, and successful outcomes. Generic runtime logs alone do not satisfy this requirement.
+- The host automatically correlates every guest log with the outer `request_id`; do not accept, generate, include, or log a request ID in WASM source.
+- The host automatically logs each platform `data_*` capability call with its logical model/query, aggregate result, duration, and safe error code. Add the Section 16 business markers around the operation; do not duplicate its low-level data-operation lines or log filters, IDs, records, or raw database errors.
+- Log single-line `key=value` messages using stable action names. Use `logWarn` for expected validation/state rejections and `logError` for failed operations/error exits; use `logInfo` for accepted actions, external/data capability boundaries, and final outcomes. Reserve `logDebug` for diagnosis-relevant branch detail.
+- Never log passwords, access tokens, cookies, authorization headers, API keys, secrets, raw request/response JSON, complete form payloads, or unredacted personal data. Sanitize and bound error text; prefer stable error codes and aggregate counts or approved non-sensitive identifiers.
 - Use data capability wrappers:
   - `dataList(DataListRequest{Model: "book", ...})`
   - `dataCreate(DataWriteRequest{Model: "book", Record: ...})`
@@ -419,14 +430,14 @@ Action parity is mandatory:
 Follow this sequence when creating or repairing an app:
 
 1. Read applied product and technical documents from paths in the prompt.
-2. Implement per technical doc sections 8-14; derive entities/actions from Section 10, permission behavior from `references/permissions.md`, interaction behavior from Section 12, and style rules from Section 13 plus `references/style-guide.md`.
+2. Implement per technical doc sections 8-16; derive entities/actions from Section 10, the per-action logging plan from Section 16, permission behavior from `references/permissions.md`, interaction behavior from Section 12, and style rules from Section 13 plus `references/style-guide.md`.
 3. Use prompt `appId`, `appDir`, and `tablePrefix` — do not re-allocate identity unless prompt omits them.
 4. Create or update the full app directory and all required source files under `appDir`.
 5. Write `manifest.json` with UUID-only id plus structured `dataModels`, `relations`, and `queries` from the technical doc. Do not write DDL or SQL for new apps.
 6. Write `frontend.js` and `frontend/*.js` per Section 11.
-7. Write backend Go files with matching actions per Section 10.
+7. Write backend Go files with matching actions per Section 10 and the planned WASM log markers from Section 16.
 8. Build `backend.wasm` from the backend source. Confirm `backend.wasm` is newer than every `backend/*.go` source file.
-9. Verify import/export consistency and action parity between frontend and backend.
+9. Verify import/export consistency, action parity, and Section 16 logging coverage.
 10. Inspect the final frontend for placeholder-only content and missing controls.
 11. Output the completion tag from the prompt as the last line.
 
@@ -442,6 +453,9 @@ Before final response, check:
 - Manifest declares `relations` for every multi-model read used by backend actions.
 - Manifest declares `queries` for every `dataRunQuery` call.
 - Backend contains no SQL strings (`SELECT`, `INSERT`, `UPDATE`, `DELETE`), no physical table constants, and no `db_query` / `db_exec` imports.
+- `backend/platform.go` imports `platform log`, and `backend/logger.go` retains usable `logDebug`, `logInfo`, `logWarn`, and `logError` helpers.
+- Every Section 10 action implements the corresponding Section 16 markers for validation rejection, critical business boundaries, failure, and final outcome. Logs are business diagnostics, not only generic invocation messages.
+- Log statements contain no credentials, secret material, raw request/response payloads, or unredacted personal data; no WASM source manually includes a `request_id`.
 - Every `dataRunQuery` call uses a manifest query name, not SQL text.
 - `backend.wasm` exists and was rebuilt after source changes; its modification time must be later than all `backend/*.go` files.
 - `frontend.js` exports `render` and uses `context.invokeData`.
