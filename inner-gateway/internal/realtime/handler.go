@@ -27,6 +27,17 @@ type ClientManager interface {
 type Writer func(Envelope) error
 type CommandHandler func(context.Context, Envelope, Writer)
 
+func newConnectionWriter(c *fiberws.Conn, writeMu *sync.Mutex, connectionClosed *bool) Writer {
+	return func(event Envelope) error {
+		writeMu.Lock()
+		defer writeMu.Unlock()
+		if c == nil || *connectionClosed || c.Conn == nil {
+			return errors.New("realtime connection is closed")
+		}
+		return c.WriteJSON(event)
+	}
+}
+
 type agentRun struct {
 	userID string
 	cancel context.CancelFunc
@@ -175,7 +186,16 @@ func (h *Handler) Serve(c *fiberws.Conn) {
 	_ = c.SetReadDeadline(time.Now().Add(70 * time.Second))
 	c.SetPongHandler(func(string) error { return c.SetReadDeadline(time.Now().Add(70 * time.Second)) })
 	var writeMu sync.Mutex
-	write := func(event Envelope) error { writeMu.Lock(); defer writeMu.Unlock(); return c.WriteJSON(event) }
+	connectionClosed := false
+	write := newConnectionWriter(c, &writeMu, &connectionClosed)
+	// Fiber's websocket wrapper returns c to a pool after Serve returns and
+	// clears c.Conn. Mark the connection closed while holding the same mutex as
+	// every asynchronous write so stream goroutines cannot write after reuse.
+	defer func() {
+		writeMu.Lock()
+		connectionClosed = true
+		writeMu.Unlock()
+	}()
 	connectionID := uuid.NewString()
 	h.clientsMu.RLock()
 	userConnections := len(h.clients[user.ID])
@@ -200,7 +220,9 @@ func (h *Handler) Serve(c *fiberws.Conn) {
 			select {
 			case <-ticker.C:
 				writeMu.Lock()
-				_ = c.WriteMessage(fiberws.PingMessage, nil)
+				if !connectionClosed && c.Conn != nil {
+					_ = c.WriteMessage(fiberws.PingMessage, nil)
+				}
 				writeMu.Unlock()
 			case <-stopHeartbeat:
 				return

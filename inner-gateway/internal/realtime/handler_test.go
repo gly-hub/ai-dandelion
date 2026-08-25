@@ -2,9 +2,11 @@ package realtime
 
 import (
 	"encoding/json"
+	"sync"
 	"testing"
 
 	"github.com/gly-hub/ai-dandelion/toolbox/eventbus"
+	fiberws "github.com/gofiber/websocket/v2"
 )
 
 func TestPublishEventTargetsUserConnections(t *testing.T) {
@@ -41,5 +43,20 @@ func TestPublishEventKeepsTargetedHistoryPrivate(t *testing.T) {
 	}
 	if len(h.history) != 1 || h.history[0].target != "u-a" {
 		t.Fatalf("history = %+v", h.history)
+	}
+}
+
+func TestConnectionWriterRejectsReleasedConnection(t *testing.T) {
+	conn := &fiberws.Conn{}
+	writeMu := &sync.Mutex{}
+	closed := false
+	write := newConnectionWriter(conn, writeMu, &closed)
+
+	if err := write(Envelope{Type: "test"}); err == nil {
+		t.Fatal("expected released websocket connection to reject writes")
+	}
+	closed = true
+	if err := write(Envelope{Type: "test"}); err == nil {
+		t.Fatal("expected closed websocket connection to reject writes")
 	}
 }

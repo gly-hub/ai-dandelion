@@ -40,6 +40,7 @@ type MessageLogic struct {
 	attachmentResolver    *AttachmentResolver
 	askUserQuestionBroker *AskUserQuestionBroker
 	toolPermissionBroker  *ToolPermissionBroker
+	navigationRuntime     *NavigationRuntime
 }
 
 var (
@@ -87,6 +88,12 @@ func NewMessageLogic(
 func (m *MessageLogic) SetAttachmentResolver(resolver *AttachmentResolver) {
 	if m != nil {
 		m.attachmentResolver = resolver
+	}
+}
+
+func (m *MessageLogic) SetNavigationRuntime(runtime *NavigationRuntime) {
+	if m != nil {
+		m.navigationRuntime = runtime
 	}
 }
 
@@ -235,6 +242,11 @@ func (m *MessageLogic) StreamMessage(
 					return err
 				}
 			}
+			if actionJSON := uiActionFromToolResult(event); actionJSON != "" {
+				if err := send(streamRespFromEvent(agent.Event{Type: "ui_action", UIActionJSON: actionJSON}, nil)); err != nil {
+					return err
+				}
+			}
 		case err, ok := <-errs:
 			if !ok {
 				errs = nil
@@ -306,6 +318,18 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 		MCPServers:      mcpServers,
 		AskUserQuestion: m.askUserQuestionHandler(sessionID),
 		ToolPermission:  m.toolPermissionHandler(sessionID),
+	}
+	if m.navigationRuntime != nil {
+		navigationServer, navigationErr := m.navigationRuntime.Server(ctx)
+		if navigationErr != nil {
+			return AgentEngineRunConfig{}, navigationErr
+		}
+		if navigationServer.Instance != nil {
+			if engineConfig.SDKMCPServers == nil {
+				engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig)
+			}
+			engineConfig.SDKMCPServers[navigationMCPServerID] = navigationServer
+		}
 	}
 	functionSkillIDs := extractSessionReferenceIDs(sessionRefs, model.SessionReferenceTypeFunctionSkill)
 	if len(functionSkillIDs) == 0 {
@@ -1002,12 +1026,74 @@ func streamRespFromEvent(event agent.Event, message *aiagent.Message) *aiagent.S
 		ToolInput:       event.ToolInput,
 		ResultText:      event.ResultText,
 		AgentSessionId:  event.AgentSessionID,
+		UiActionJson:    event.UIActionJSON,
 		IsError:         event.IsError,
 		Done:            event.Done,
 		Message:         message,
 	}
 	resp.Content = mustMarshalStreamContent(resp)
 	return resp
+}
+
+func uiActionFromToolResult(event agent.Event) string {
+	if event.Type != "tool_result" {
+		return ""
+	}
+	toolName := strings.ToLower(event.ToolName)
+	if !strings.Contains(toolName, "navigate_to_target") {
+		return ""
+	}
+	var value any
+	if json.Unmarshal([]byte(event.ResultText), &value) != nil {
+		return ""
+	}
+	action, ok := findUIAction(value, 0)
+	if !ok {
+		return ""
+	}
+	data, err := json.Marshal(action)
+	if err != nil {
+		return ""
+	}
+	return string(data)
+}
+
+// MCP tool results are exposed by the SDK as a content-block array. The text
+// block itself contains the JSON returned by the SDK MCP handler, so unwrap
+// both layers while also accepting the direct-object shape used by tests and
+// other runners.
+func findUIAction(value any, depth int) (any, bool) {
+	if depth > 4 || value == nil {
+		return nil, false
+	}
+	switch item := value.(type) {
+	case string:
+		var nested any
+		if json.Unmarshal([]byte(item), &nested) != nil {
+			return nil, false
+		}
+		return findUIAction(nested, depth+1)
+	case []any:
+		for _, child := range item {
+			if action, ok := findUIAction(child, depth+1); ok {
+				return action, true
+			}
+		}
+	case map[string]any:
+		if item["action"] == "navigate" {
+			if target, ok := item["target"].(map[string]any); ok && strings.TrimSpace(navStringValue(target["targetId"])) != "" {
+				return item, true
+			}
+		}
+		for _, key := range []string{"uiAction", "ui_action", "content", "text"} {
+			if child, exists := item[key]; exists {
+				if action, ok := findUIAction(child, depth+1); ok {
+					return action, true
+				}
+			}
+		}
+	}
+	return nil, false
 }
 
 func mustMarshalStreamContent(resp *aiagent.StreamMessageResp) string {
@@ -1024,6 +1110,7 @@ func mustMarshalStreamContent(resp *aiagent.StreamMessageResp) string {
 		IsError         bool             `json:"isError,omitempty"`
 		Done            bool             `json:"done,omitempty"`
 		Message         *aiagent.Message `json:"message,omitempty"`
+		UIActionJSON    string           `json:"uiActionJson,omitempty"`
 	}{
 		Type:            resp.Type,
 		Text:            resp.Text,
@@ -1037,6 +1124,7 @@ func mustMarshalStreamContent(resp *aiagent.StreamMessageResp) string {
 		IsError:         resp.IsError,
 		Done:            resp.Done,
 		Message:         resp.Message,
+		UIActionJSON:    resp.UiActionJson,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

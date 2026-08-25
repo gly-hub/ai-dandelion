@@ -52,11 +52,13 @@ func RegisterHandler(s *rpc.Server) {
 		panic(err)
 	}
 	attachmentResolver := logic.NewAttachmentResolver(systemproto.NewSystemServiceClient(systemConn), global.GetConfig().AgentConfig.AttachmentStorageDir)
+	navigationRuntime := logic.NewNavigationRuntime(systemproto.NewSystemServiceClient(systemConn))
 	agentEngine := logic.NewAgentEngine(runnerFactory, agentModelLogic)
 
 	sessionLogic := logic.NewSessionLogic(sessionDao, runnerFactory.DefaultRunner())
 	messageLogic := logic.NewMessageLogic(sessionDao, messageDao, sessionReferenceDao, runnerFactory, agentModelLogic, agentSessionConfigDao, skillLogic, mcpLogic, functionSkillRuntime)
 	messageLogic.SetAttachmentResolver(attachmentResolver)
+	messageLogic.SetNavigationRuntime(navigationRuntime)
 	runtime := logic.NewAgentBotRuntime(agentBotDao, sessionLogic, messageLogic, agentEngine, skillLogic, mcpLogic)
 	agentBotLogic := logic.NewAgentBotLogic(agentBotDao, runtime.Reload)
 	if err := runtime.Start(context.Background()); err != nil {

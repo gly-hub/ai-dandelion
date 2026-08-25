@@ -76,7 +76,9 @@ func TestStreamStateAssistantMessageEmitsDeltaOnly(t *testing.T) {
 }
 
 func TestEventsFromUserIncludesToolResult(t *testing.T) {
-	events := eventsFromUser(&claudeagentsdk.UserMessage{
+	state := newStreamState()
+	state.toolNames["tool-1"] = "mcp__navigation__navigate_to_target"
+	events := state.eventsFromUser(&claudeagentsdk.UserMessage{
 		Content: []claudeagentsdk.ContentBlock{
 			claudeagentsdk.ToolResultBlock{
 				ToolUseID: "tool-1",
@@ -90,6 +92,9 @@ func TestEventsFromUserIncludesToolResult(t *testing.T) {
 	}
 	if events[0].Type != "tool_result" || !events[0].IsError {
 		t.Fatalf("unexpected tool result event: %#v", events[0])
+	}
+	if events[0].ToolName != "mcp__navigation__navigate_to_target" {
+		t.Fatalf("expected originating tool name, got %#v", events[0])
 	}
 }
 
