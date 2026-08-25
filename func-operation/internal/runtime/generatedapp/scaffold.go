@@ -162,7 +162,6 @@ func buildScaffoldWASM(appDir string) error {
 	cmd.Env = append(os.Environ(),
 		"GOOS=wasip1",
 		"GOARCH=wasm",
-		"GOCACHE=/private/tmp/ai-dandelion-go-cache",
 	)
 	out, err := cmd.CombinedOutput()
 	if err != nil {

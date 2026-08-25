@@ -18,6 +18,15 @@ func TestFunctionExecutionLogListByFunctionIDPaginatesFilteredRows(t *testing.T)
 	if err := db.AutoMigrate(&model.FunctionExecutionLog{}); err != nil {
 		t.Fatalf("migrate execution logs: %v", err)
 	}
+	for _, indexName := range []string{
+		"idx_func_exec_logs_function_created_id",
+		"idx_func_exec_logs_function_request_id",
+		"idx_func_exec_logs_function_type_created_id",
+	} {
+		if !db.Migrator().HasIndex(&model.FunctionExecutionLog{}, indexName) {
+			t.Fatalf("expected execution log index %q", indexName)
+		}
+	}
 	store := NewFunctionExecutionLog(db)
 	for index := 1; index <= 5; index++ {
 		item := &model.FunctionExecutionLog{
