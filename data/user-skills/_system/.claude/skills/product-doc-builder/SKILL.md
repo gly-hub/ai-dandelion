@@ -39,7 +39,7 @@ The frontend sends a short prompt like:
 功能描述：...
 draft 文件：generated_apps/<app-id>/documents/product/draft/product-doc.md
 完成标签：<func-operation-document-ready function-id="<function-id>" doc-type="product" />
-失败标签：<func-operation-document-failed function-id="<function-id>" doc-type="product" />
+待继续标签：<func-operation-continue function-id="<function-id>" conversation="product" />
 ```
 
 When you see this shape:
@@ -49,8 +49,9 @@ When you see this shape:
 3. Write the full document to the exact `draft 文件` path only after the scope is clear enough (overwrite if exists).
 4. Reply with 1-3 sentence summary only; do not paste the full document in chat.
 5. Put `完成标签` alone on the last line when successful.
-6. Put `失败标签` alone on the last line when blocked.
-7. Never write completion or failure tags inside `draft 文件` or any document body. Tags are chat-only signals.
+6. Put `待继续标签` alone on the last line only when the work remains unfinished and a later AI turn must continue it because of a turn, time, or execution boundary.
+7. When waiting for user clarification or reporting a blocker, do not emit either tag.
+8. Never write either tag inside `draft 文件` or any document body. Tags are chat-only signals.
 
 ## Document Storage
 
@@ -217,19 +218,9 @@ product-doc (this skill) → technical-doc-builder → generated-app-builder
 
 Product doc defines *what users can do*; later steps define *how*. Do not pre-empt technical sections (tables, APIs, file trees), but do define concrete pages, operations, and states.
 
-## Failure Contract
+## Blocked Work
 
-When blocked because the file cannot be written:
-
-1. One short blocker summary.
-2. Failure tag alone on the last line.
-
-When blocked because product scope is unclear:
-
-1. Ask 1-3 concise follow-up questions in chat.
-2. Do not write or overwrite the draft file.
-3. Do not emit the completion tag.
-4. Emit the failure tag only if the surrounding automation requires an explicit failed run; otherwise wait for the user's answer.
+When the file cannot be written or product scope is unclear, explain the blocker or ask 1-3 concise follow-up questions in chat. Do not write or overwrite the draft file, and do not emit either tag.
 
 ## Public Configuration Decisions
 

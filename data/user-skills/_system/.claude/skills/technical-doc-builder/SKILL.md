@@ -39,7 +39,7 @@ The frontend sends a short prompt like:
 产品文档（applied）：generated_apps/<app-id>/documents/product/applied/product-doc.md
 draft 文件：generated_apps/<app-id>/documents/technical/draft/technical-doc.md
 完成标签：<func-operation-document-ready function-id="<function-id>" doc-type="technical" />
-失败标签：<func-operation-document-failed function-id="<function-id>" doc-type="technical" />
+待继续标签：<func-operation-continue function-id="<function-id>" conversation="technical" />
 ```
 
 When you see this shape:
@@ -51,8 +51,9 @@ When you see this shape:
 5. Write the full document to the exact `draft 文件` path only after the implementation contract is clear enough (overwrite if exists).
 6. Reply with 1-3 sentence summary only; do not paste the full document in chat.
 7. Put `完成标签` alone on the last line when successful.
-8. Put `失败标签` alone on the last line when blocked.
-9. Never write completion or failure tags inside `draft 文件` or any document body. Tags are chat-only signals.
+8. Put `待继续标签` alone on the last line only when the work remains unfinished and a later AI turn must continue it because of a turn, time, or execution boundary.
+9. When waiting for user clarification or reporting a blocker, do not emit either tag.
+10. Never write either tag inside `draft 文件` or any document body. Tags are chat-only signals.
 
 ## Document Storage
 
@@ -588,19 +589,9 @@ product-doc-builder → technical-doc (this skill) → generated-app-builder
 
 Sections 8-16 are the handoff contract to code generation. If non-critical details are ambiguous, resolve them with conservative defaults in the relevant section. If ambiguity changes layout, data models, validation, action behavior, or safe observability, ask the user before writing the draft.
 
-## Failure Contract
+## Blocked Work
 
-When blocked because the product doc cannot be read or the file cannot be written:
-
-1. One short blocker summary.
-2. Failure tag alone on the last line.
-
-When blocked because implementation-critical facts are unclear:
-
-1. Ask 1-3 concise follow-up questions in chat.
-2. Do not write or overwrite the draft file.
-3. Do not emit the completion tag.
-4. Emit the failure tag only if the surrounding automation requires an explicit failed run; otherwise wait for the user's answer.
+When the product doc cannot be read, the file cannot be written, or implementation-critical facts are unclear, explain the blocker or ask 1-3 concise follow-up questions in chat. Do not write or overwrite the draft file, and do not emit either tag.
 
 ## Public Configuration Contract
 

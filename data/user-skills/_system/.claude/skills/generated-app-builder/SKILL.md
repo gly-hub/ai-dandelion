@@ -58,7 +58,7 @@ appId：550e8400-e29b-41d4-a716-446655440000
 appDir：generated_apps/550e8400-...
 tablePrefix：func_42
 完成标签：<func-operation-generated-app-ready function-id="<function-id>" />
-失败标签：<func-operation-generated-app-failed function-id="<function-id>" />
+待继续标签：<func-operation-continue function-id="<function-id>" conversation="generation" />
 ```
 
 When you see this shape:
@@ -70,9 +70,10 @@ When you see this shape:
 5. Rebuild `backend.wasm` after backend changes; confirm it is newer than all `backend/*.go` files.
 6. Reply briefly in chat; do not dump full source or doc content.
 7. Put `完成标签` alone on the last line when files are complete and verifiable.
-8. Put `失败标签` alone on the last line when blocked.
-9. Never write completion or failure tags inside source files, documents, or `manifest.json`. Tags are chat-only signals.
-10. If information is insufficient, ask focused follow-up questions before generating.
+8. Put `待继续标签` alone on the last line only when the work remains unfinished and a later AI turn must continue it because of a turn, time, or execution boundary.
+9. When waiting for user clarification or reporting a blocker, do not emit either tag.
+10. Never write either tag inside source files, documents, or `manifest.json`. Tags are chat-only signals.
+11. If information is insufficient, ask focused follow-up questions before generating.
 
 Do not ask the user to run curl, hit backend APIs directly, or call reload/materialize endpoints.
 
