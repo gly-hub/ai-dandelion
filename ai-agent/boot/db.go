@@ -60,17 +60,15 @@ func migrate(stage string) bool {
 	}
 
 	for _, model := range models {
-		if dbIns.Migrator().HasTable(model) && (stage == "production") {
-			continue
-		}
+		// AutoMigrate is additive for these models. Existing production tables
+		// must still receive new message correlation and terminal-state columns.
 		var err error
 		if stage == "production" {
 			err = dbIns.Migrator().AutoMigrate(model)
-			gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
 		} else {
 			err = dbIns.AutoMigrate(model)
-			gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
 		}
+		gormutil.ApplyTableComment(dbIns, model.TableName(), model.TableComment())
 		if err != nil {
 			logger.Error(context.Background(), "Migrate Model Error:%v", err)
 		}

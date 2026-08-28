@@ -105,6 +105,34 @@ func (s *FuncOperationService) EnsureFunctionSession(ctx context.Context, req *f
 	return
 }
 
+func (s *FuncOperationService) StartFunctionConversationOperation(ctx context.Context, req *funcoperation.StartFunctionConversationOperationReq) (
+	out *funcoperation.StartFunctionConversationOperationResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Operation, err = s.conversationOperationLogic.Start(ctx, req)
+	return
+}
+
+func (s *FuncOperationService) GetLatestFunctionConversationOperation(ctx context.Context, req *funcoperation.GetLatestFunctionConversationOperationReq) (
+	out *funcoperation.GetLatestFunctionConversationOperationResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Operation, err = s.conversationOperationLogic.GetLatest(ctx, req)
+	return
+}
+
+func (s *FuncOperationService) FinishFunctionConversationOperation(ctx context.Context, req *funcoperation.FinishFunctionConversationOperationReq) (
+	out *funcoperation.FinishFunctionConversationOperationResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Operation, err = s.conversationOperationLogic.Finish(ctx, req)
+	return
+}
+
+func (s *FuncOperationService) SubmitFunctionConversationProgress(ctx context.Context, req *funcoperation.SubmitFunctionConversationProgressReq) (
+	out *funcoperation.SubmitFunctionConversationProgressResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Operation, out.AlreadySubmitted, err = s.conversationOperationLogic.SubmitProgress(ctx, req)
+	return
+}
+
 func (s *FuncOperationService) ListFunctionDataForms(ctx context.Context, req *funcoperation.ListFunctionDataFormsReq) (
 	out *funcoperation.ListFunctionDataFormsResp, err error) {
 	out, err = s.functionLogic.ListFunctionDataForms(ctx, req)

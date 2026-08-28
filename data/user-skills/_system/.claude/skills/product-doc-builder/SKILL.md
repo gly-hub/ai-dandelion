@@ -38,19 +38,17 @@ The frontend sends a short prompt like:
 功能名称：...
 功能描述：...
 draft 文件：generated_apps/<app-id>/documents/product/draft/product-doc.md
-完成标签：<func-operation-document-ready function-id="<function-id>" doc-type="product" />
-失败标签：<func-operation-document-failed function-id="<function-id>" doc-type="product" />
 ```
 
 When you see this shape:
 
 1. Read `功能名称` and `功能描述` as the only business input unless the user adds more in chat.
-2. Before writing the document, decide whether key product facts are missing. If they are missing and a reasonable assumption would change scope, ask concise follow-up questions instead of writing the draft.
-3. Write the full document to the exact `draft 文件` path only after the scope is clear enough (overwrite if exists).
-4. Reply with 1-3 sentence summary only; do not paste the full document in chat.
-5. Put `完成标签` alone on the last line when successful.
-6. Put `失败标签` alone on the last line when blocked.
-7. Never write completion or failure tags inside `draft 文件` or any document body. Tags are chat-only signals.
+2. Use `TaskCreate` and `TaskUpdate` to plan and execute the current request. The final task must be the product-document completion action.
+3. Before writing the document, decide whether key product facts are missing. If they are missing and a reasonable assumption would change scope, use `AskUserQuestion` to ask concise follow-up questions instead of writing the draft.
+4. Write the full document to the exact `draft 文件` path only after the scope is clear enough (overwrite if exists).
+5. Reply with 1-3 sentence summary only; do not paste the full document in chat.
+6. Only after the complete draft is written, call `submit_product_document_draft` with a concise summary. Never call it while waiting for clarification, blocked, or before the file is complete.
+7. Never emit XML tags, bracketed completion markers, or text status tags in chat or in the document.
 
 ## Document Storage
 
@@ -217,19 +215,9 @@ product-doc (this skill) → technical-doc-builder → generated-app-builder
 
 Product doc defines *what users can do*; later steps define *how*. Do not pre-empt technical sections (tables, APIs, file trees), but do define concrete pages, operations, and states.
 
-## Failure Contract
+## Blocked Work
 
-When blocked because the file cannot be written:
-
-1. One short blocker summary.
-2. Failure tag alone on the last line.
-
-When blocked because product scope is unclear:
-
-1. Ask 1-3 concise follow-up questions in chat.
-2. Do not write or overwrite the draft file.
-3. Do not emit the completion tag.
-4. Emit the failure tag only if the surrounding automation requires an explicit failed run; otherwise wait for the user's answer.
+When the file cannot be written or product scope is unclear, explain the blocker or ask 1-3 concise follow-up questions in chat. Do not write or overwrite the draft file, and do not emit either tag.
 
 ## Public Configuration Decisions
 

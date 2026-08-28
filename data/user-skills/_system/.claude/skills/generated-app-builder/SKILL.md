@@ -57,22 +57,20 @@ The frontend sends a short prompt like:
 appId：550e8400-e29b-41d4-a716-446655440000
 appDir：generated_apps/550e8400-...
 tablePrefix：func_42
-完成标签：<func-operation-generated-app-ready function-id="<function-id>" />
-失败标签：<func-operation-generated-app-failed function-id="<function-id>" />
 ```
 
 When you see this shape:
 
 1. Read both applied documents from the given paths before writing any code.
-2. Implement strictly per technical doc sections 8-11 (directory, manifest/tables, actions, frontend modules). Do not redesign structure.
-3. Modify files only under `appDir`. Do not create other `generated_apps/<name>/` folders.
-4. Use `appId` for manifest `id` and folder name. Treat `tablePrefix` as legacy metadata only; new apps must use manifest `dataModels`, `relations`, and `queries`.
-5. Rebuild `backend.wasm` after backend changes; confirm it is newer than all `backend/*.go` files.
-6. Reply briefly in chat; do not dump full source or doc content.
-7. Put `完成标签` alone on the last line when files are complete and verifiable.
-8. Put `失败标签` alone on the last line when blocked.
-9. Never write completion or failure tags inside source files, documents, or `manifest.json`. Tags are chat-only signals.
-10. If information is insufficient, ask focused follow-up questions before generating.
+2. Use `TaskCreate` and `TaskUpdate` to plan and execute the current request. The final task must be the app completion and verification action.
+3. Implement strictly per technical doc sections 8-11 (directory, manifest/tables, actions, frontend modules). Do not redesign structure.
+4. Modify files only under `appDir`. Do not create other `generated_apps/<name>/` folders.
+5. Use `appId` for manifest `id` and folder name. Treat `tablePrefix` as legacy metadata only; new apps must use manifest `dataModels`, `relations`, and `queries`.
+6. Rebuild `backend.wasm` after backend changes; confirm it is newer than all `backend/*.go` files.
+7. Reply briefly in chat; do not dump full source or doc content.
+8. Only after files, build, and verification are complete, call `submit_generated_app` with a concise summary. Never call it while waiting for clarification, blocked, or before verification succeeds.
+9. Never emit XML tags, bracketed completion markers, or text status tags in chat, source files, documents, or `manifest.json`.
+10. If information is insufficient, use `AskUserQuestion` before generating.
 
 Do not ask the user to run curl, hit backend APIs directly, or call reload/materialize endpoints.
 

@@ -42,6 +42,9 @@ message Message {
   repeated MessagePart parts = 5 [(gogoproto.jsontag) = 'parts,omitempty'];
   int64 created_at = 6 [(gogoproto.jsontag) = 'createdAt'];
   repeated MessageExtra extra = 7 [(gogoproto.jsontag) = 'extra,omitempty'];
+  string operation_id = 8 [(gogoproto.jsontag) = 'operationId,omitempty'];
+  string terminal_status = 9 [(gogoproto.jsontag) = 'terminalStatus,omitempty'];
+  string terminal_reason = 10 [(gogoproto.jsontag) = 'terminalReason,omitempty'];
 }
 
 message GetMessageReq {
@@ -68,6 +71,9 @@ message StreamMessageReq {
   repeated MessageExtra extra = 8 [(gogoproto.jsontag) = 'extra,omitempty'];
   string user_id = 9 [(gogoproto.jsontag) = 'userId,omitempty'];
   repeated MessagePart message_parts = 10 [(gogoproto.jsontag) = 'messageParts,omitempty'];
+  string function_operation_id = 11 [(gogoproto.jsontag) = 'functionOperationId,omitempty'];
+  string function_id = 12 [(gogoproto.jsontag) = 'functionId,omitempty'];
+  string function_conversation = 13 [(gogoproto.jsontag) = 'functionConversation,omitempty'];
 }
 
 message StreamMessageResp {
@@ -85,6 +91,8 @@ message StreamMessageResp {
   string tool_title = 12 [(gogoproto.jsontag) = 'toolTitle,omitempty'];
   string tool_description = 13 [(gogoproto.jsontag) = 'toolDescription,omitempty'];
   string ui_action_json = 14 [(gogoproto.jsontag) = 'uiActionJson,omitempty'];
+  string terminal_status = 15 [(gogoproto.jsontag) = 'terminalStatus,omitempty'];
+  string terminal_reason = 16 [(gogoproto.jsontag) = 'terminalReason,omitempty'];
 }
 
 message SubmitAskUserQuestionReq {
