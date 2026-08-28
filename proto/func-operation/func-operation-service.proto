@@ -4,6 +4,7 @@ package funcoperation;
 option go_package = "./;funcoperation";
 import "function.proto";
 import "function_skill.proto";
+import "conversation_operation.proto";
 
 service FuncOperationService {
   rpc ListFunctions(func_operation_proto.ListFunctionsReq) returns (func_operation_proto.ListFunctionsResp);
@@ -16,6 +17,10 @@ service FuncOperationService {
   rpc TouchFunctionCodeDraft(func_operation_proto.TouchFunctionCodeDraftReq) returns (func_operation_proto.TouchFunctionCodeDraftResp);
   rpc ApplyFunctionCode(func_operation_proto.ApplyFunctionCodeReq) returns (func_operation_proto.ApplyFunctionCodeResp);
   rpc EnsureFunctionSession(func_operation_proto.EnsureFunctionSessionReq) returns (func_operation_proto.EnsureFunctionSessionResp);
+  rpc StartFunctionConversationOperation(func_operation_proto.StartFunctionConversationOperationReq) returns (func_operation_proto.StartFunctionConversationOperationResp);
+  rpc GetLatestFunctionConversationOperation(func_operation_proto.GetLatestFunctionConversationOperationReq) returns (func_operation_proto.GetLatestFunctionConversationOperationResp);
+  rpc FinishFunctionConversationOperation(func_operation_proto.FinishFunctionConversationOperationReq) returns (func_operation_proto.FinishFunctionConversationOperationResp);
+  rpc SubmitFunctionConversationProgress(func_operation_proto.SubmitFunctionConversationProgressReq) returns (func_operation_proto.SubmitFunctionConversationProgressResp);
   rpc DeleteFunction(func_operation_proto.DeleteFunctionReq) returns (func_operation_proto.DeleteFunctionResp);
   rpc ListFunctionDataForms(func_operation_proto.ListFunctionDataFormsReq) returns (func_operation_proto.ListFunctionDataFormsResp);
   rpc DeleteFunctionDataForm(func_operation_proto.DeleteFunctionDataFormReq) returns (func_operation_proto.DeleteFunctionDataFormResp);

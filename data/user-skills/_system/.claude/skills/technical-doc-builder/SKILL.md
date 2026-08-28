@@ -38,22 +38,19 @@ The frontend sends a short prompt like:
 功能名称：...
 产品文档（applied）：generated_apps/<app-id>/documents/product/applied/product-doc.md
 draft 文件：generated_apps/<app-id>/documents/technical/draft/technical-doc.md
-完成标签：<func-operation-document-ready function-id="<function-id>" doc-type="technical" />
-待继续标签：<func-operation-continue function-id="<function-id>" conversation="technical" />
 ```
 
 When you see this shape:
 
 1. Read the applied product document from the given path first.
-2. Read generated-app-builder `references/structure.md` and `references/style-guide.md` when available; align the technical contract with both.
-3. Before writing the document, decide whether implementation-critical facts are missing. If missing facts would change data models, actions, layout, validation, or generated-app contracts, ask concise follow-up questions instead of writing the draft.
-4. Draft the technical document strictly from the product doc and generated-app contracts; do not expand scope.
-5. Write the full document to the exact `draft 文件` path only after the implementation contract is clear enough (overwrite if exists).
-6. Reply with 1-3 sentence summary only; do not paste the full document in chat.
-7. Put `完成标签` alone on the last line when successful.
-8. Put `待继续标签` alone on the last line only when the work remains unfinished and a later AI turn must continue it because of a turn, time, or execution boundary.
-9. When waiting for user clarification or reporting a blocker, do not emit either tag.
-10. Never write either tag inside `draft 文件` or any document body. Tags are chat-only signals.
+2. Use `TaskCreate` and `TaskUpdate` to plan and execute the current request. The final task must be the technical-document completion action.
+3. Read generated-app-builder `references/structure.md` and `references/style-guide.md` when available; align the technical contract with both.
+4. Before writing the document, decide whether implementation-critical facts are missing. If missing facts would change data models, actions, layout, validation, or generated-app contracts, use `AskUserQuestion` instead of writing the draft.
+5. Draft the technical document strictly from the product doc and generated-app contracts; do not expand scope.
+6. Write the full document to the exact `draft 文件` path only after the implementation contract is clear enough (overwrite if exists).
+7. Reply with 1-3 sentence summary only; do not paste the full document in chat.
+8. Only after the complete draft is written, call `submit_technical_document_draft` with a concise summary. Never call it while waiting for clarification, blocked, or before the file is complete.
+9. Never emit XML tags, bracketed completion markers, or text status tags in chat or in the document.
 
 ## Document Storage
 

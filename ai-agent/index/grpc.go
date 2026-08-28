@@ -47,6 +47,13 @@ func RegisterHandler(s *rpc.Server) {
 		}
 		return funcoperation.NewFuncOperationServiceClient(conn), nil
 	})
+	functionConversationRuntime := logic.NewFunctionConversationRuntime(func(ctx context.Context) (funcoperation.FuncOperationServiceClient, error) {
+		conn, err := global.GetApp().GrpcClientManager().GetConn(ctx, "func-operation")
+		if err != nil {
+			return nil, err
+		}
+		return funcoperation.NewFuncOperationServiceClient(conn), nil
+	})
 	systemConn, err := global.GetApp().GrpcClientManager().GetConn(context.Background(), "system")
 	if err != nil {
 		panic(err)
@@ -59,6 +66,7 @@ func RegisterHandler(s *rpc.Server) {
 	messageLogic := logic.NewMessageLogic(sessionDao, messageDao, sessionReferenceDao, runnerFactory, agentModelLogic, agentSessionConfigDao, skillLogic, mcpLogic, functionSkillRuntime)
 	messageLogic.SetAttachmentResolver(attachmentResolver)
 	messageLogic.SetNavigationRuntime(navigationRuntime)
+	messageLogic.SetFunctionConversationRuntime(functionConversationRuntime)
 	runtime := logic.NewAgentBotRuntime(agentBotDao, sessionLogic, messageLogic, agentEngine, skillLogic, mcpLogic)
 	agentBotLogic := logic.NewAgentBotLogic(agentBotDao, runtime.Reload)
 	if err := runtime.Start(context.Background()); err != nil {

@@ -242,6 +242,43 @@ func (f *FuncOperationServerController) EnsureFunctionSession(ctx *fiber.Ctx) er
 	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
 }
 
+// StartFunctionConversationOperation starts a new business request or resumes
+// the current one after clarification or a continuation boundary.
+// @tags Func Operation
+// @summary 开始功能会话操作
+// @router /func-operation/functions/{id}/conversation-operations [POST]
+func (f *FuncOperationServerController) StartFunctionConversationOperation(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.StartFunctionConversationOperationReq{Id: ctx.Params("id")}
+	if err := f.baseHandler.ParseJson(ctx, rpcParam); err != nil {
+		return f.baseHandler.Response(ctx, grpcep.JsonResponse{}, gerr.NewGErr(grpcep.ParamsErrCode, err.Error()))
+	}
+	rpcParam.Id = ctx.Params("id")
+	handler := func(ctx context.Context, req *funcoperation.StartFunctionConversationOperationReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return client.StartFunctionConversationOperation(ctx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
+// GetLatestFunctionConversationOperation
+// @tags Func Operation
+// @summary 获取功能会话当前操作
+// @router /func-operation/functions/{id}/conversation-operations/latest [GET]
+func (f *FuncOperationServerController) GetLatestFunctionConversationOperation(ctx *fiber.Ctx) error {
+	rpcParam := &funcoperation.GetLatestFunctionConversationOperationReq{Id: ctx.Params("id"), Conversation: ctx.Query("conversation")}
+	handler := func(ctx context.Context, req *funcoperation.GetLatestFunctionConversationOperationReq) (interface{}, error) {
+		client, err := f.getFuncOperationClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return client.GetLatestFunctionConversationOperation(ctx, req)
+	}
+	return f.baseHandler.GRPCCall(ctx, rpcParam, handler)
+}
+
 // ListFunctionDataForms
 // @tags Func Operation
 // @summary 获取功能数据库表单列表

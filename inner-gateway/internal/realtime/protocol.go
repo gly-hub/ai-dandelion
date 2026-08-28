@@ -28,6 +28,9 @@ type AgentStreamPayload struct {
 	Extra                  []*aiagent.MessageExtra `json:"extra,omitempty"`
 	UserID                 string                  `json:"userId,omitempty"`
 	MessageParts           []*aiagent.MessagePart  `json:"messageParts,omitempty"`
+	FunctionOperationID    string                  `json:"functionOperationId,omitempty"`
+	FunctionID             string                  `json:"functionId,omitempty"`
+	FunctionConversation   string                  `json:"functionConversation,omitempty"`
 }
 
 type AskUserPayload struct {

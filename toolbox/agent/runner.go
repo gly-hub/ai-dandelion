@@ -60,7 +60,7 @@ func (r *ClaudeRunner) Stream(ctx context.Context, sessionID string, prompt stri
 				}
 			}
 			if result, ok := msg.(*claudeagentsdk.ResultMessage); ok {
-				if !sendEvent(ctx, events, errs, Event{Type: "done", AgentSessionID: result.SessionID, Done: true}) {
+				if !sendEvent(ctx, events, errs, Event{Type: "done", AgentSessionID: result.SessionID, Done: true, TerminalStatus: terminalStatusFromResult(result), TerminalReason: terminalReasonFromResult(result)}) {
 					return
 				}
 				return
@@ -69,6 +69,32 @@ func (r *ClaudeRunner) Stream(ctx context.Context, sessionID string, prompt stri
 	}()
 
 	return events, errs
+}
+
+func terminalStatusFromResult(result *claudeagentsdk.ResultMessage) string {
+	if result == nil {
+		return "error"
+	}
+	combined := strings.ToLower(strings.Join([]string{result.TerminalReason, result.StopReason, result.Subtype}, " "))
+	if strings.Contains(combined, "max_turn") || strings.Contains(combined, "turn_limit") || strings.Contains(combined, "turn limit") {
+		return "max_turns"
+	}
+	if result.IsError {
+		return "error"
+	}
+	return "normal"
+}
+
+func terminalReasonFromResult(result *claudeagentsdk.ResultMessage) string {
+	if result == nil {
+		return "agent returned no terminal result"
+	}
+	for _, value := range append([]string{result.TerminalReason, result.StopReason}, result.Errors...) {
+		if value = strings.TrimSpace(value); value != "" {
+			return value
+		}
+	}
+	return ""
 }
 
 func sendUserContent(ctx context.Context, client *claudeagentsdk.Client, sessionID, prompt string, content any) error {

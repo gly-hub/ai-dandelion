@@ -22,6 +22,8 @@ func RouteHandler(fiberApp *fiber.App) {
 		functionRouter.Post("/:id/code/draft", funcOperationController.TouchFunctionCodeDraft)
 		functionRouter.Post("/:id/code/apply", funcOperationController.ApplyFunctionCode)
 		functionRouter.Post("/:id/sessions/ensure", funcOperationController.EnsureFunctionSession)
+		functionRouter.Post("/:id/conversation-operations", funcOperationController.StartFunctionConversationOperation)
+		functionRouter.Get("/:id/conversation-operations/latest", funcOperationController.GetLatestFunctionConversationOperation)
 		functionRouter.Get("/:id/data-forms", funcOperationController.ListFunctionDataForms)
 		functionRouter.Delete("/:id/data-forms/:name", funcOperationController.DeleteFunctionDataForm)
 		functionRouter.Get("/:id/preview/frontend.js", funcOperationController.GetFunctionPreviewFrontend)

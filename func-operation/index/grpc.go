@@ -39,6 +39,8 @@ func RegisterHandler(s *rpc.Server) {
 	functionSkillGrantDao := dao.NewFunctionSkillGrant(db)
 	functionSkillApprovalDao := dao.NewFunctionSkillApproval(db)
 	functionSkillExecutionDao := dao.NewFunctionSkillExecution(db)
+	conversationOperationDao := dao.NewFunctionConversationOperation(db)
+	conversationProgressExecutionDao := dao.NewFunctionConversationProgressExecution(db)
 	outboxDao := dao.NewFunctionOutbox(db)
 	redisClient, redisErr := global.GetApp().RedisManager().GetRedisClient("ai-dandelion")
 	if redisErr != nil || redisClient == nil {
@@ -132,6 +134,7 @@ func RegisterHandler(s *rpc.Server) {
 	functionLogic := logic.NewFunctionLogic(functionDao, messageStore, generatedAppDao, appRuntime, previewRuntime, aiAgentClientProvider, menuSync, authorizer, releaseLogic)
 	appLogic := logic.NewGeneratedAppLogic(appRuntime, previewRuntime, functionDao, menuSync, generatedFunctionMenuDao, releaseLogic, authorizer, publicConfigLogic, executionLogDao)
 	functionSkillLogic := logic.NewFunctionSkillLogic(functionSkillDao, functionSkillReleaseDao, functionSkillGrantDao, functionSkillApprovalDao, functionSkillExecutionDao, functionDao, appLogic, authorizer)
+	conversationOperationLogic := logic.NewConversationOperationLogic(functionDao, conversationOperationDao, conversationProgressExecutionDao, authorizer)
 	releaseLogic.SetFunctionSkillSynchronizer(functionSkillLogic)
 	// Reconcile skill snapshots for releases that were already published before
 	// function skills were enabled (or while the service was offline).  The
@@ -160,7 +163,7 @@ func RegisterHandler(s *rpc.Server) {
 	appRuntime.SetExternalAPIExecutor(externalAPILogic)
 	previewRuntime.SetExternalAPIExecutor(externalAPILogic)
 	outboxLogic := logic.NewOutboxManagementLogic(outboxDao, outboxProcessor, authorizer)
-	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic, functionSkillLogic)
+	funcOperationService := service.NewFuncOperationService(functionLogic, appLogic, outboxLogic, publicConfigLogic, externalAPILogic, functionSkillLogic, conversationOperationLogic)
 
 	funcoperation.RegisterFuncOperationServiceServer(s, funcOperationService)
 }

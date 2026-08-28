@@ -27,20 +27,21 @@ type runnerFactory interface {
 }
 
 type MessageLogic struct {
-	sessionDao            *dao.Session
-	messageDao            *dao.Message
-	sessionReferenceDao   *dao.SessionReference
-	runnerFactory         runnerFactory
-	agentModelLogic       *AgentModelLogic
-	agentEngine           *AgentEngine
-	agentSessionConfigDao *dao.AgentSessionConfig
-	skillLogic            *SkillLogic
-	mcpLogic              *MCPLogic
-	functionSkillRuntime  *FunctionSkillRuntime
-	attachmentResolver    *AttachmentResolver
-	askUserQuestionBroker *AskUserQuestionBroker
-	toolPermissionBroker  *ToolPermissionBroker
-	navigationRuntime     *NavigationRuntime
+	sessionDao                  *dao.Session
+	messageDao                  *dao.Message
+	sessionReferenceDao         *dao.SessionReference
+	runnerFactory               runnerFactory
+	agentModelLogic             *AgentModelLogic
+	agentEngine                 *AgentEngine
+	agentSessionConfigDao       *dao.AgentSessionConfig
+	skillLogic                  *SkillLogic
+	mcpLogic                    *MCPLogic
+	functionSkillRuntime        *FunctionSkillRuntime
+	functionConversationRuntime *FunctionConversationRuntime
+	attachmentResolver          *AttachmentResolver
+	askUserQuestionBroker       *AskUserQuestionBroker
+	toolPermissionBroker        *ToolPermissionBroker
+	navigationRuntime           *NavigationRuntime
 }
 
 var (
@@ -97,6 +98,12 @@ func (m *MessageLogic) SetNavigationRuntime(runtime *NavigationRuntime) {
 	}
 }
 
+func (m *MessageLogic) SetFunctionConversationRuntime(runtime *FunctionConversationRuntime) {
+	if m != nil {
+		m.functionConversationRuntime = runtime
+	}
+}
+
 func (m *MessageLogic) ListMessages(ctx context.Context, req *aiagent.GetMessageReq) (
 	[]*aiagent.Message, bool, string, error) {
 	userID, err := authctx.RequireUserID(ctx)
@@ -144,6 +151,10 @@ func (m *MessageLogic) StreamMessage(
 		return err
 	}
 	content := strings.TrimSpace(req.GetContent())
+	operationID := strings.TrimSpace(req.GetFunctionOperationId())
+	if operationID != "" && (strings.TrimSpace(req.GetFunctionId()) == "" || strings.TrimSpace(req.GetFunctionConversation()) == "") {
+		return errors.New("function conversation operation context is incomplete")
+	}
 	userParts := userMessageParts(req)
 	if content == "" && len(userParts) == 0 {
 		return errContentRequired
@@ -163,9 +174,6 @@ func (m *MessageLogic) StreamMessage(
 	prompt = attachmentPrompt(prompt, preparedAttachments)
 	userContent, err := m.buildAgentUserContent(userParts, prompt, preparedAttachments)
 	if err != nil {
-		return err
-	}
-	if _, err := m.addMessage(ctx, sessionID, model.RoleUser, content, userParts); err != nil {
 		return err
 	}
 	sessionRefs, err := m.recordAndListSessionReferences(ctx, sessionID, userParts, req.GetExtra())
@@ -190,6 +198,9 @@ func (m *MessageLogic) StreamMessage(
 		engineConfig.AddDirs = append(engineConfig.AddDirs, preparedAttachments.Dir)
 	}
 	engineConfig.UserContent = userContent
+	if _, err := m.addOperationMessage(ctx, sessionID, model.RoleUser, content, userParts, operationID, "", ""); err != nil {
+		return err
+	}
 	events, errs, err := m.agentEngine.Stream(ctx, agentSessionID, prompt, resume, engineConfig)
 	if err != nil {
 		return err
@@ -205,9 +216,12 @@ func (m *MessageLogic) StreamMessage(
 		// uses a short independent context so refresh/reconnect can recover it.
 		persistCtx, cancelPersist := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancelPersist()
-		message, saveErr := m.addMessage(persistCtx, sessionID, model.RoleAssistant, answer.String(), parts.parts())
+		message, saveErr := m.addOperationMessage(persistCtx, sessionID, model.RoleAssistant, answer.String(), parts.parts(), operationID, "cancelled", "stream interrupted")
 		if saveErr == nil {
 			if updateErr := m.sessionDao.UpdateAgentSession(persistCtx, userID, sessionID, agentSessionID, message.CreatedAt); updateErr == nil {
+				if m.functionConversationRuntime != nil && operationID != "" {
+					_ = m.functionConversationRuntime.Finish(persistCtx, operationID, "cancelled", "stream interrupted")
+				}
 				partialSaved = true
 			}
 		}
@@ -225,7 +239,7 @@ func (m *MessageLogic) StreamMessage(
 			}
 			parts.apply(event)
 			if event.Done {
-				message, err := m.addMessage(ctx, sessionID, model.RoleAssistant, answer.String(), parts.parts())
+				message, err := m.addOperationMessage(ctx, sessionID, model.RoleAssistant, answer.String(), parts.parts(), operationID, event.TerminalStatus, event.TerminalReason)
 				if err != nil {
 					return err
 				}
@@ -235,7 +249,10 @@ func (m *MessageLogic) StreamMessage(
 				if err := m.sessionDao.UpdateAgentSession(ctx, userID, sessionID, agentSessionID, message.CreatedAt); err != nil {
 					return err
 				}
-				return send(streamRespFromEvent(agent.Event{Type: "done", AgentSessionID: agentSessionID, Done: true}, modelMessageToProto(message)))
+				if m.functionConversationRuntime != nil && operationID != "" {
+					_ = m.functionConversationRuntime.Finish(context.WithoutCancel(ctx), operationID, event.TerminalStatus, event.TerminalReason)
+				}
+				return send(streamRespFromEvent(agent.Event{Type: "done", AgentSessionID: agentSessionID, Done: true, TerminalStatus: event.TerminalStatus, TerminalReason: event.TerminalReason}, modelMessageToProto(message)))
 			}
 			if event.Type != "" {
 				if err := send(streamRespFromEvent(event, nil)); err != nil {
@@ -255,6 +272,9 @@ func (m *MessageLogic) StreamMessage(
 			if errors.Is(err, context.Canceled) || status.Code(err) == codes.Canceled {
 				savePartial()
 				return context.Canceled
+			}
+			if m.functionConversationRuntime != nil && operationID != "" {
+				_ = m.functionConversationRuntime.Finish(context.WithoutCancel(ctx), operationID, "error", err.Error())
 			}
 			return err
 		case <-ctx.Done():
@@ -331,6 +351,25 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 			engineConfig.SDKMCPServers[navigationMCPServerID] = navigationServer
 		}
 	}
+	var conversationSetup *FunctionConversationSetup
+	if strings.TrimSpace(req.GetFunctionOperationId()) != "" {
+		if m.functionConversationRuntime == nil {
+			return AgentEngineRunConfig{}, errors.New("function conversation runtime is not configured")
+		}
+		conversationSetup, err = m.functionConversationRuntime.Prepare(ctx, userIDForSkills(ctx, req.GetUserId()), req.GetFunctionOperationId(), req.GetFunctionId(), sessionID, req.GetFunctionConversation())
+		if err != nil {
+			return AgentEngineRunConfig{}, err
+		}
+		if engineConfig.SDKMCPServers == nil {
+			engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig)
+		}
+		for id, server := range conversationSetup.SDKMCPServers {
+			engineConfig.SDKMCPServers[id] = server
+		}
+		basePermission := engineConfig.ToolPermission
+		engineConfig.ToolPermission = m.functionConversationToolPermissionHandler(conversationSetup, basePermission)
+		engineConfig.ForceToolPermission = conversationSetup.IsCompletionTool
+	}
 	functionSkillIDs := extractSessionReferenceIDs(sessionRefs, model.SessionReferenceTypeFunctionSkill)
 	if len(functionSkillIDs) == 0 {
 		functionSkillIDs = extractFunctionSkillIDsFromParts(userParts, req.GetExtra())
@@ -353,8 +392,25 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 	engineConfig.Cleanup = setup.Cleanup
 	basePermission := engineConfig.ToolPermission
 	engineConfig.ToolPermission = m.functionSkillToolPermissionHandler(sessionID, setup, basePermission)
-	engineConfig.ForceToolPermission = setup.IsFunctionTool
+	baseForcePermission := engineConfig.ForceToolPermission
+	engineConfig.ForceToolPermission = func(toolName string) bool {
+		return setup.IsFunctionTool(toolName) || (baseForcePermission != nil && baseForcePermission(toolName))
+	}
 	return engineConfig, nil
+}
+
+func (m *MessageLogic) functionConversationToolPermissionHandler(setup *FunctionConversationSetup, fallback agent.ToolPermissionHandler) agent.ToolPermissionHandler {
+	return func(ctx context.Context, req agent.ToolPermissionRequest, emit func(agent.Event) bool) (agent.ToolPermissionDecision, error) {
+		if setup == nil || !setup.IsCompletionTool(req.ToolName) {
+			return fallback(ctx, req, emit)
+		}
+		updated := make(map[string]any, len(req.Input)+1)
+		for key, value := range req.Input {
+			updated[key] = value
+		}
+		updated[functionConversationToolUseIDInputKey] = req.ToolID
+		return agent.ToolPermissionDecision{Allow: true, UpdatedInput: updated}, nil
+	}
 }
 
 func (m *MessageLogic) functionSkillToolPermissionHandler(_ string, setup *FunctionSkillSetup, fallback agent.ToolPermissionHandler) agent.ToolPermissionHandler {
@@ -504,18 +560,25 @@ func (m *MessageLogic) resolveRuntimeConfig(ctx context.Context, req *aiagent.St
 }
 
 func (m *MessageLogic) addMessage(ctx context.Context, sessionID string, role string, content string, parts []*aiagent.MessagePart) (*model.Message, error) {
+	return m.addOperationMessage(ctx, sessionID, role, content, parts, "", "", "")
+}
+
+func (m *MessageLogic) addOperationMessage(ctx context.Context, sessionID string, role string, content string, parts []*aiagent.MessagePart, operationID, terminalStatus, terminalReason string) (*model.Message, error) {
 	now := nowUnixMicro()
 	partsJSON, err := encodeParts(parts)
 	if err != nil {
 		return nil, err
 	}
 	message := &model.Message{
-		ID:        uuid.NewString(),
-		SessionID: sessionID,
-		Role:      role,
-		Content:   content,
-		PartsJSON: partsJSON,
-		CreatedAt: now,
+		ID:             uuid.NewString(),
+		SessionID:      sessionID,
+		OperationID:    strings.TrimSpace(operationID),
+		Role:           role,
+		Content:        content,
+		PartsJSON:      partsJSON,
+		TerminalStatus: strings.TrimSpace(terminalStatus),
+		TerminalReason: strings.TrimSpace(terminalReason),
+		CreatedAt:      now,
 	}
 	if err := m.messageDao.Add(ctx, message, summarizeTitle(content)); err != nil {
 		return nil, err
@@ -537,13 +600,16 @@ func modelMessageToProto(message *model.Message) *aiagent.Message {
 	}
 	parts := decodeParts(message.PartsJSON, message.Content)
 	return &aiagent.Message{
-		Id:        message.ID,
-		SessionId: message.SessionID,
-		Role:      message.Role,
-		Content:   message.Content,
-		Parts:     parts,
-		CreatedAt: message.CreatedAt,
-		Extra:     extraFromParts(parts),
+		Id:             message.ID,
+		SessionId:      message.SessionID,
+		Role:           message.Role,
+		Content:        message.Content,
+		Parts:          parts,
+		CreatedAt:      message.CreatedAt,
+		Extra:          extraFromParts(parts),
+		OperationId:    message.OperationID,
+		TerminalStatus: message.TerminalStatus,
+		TerminalReason: message.TerminalReason,
 	}
 }
 
@@ -1027,6 +1093,8 @@ func streamRespFromEvent(event agent.Event, message *aiagent.Message) *aiagent.S
 		ResultText:      event.ResultText,
 		AgentSessionId:  event.AgentSessionID,
 		UiActionJson:    event.UIActionJSON,
+		TerminalStatus:  event.TerminalStatus,
+		TerminalReason:  event.TerminalReason,
 		IsError:         event.IsError,
 		Done:            event.Done,
 		Message:         message,
@@ -1111,6 +1179,8 @@ func mustMarshalStreamContent(resp *aiagent.StreamMessageResp) string {
 		Done            bool             `json:"done,omitempty"`
 		Message         *aiagent.Message `json:"message,omitempty"`
 		UIActionJSON    string           `json:"uiActionJson,omitempty"`
+		TerminalStatus  string           `json:"terminalStatus,omitempty"`
+		TerminalReason  string           `json:"terminalReason,omitempty"`
 	}{
 		Type:            resp.Type,
 		Text:            resp.Text,
@@ -1125,6 +1195,8 @@ func mustMarshalStreamContent(resp *aiagent.StreamMessageResp) string {
 		Done:            resp.Done,
 		Message:         resp.Message,
 		UIActionJSON:    resp.UiActionJson,
+		TerminalStatus:  resp.TerminalStatus,
+		TerminalReason:  resp.TerminalReason,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

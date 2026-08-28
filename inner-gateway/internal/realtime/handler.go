@@ -333,6 +333,7 @@ func (h *Handler) startAgentStream(ctx context.Context, in Envelope, write Write
 		AgentSessionConfigType: p.AgentSessionConfigType, SystemPrompt: p.SystemPrompt,
 		PermissionMode: p.PermissionMode, MaxTurns: p.MaxTurns, Extra: p.Extra,
 		UserId: p.UserID, MessageParts: p.MessageParts,
+		FunctionOperationId: p.FunctionOperationID, FunctionId: p.FunctionID, FunctionConversation: p.FunctionConversation,
 	})
 	if err != nil {
 		h.removeRun(in.RequestID)

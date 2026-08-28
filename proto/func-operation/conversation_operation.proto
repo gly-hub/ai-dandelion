@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package func_operation_proto;
+option go_package = "./;funcoperation";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/gly-hub/quickgo/grpcep/lib.proto";
+
+// FunctionConversationOperation identifies one business request within a
+// long-lived function conversation. Agent TaskCreate/TaskUpdate remain in
+// message parts and are intentionally not duplicated here.
+message FunctionConversationOperation {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string session_id = 3 [(gogoproto.jsontag) = 'sessionId'];
+  string conversation = 4 [(gogoproto.jsontag) = 'conversation'];
+  string state = 5 [(gogoproto.jsontag) = 'state'];
+  string terminal_status = 6 [(gogoproto.jsontag) = 'terminalStatus'];
+  string terminal_reason = 7 [(gogoproto.jsontag) = 'terminalReason'];
+  string outcome = 8 [(gogoproto.jsontag) = 'outcome'];
+  int64 created_at = 9 [(gogoproto.jsontag) = 'createdAt'];
+  int64 updated_at = 10 [(gogoproto.jsontag) = 'updatedAt'];
+  int64 finished_at = 11 [(gogoproto.jsontag) = 'finishedAt'];
+}
+
+message StartFunctionConversationOperationReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string conversation = 2 [(gogoproto.jsontag) = 'conversation'];
+  // Reuses a pending operation after user clarification or a turn limit.
+  string operation_id = 3 [(gogoproto.jsontag) = 'operationId,omitempty'];
+}
+
+message StartFunctionConversationOperationResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionConversationOperation operation = 2 [(gogoproto.jsontag) = 'operation'];
+}
+
+message GetLatestFunctionConversationOperationReq {
+  string id = 1 [(gogoproto.jsontag) = 'id'];
+  string conversation = 2 [(gogoproto.jsontag) = 'conversation'];
+}
+
+message GetLatestFunctionConversationOperationResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionConversationOperation operation = 2 [(gogoproto.jsontag) = 'operation'];
+}
+
+// The following two RPCs are called only by ai-agent with the authenticated
+// user context forwarded. They are not exposed as HTTP endpoints.
+message FinishFunctionConversationOperationReq {
+  string operation_id = 1 [(gogoproto.jsontag) = 'operationId'];
+  string terminal_status = 2 [(gogoproto.jsontag) = 'terminalStatus'];
+  string terminal_reason = 3 [(gogoproto.jsontag) = 'terminalReason,omitempty'];
+}
+
+message FinishFunctionConversationOperationResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionConversationOperation operation = 2 [(gogoproto.jsontag) = 'operation'];
+}
+
+message SubmitFunctionConversationProgressReq {
+  string operation_id = 1 [(gogoproto.jsontag) = 'operationId'];
+  string function_id = 2 [(gogoproto.jsontag) = 'functionId'];
+  string session_id = 3 [(gogoproto.jsontag) = 'sessionId'];
+  string conversation = 4 [(gogoproto.jsontag) = 'conversation'];
+  string tool_name = 5 [(gogoproto.jsontag) = 'toolName'];
+  string tool_use_id = 6 [(gogoproto.jsontag) = 'toolUseId'];
+  string summary = 7 [(gogoproto.jsontag) = 'summary'];
+}
+
+message SubmitFunctionConversationProgressResp {
+  grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp'];
+  FunctionConversationOperation operation = 2 [(gogoproto.jsontag) = 'operation'];
+  bool already_submitted = 3 [(gogoproto.jsontag) = 'alreadySubmitted'];
+}
