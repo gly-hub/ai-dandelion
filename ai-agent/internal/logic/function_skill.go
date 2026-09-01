@@ -76,13 +76,9 @@ func (r *FunctionSkillRuntime) Prepare(ctx context.Context, userID, sessionID st
 		selected[item.GetId()] = item
 	}
 	ids = uniqueFunctionSkillIDs(ids)
-	items := make([]*funcoperation.FunctionSkill, 0, len(ids))
-	for _, id := range ids {
-		item := selected[id]
-		if item == nil {
-			return nil, fmt.Errorf("function skill %q is unavailable", id)
-		}
-		items = append(items, item)
+	ids, items := selectAvailableFunctionSkills(ids, selected)
+	if len(ids) == 0 {
+		return nil, nil
 	}
 	grant, err := client.IssueFunctionSkillGrant(authctx.ForwardUserContext(ctx), &funcoperation.IssueFunctionSkillGrantReq{SessionId: sessionID, SkillIds: ids})
 	if err != nil {
@@ -301,4 +297,18 @@ func uniqueFunctionSkillIDs(values []string) []string {
 		out = append(out, value)
 	}
 	return out
+}
+
+func selectAvailableFunctionSkills(ids []string, selected map[string]*funcoperation.FunctionSkill) ([]string, []*funcoperation.FunctionSkill) {
+	availableIDs := make([]string, 0, len(ids))
+	items := make([]*funcoperation.FunctionSkill, 0, len(ids))
+	for _, id := range ids {
+		item := selected[id]
+		if item == nil {
+			continue
+		}
+		availableIDs = append(availableIDs, id)
+		items = append(items, item)
+	}
+	return availableIDs, items
 }

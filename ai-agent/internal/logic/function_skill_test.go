@@ -63,6 +63,17 @@ func TestFunctionSkillRuntimeCreatesSDKMCPTool(t *testing.T) {
 	}
 }
 
+func TestSelectAvailableFunctionSkillsSkipsStaleReferences(t *testing.T) {
+	available := &funcoperation.FunctionSkill{Id: "available", Name: "可用功能"}
+	ids, items := selectAvailableFunctionSkills(
+		[]string{"stale", "available"},
+		map[string]*funcoperation.FunctionSkill{"available": available},
+	)
+	if len(ids) != 1 || ids[0] != "available" || len(items) != 1 || items[0] != available {
+		t.Fatalf("filtered skills = %#v, %#v; want only available skill", ids, items)
+	}
+}
+
 func TestFunctionSkillAutoToolInjectsToolUseID(t *testing.T) {
 	setup := &FunctionSkillSetup{autoTools: map[string]bool{"books__create_book": true}, protectedTools: map[string]bool{}}
 	handler := (&MessageLogic{}).functionSkillToolPermissionHandler("session", setup, nil)

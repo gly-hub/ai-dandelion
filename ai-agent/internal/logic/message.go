@@ -381,6 +381,9 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 	if err != nil {
 		return AgentEngineRunConfig{}, err
 	}
+	if setup == nil {
+		return engineConfig, nil
+	}
 	engineConfig.Skills = append(engineConfig.Skills, setup.SkillNames...)
 	engineConfig.AddDirs = append(engineConfig.AddDirs, setup.AddDirs...)
 	if engineConfig.SDKMCPServers == nil {

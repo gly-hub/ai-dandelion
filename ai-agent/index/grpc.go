@@ -2,6 +2,8 @@ package index
 
 import (
 	"context"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/gly-hub/ai-dandelion/ai-agent/global"
@@ -58,7 +60,14 @@ func RegisterHandler(s *rpc.Server) {
 	if err != nil {
 		panic(err)
 	}
-	attachmentResolver := logic.NewAttachmentResolver(systemproto.NewSystemServiceClient(systemConn), global.GetConfig().AgentConfig.AttachmentStorageDir)
+	attachmentStorageDir := strings.TrimSpace(global.GetConfig().AgentConfig.AttachmentStorageDir)
+	if attachmentStorageDir == "" {
+		attachmentStorageDir = "data/agent-attachments"
+	}
+	if !filepath.IsAbs(attachmentStorageDir) {
+		attachmentStorageDir = filepath.Join(global.GetConfig().AgentConfig.CWD, attachmentStorageDir)
+	}
+	attachmentResolver := logic.NewAttachmentResolver(systemproto.NewSystemServiceClient(systemConn), attachmentStorageDir)
 	navigationRuntime := logic.NewNavigationRuntime(systemproto.NewSystemServiceClient(systemConn))
 	agentEngine := logic.NewAgentEngine(runnerFactory, agentModelLogic)
 
