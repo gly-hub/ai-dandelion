@@ -665,6 +665,11 @@ func normalizeUserMessageParts(parts []*aiagent.MessagePart) []*aiagent.MessageP
 			if text != "" {
 				next = append(next, &aiagent.MessagePart{Type: "text", Text: text})
 			}
+		case "function_operation_bootstrap":
+			metadata := strings.TrimSpace(part.GetText())
+			if metadata != "" {
+				next = append(next, &aiagent.MessagePart{Type: "function_operation_bootstrap", Text: metadata})
+			}
 		case "skill":
 			id := strings.TrimSpace(part.GetSkillId())
 			if id == "" {

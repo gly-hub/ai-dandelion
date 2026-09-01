@@ -153,7 +153,34 @@ func (l *ConversationOperationLogic) SubmitProgress(ctx context.Context, req *fu
 	if err != nil {
 		return nil, false, err
 	}
+	if completed == nil || completed.State != model.ConversationOperationStateCompleted {
+		return nil, false, errors.New("conversation operation is no longer active")
+	}
+	if err := l.recordDraftOperation(ctx, completed, now); err != nil {
+		return nil, false, err
+	}
 	return conversationOperationToProto(completed), alreadySubmitted, nil
+}
+
+func (l *ConversationOperationLogic) recordDraftOperation(ctx context.Context, operation *model.FunctionConversationOperation, now int64) error {
+	if operation == nil {
+		return errors.New("conversation operation is required")
+	}
+	if operation.Conversation != functionConversationTechnical && operation.Conversation != functionConversationGeneration {
+		return nil
+	}
+	function, err := l.functions.Get(ctx, operation.FunctionID)
+	if err != nil {
+		return err
+	}
+	switch operation.Conversation {
+	case functionConversationTechnical:
+		function.TechnicalDraftOperationID = operation.UUID
+	case functionConversationGeneration:
+		function.CodeDraftOperationID = operation.UUID
+	}
+	function.UpdatedAt = now
+	return l.functions.Update(ctx, function)
 }
 
 func (l *ConversationOperationLogic) resolveScope(ctx context.Context, functionID, conversationValue string) (*model.Function, string, string, error) {

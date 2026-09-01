@@ -10,7 +10,7 @@ import (
 
 func TestFunctionLogicDefersAiAgentConnectionUntilRPC(t *testing.T) {
 	calls := 0
-	logic := NewFunctionLogic(nil, nil, nil, nil, nil, func(context.Context) (aiagent.AiAgentServiceClient, error) {
+	logic := NewFunctionLogic(nil, nil, nil, nil, nil, nil, func(context.Context) (aiagent.AiAgentServiceClient, error) {
 		calls++
 		return nil, errors.New("ai-agent is unavailable")
 	}, nil, nil, nil)

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -33,15 +34,16 @@ const (
 )
 
 type FunctionLogic struct {
-	functionDao     *dao.Function
-	messageStore    *dao.AiAgentMessageStore
-	generatedAppDao *dao.GeneratedApp
-	appRuntime      *generatedapp.Service
-	previewRuntime  *generatedapp.Service
-	aiAgentProvider AiAgentClientProvider
-	menuSync        *FunctionMenuSync
-	authorizer      *FunctionAuthorizer
-	releaseLogic    *ReleaseLogic
+	functionDao            *dao.Function
+	conversationOperations *dao.FunctionConversationOperation
+	messageStore           *dao.AiAgentMessageStore
+	generatedAppDao        *dao.GeneratedApp
+	appRuntime             *generatedapp.Service
+	previewRuntime         *generatedapp.Service
+	aiAgentProvider        AiAgentClientProvider
+	menuSync               *FunctionMenuSync
+	authorizer             *FunctionAuthorizer
+	releaseLogic           *ReleaseLogic
 }
 
 // AiAgentClientProvider resolves the downstream client only when an operation needs it.
@@ -161,17 +163,18 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
-func NewFunctionLogic(functionDao *dao.Function, messageStore *dao.AiAgentMessageStore, generatedAppDao *dao.GeneratedApp, appRuntime, previewRuntime *generatedapp.Service, aiAgentProvider AiAgentClientProvider, menuSync *FunctionMenuSync, authorizer *FunctionAuthorizer, releaseLogic *ReleaseLogic) *FunctionLogic {
+func NewFunctionLogic(functionDao *dao.Function, conversationOperations *dao.FunctionConversationOperation, messageStore *dao.AiAgentMessageStore, generatedAppDao *dao.GeneratedApp, appRuntime, previewRuntime *generatedapp.Service, aiAgentProvider AiAgentClientProvider, menuSync *FunctionMenuSync, authorizer *FunctionAuthorizer, releaseLogic *ReleaseLogic) *FunctionLogic {
 	return &FunctionLogic{
-		functionDao:     functionDao,
-		messageStore:    messageStore,
-		generatedAppDao: generatedAppDao,
-		appRuntime:      appRuntime,
-		previewRuntime:  previewRuntime,
-		aiAgentProvider: aiAgentProvider,
-		menuSync:        menuSync,
-		authorizer:      authorizer,
-		releaseLogic:    releaseLogic,
+		functionDao:            functionDao,
+		conversationOperations: conversationOperations,
+		messageStore:           messageStore,
+		generatedAppDao:        generatedAppDao,
+		appRuntime:             appRuntime,
+		previewRuntime:         previewRuntime,
+		aiAgentProvider:        aiAgentProvider,
+		menuSync:               menuSync,
+		authorizer:             authorizer,
+		releaseLogic:           releaseLogic,
 	}
 }
 
@@ -430,6 +433,16 @@ func (f *FunctionLogic) CommitFunctionDocument(ctx context.Context, req *funcope
 	if err := f.validateDocumentCommit(function, req.GetDocType()); err != nil {
 		return nil, err
 	}
+	technicalSourceProductVersion := int64(0)
+	if normalizeFunctionDocumentType(req.GetDocType()) == functionDocumentTypeTechnical {
+		technicalSourceProductVersion, err = f.technicalDraftProductVersion(ctx, function)
+		if err != nil {
+			return nil, err
+		}
+		if technicalSourceProductVersion != function.ProductDocVersion {
+			return nil, errors.New("product doc changed after this technical draft was generated; regenerate the technical doc")
+		}
+	}
 	document, err := f.commitFunctionDocument(function, req.GetDocType())
 	if err != nil {
 		return nil, err
@@ -443,6 +456,8 @@ func (f *FunctionLogic) CommitFunctionDocument(ctx context.Context, req *funcope
 		nextVersion := adoptDocumentVersion(function.TechnicalDocVersion, function.TechnicalDraftVersion)
 		function.TechnicalDocVersion = nextVersion
 		function.TechnicalDraftVersion = nextVersion
+		function.TechnicalDraftOperationID = ""
+		function.TechnicalSourceProductVersion = technicalSourceProductVersion
 	}
 	function.UpdatedAt = nowUnixMicro()
 	switch normalizeFunctionDocumentType(req.GetDocType()) {
@@ -665,6 +680,13 @@ func (f *FunctionLogic) ApplyFunctionCode(ctx context.Context, req *funcoperatio
 	if function.DocTechnicalStale {
 		return nil, errors.New("technical doc is stale, please regenerate and apply technical doc")
 	}
+	codeSourceTechnicalVersion, err := f.codeDraftTechnicalVersion(ctx, function)
+	if err != nil {
+		return nil, err
+	}
+	if codeSourceTechnicalVersion != function.TechnicalDocVersion {
+		return nil, errors.New("technical doc changed after this page was generated; regenerate the page")
+	}
 	if f.appRuntime == nil {
 		return nil, errors.New("generated app runtime is not configured")
 	}
@@ -682,6 +704,8 @@ func (f *FunctionLogic) ApplyFunctionCode(ctx context.Context, req *funcoperatio
 	function.FunctionVersion++
 	function.CodeVersion = function.FunctionVersion
 	function.CodeDraftVersion = function.CodeVersion
+	function.CodeDraftOperationID = ""
+	function.CodeSourceTechnicalVersion = codeSourceTechnicalVersion
 	function.WorkflowStage = model.FunctionWorkflowStageCodeGenerated
 	function.UpdatedAt = nowUnixMicro()
 	if err := f.functionDao.Update(ctx, function); err != nil {
@@ -1067,7 +1091,13 @@ func (f *FunctionLogic) syncDocumentStateFromFiles(function *model.Function) {
 
 	function.DocTechnicalStale = false
 	if productApplied.Exists && technicalApplied.Exists {
-		function.DocTechnicalStale = fileModTime(productApplied.Path) > fileModTime(technicalApplied.Path)
+		if function.TechnicalSourceProductVersion > 0 {
+			function.DocTechnicalStale = function.TechnicalSourceProductVersion != function.ProductDocVersion
+		} else {
+			// Existing functions predate source-version tracking. Preserve their
+			// file-time behavior until their next technical document is adopted.
+			function.DocTechnicalStale = fileModTime(productApplied.Path) > fileModTime(technicalApplied.Path)
+		}
 	}
 	if function.DocTechnicalStale {
 		function.TechnicalDraftVersion = function.TechnicalDocVersion
@@ -1205,6 +1235,61 @@ func (f *FunctionLogic) validateDocumentCommit(function *model.Function, docType
 	return nil
 }
 
+func (f *FunctionLogic) technicalDraftProductVersion(ctx context.Context, function *model.Function) (int64, error) {
+	return f.completedOperationBaselineVersion(
+		ctx,
+		function,
+		function.TechnicalDraftOperationID,
+		functionConversationTechnical,
+		"productDocVersion",
+		function.ProductDocVersion,
+	)
+}
+
+func (f *FunctionLogic) codeDraftTechnicalVersion(ctx context.Context, function *model.Function) (int64, error) {
+	return f.completedOperationBaselineVersion(
+		ctx,
+		function,
+		function.CodeDraftOperationID,
+		functionConversationGeneration,
+		"technicalDocVersion",
+		function.TechnicalDocVersion,
+	)
+}
+
+func (f *FunctionLogic) completedOperationBaselineVersion(
+	ctx context.Context,
+	function *model.Function,
+	operationID string,
+	conversation string,
+	versionKey string,
+	legacyVersion int64,
+) (int64, error) {
+	operationID = strings.TrimSpace(operationID)
+	if operationID == "" {
+		return legacyVersion, nil
+	}
+	if f.conversationOperations == nil {
+		return 0, errors.New("conversation operation store is not configured")
+	}
+	operation, err := f.conversationOperations.Get(ctx, operationID)
+	if err != nil {
+		return 0, err
+	}
+	if operation.FunctionID != function.UUID || operation.Conversation != conversation || operation.State != model.ConversationOperationStateCompleted {
+		return 0, errors.New("generation operation is no longer eligible for adoption")
+	}
+	var baseline map[string]int64
+	if err := json.Unmarshal([]byte(operation.BaselineJSON), &baseline); err != nil {
+		return 0, errors.New("generation operation baseline is invalid")
+	}
+	version := baseline[versionKey]
+	if version <= 0 {
+		return 0, errors.New("generation operation baseline is missing the source document version")
+	}
+	return version, nil
+}
+
 func (f *FunctionLogic) loadFunctionDocument(function *model.Function, docType string, source string) (functionDocumentPayload, error) {
 	docType = normalizeFunctionDocumentType(docType)
 	if docType == "" {
@@ -1333,7 +1418,21 @@ func functionVersionFlags(function *model.Function) (productDraftReady bool, tec
 	technicalDraftReady = function.TechnicalDraftVersion > function.TechnicalDocVersion
 	codeDraftReady = false
 	technicalStale = function.DocTechnicalStale
-	codeStale = function.CodeVersion > 0 && function.TechnicalDocVersion > function.CodeVersion
+	if !technicalStale &&
+		function.TechnicalDocVersion > 0 &&
+		function.ProductDocVersion > 0 &&
+		function.TechnicalSourceProductVersion > 0 &&
+		function.TechnicalSourceProductVersion != function.ProductDocVersion {
+		technicalStale = true
+	}
+	if function.CodeVersion > 0 {
+		if function.CodeSourceTechnicalVersion > 0 {
+			codeStale = function.CodeSourceTechnicalVersion != function.TechnicalDocVersion
+		} else {
+			// Existing generated pages have no recorded technical source version.
+			codeStale = function.TechnicalDocVersion > function.CodeVersion
+		}
+	}
 	return productDraftReady, technicalDraftReady, technicalStale, codeStale, codeDraftReady
 }
 
