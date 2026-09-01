@@ -381,6 +381,9 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 	if err != nil {
 		return AgentEngineRunConfig{}, err
 	}
+	if setup == nil {
+		return engineConfig, nil
+	}
 	engineConfig.Skills = append(engineConfig.Skills, setup.SkillNames...)
 	engineConfig.AddDirs = append(engineConfig.AddDirs, setup.AddDirs...)
 	if engineConfig.SDKMCPServers == nil {
@@ -664,6 +667,11 @@ func normalizeUserMessageParts(parts []*aiagent.MessagePart) []*aiagent.MessageP
 			text := strings.TrimSpace(part.GetText())
 			if text != "" {
 				next = append(next, &aiagent.MessagePart{Type: "text", Text: text})
+			}
+		case "function_operation_bootstrap":
+			metadata := strings.TrimSpace(part.GetText())
+			if metadata != "" {
+				next = append(next, &aiagent.MessagePart{Type: "function_operation_bootstrap", Text: metadata})
 			}
 		case "skill":
 			id := strings.TrimSpace(part.GetSkillId())

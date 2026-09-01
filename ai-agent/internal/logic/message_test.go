@@ -629,3 +629,15 @@ func TestMessageLogicStreamValidatesContent(t *testing.T) {
 		t.Fatalf("expected content required error, got %v", err)
 	}
 }
+
+func TestNormalizeUserMessagePartsPreservesBootstrapMetadata(t *testing.T) {
+	parts := normalizeUserMessageParts([]*aiagent.MessagePart{
+		{Type: "function_operation_bootstrap", Text: `{"conversation":"product","title":"生成产品方案"}`},
+	})
+	if len(parts) != 1 || parts[0].GetType() != "function_operation_bootstrap" {
+		t.Fatalf("expected bootstrap metadata to be persisted, got %#v", parts)
+	}
+	if prompt := promptFromParts(parts); prompt != "" {
+		t.Fatalf("bootstrap metadata must not be sent as agent prompt, got %q", prompt)
+	}
+}

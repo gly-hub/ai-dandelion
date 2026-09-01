@@ -1,11 +1,14 @@
 package logic
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -20,6 +23,8 @@ import (
 )
 
 const maxAgentAttachmentBytes int64 = 16 * 1024 * 1024
+
+const maxInlineAttachmentBytes = 256 * 1024
 
 type agentUploadClient interface {
 	ResolveUploadForAgent(context.Context, *systemproto.ResolveUploadForAgentReq, ...grpc.CallOption) (*systemproto.ResolveUploadForAgentResp, error)
@@ -212,12 +217,102 @@ func nativeAttachmentContent(item *PreparedAttachment) (map[string]any, bool) {
 		return nil, false
 	}
 	encoded := base64.StdEncoding.EncodeToString(item.Data)
-	switch item.ContentType {
+	contentType := strings.ToLower(strings.TrimSpace(strings.Split(item.ContentType, ";")[0]))
+	switch contentType {
 	case "image/jpeg", "image/png", "image/gif", "image/webp":
-		return map[string]any{"type": "image", "source": map[string]any{"type": "base64", "media_type": item.ContentType, "data": encoded}}, true
+		return map[string]any{"type": "image", "source": map[string]any{"type": "base64", "media_type": contentType, "data": encoded}}, true
 	case "application/pdf":
-		return map[string]any{"type": "document", "source": map[string]any{"type": "base64", "media_type": item.ContentType, "data": encoded}}, true
+		return map[string]any{"type": "document", "source": map[string]any{"type": "base64", "media_type": contentType, "data": encoded}}, true
+	case "application/zip", "application/x-zip-compressed",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation":
+		return zipAttachmentContent(item), true
 	default:
+		if isArchiveAttachment(item.Name) {
+			return zipAttachmentContent(item), true
+		}
+		if isTextAttachment(item.Name, contentType) {
+			data := item.Data
+			if len(data) > maxInlineAttachmentBytes {
+				data = data[:maxInlineAttachmentBytes]
+			}
+			return map[string]any{"type": "text", "text": fmt.Sprintf("附件 %s 内容%s：\n%s", item.Name, truncatedSuffix(len(item.Data)), string(data))}, true
+		}
 		return nil, false
 	}
+}
+
+func isArchiveAttachment(name string) bool {
+	switch strings.ToLower(filepath.Ext(name)) {
+	case ".zip", ".docx", ".xlsx", ".pptx":
+		return true
+	default:
+		return false
+	}
+}
+
+func isTextAttachment(name, contentType string) bool {
+	contentType = strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+	if strings.HasPrefix(contentType, "text/") || contentType == "application/json" || contentType == "application/xml" || contentType == "application/javascript" {
+		return true
+	}
+	ext := strings.ToLower(filepath.Ext(name))
+	if ext == "" {
+		return false
+	}
+	if detected := mime.TypeByExtension(ext); strings.HasPrefix(detected, "text/") || detected == "application/json" || detected == "application/xml" {
+		return true
+	}
+	switch ext {
+	case ".md", ".markdown", ".csv", ".tsv", ".yaml", ".yml", ".toml", ".ini", ".env", ".sql", ".go", ".py", ".java", ".kt", ".rs", ".js", ".jsx", ".ts", ".tsx", ".css", ".scss", ".html", ".htm", ".vue", ".svelte", ".sh", ".bash", ".xml":
+		return true
+	default:
+		return false
+	}
+}
+
+func truncatedSuffix(size int) string {
+	if size > maxInlineAttachmentBytes {
+		return fmt.Sprintf("（仅展示前 %d 字节，共 %d 字节）", maxInlineAttachmentBytes, size)
+	}
+	return ""
+}
+
+func zipAttachmentContent(item *PreparedAttachment) map[string]any {
+	reader, err := zip.NewReader(bytes.NewReader(item.Data), int64(len(item.Data)))
+	if err != nil {
+		return map[string]any{"type": "text", "text": fmt.Sprintf("附件 %s 是 ZIP 文件，但无法读取压缩包目录：%v。文件已保存到 %s", item.Name, err, item.Path)}
+	}
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("附件 %s 是 ZIP 压缩包，包含以下文件：\n", item.Name))
+	remaining := maxInlineAttachmentBytes
+	for _, entry := range reader.File {
+		if remaining <= 0 {
+			builder.WriteString("\n（文本内容达到展示上限，完整文件仍可从附件路径读取）")
+			break
+		}
+		builder.WriteString(fmt.Sprintf("- %s (%d 字节)", entry.Name, entry.UncompressedSize64))
+		if entry.FileInfo().IsDir() || !isTextAttachment(entry.Name, mime.TypeByExtension(strings.ToLower(filepath.Ext(entry.Name)))) {
+			builder.WriteByte('\n')
+			continue
+		}
+		file, openErr := entry.Open()
+		if openErr != nil {
+			builder.WriteString(fmt.Sprintf("：读取失败 %v\n", openErr))
+			continue
+		}
+		data, readErr := io.ReadAll(io.LimitReader(file, int64(remaining)+1))
+		file.Close()
+		if readErr != nil {
+			builder.WriteString(fmt.Sprintf("：读取失败 %v\n", readErr))
+			continue
+		}
+		if len(data) > remaining {
+			data = data[:remaining]
+		}
+		remaining -= len(data)
+		builder.WriteString(fmt.Sprintf("：\n%s\n", string(data)))
+	}
+	return map[string]any{"type": "text", "text": builder.String()}
 }

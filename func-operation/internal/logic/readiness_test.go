@@ -185,3 +185,27 @@ func TestFunctionVersionFlagsKeepsTechnicalDraftWhenStale(t *testing.T) {
 		t.Fatalf("unexpected version flags: product=%v technical=%v stale=%v", productDraftReady, technicalDraftReady, technicalStale)
 	}
 }
+
+func TestFunctionVersionFlagsUseRecordedDependencyVersions(t *testing.T) {
+	_, _, technicalStale, codeStale, _ := functionVersionFlags(&model.Function{
+		ProductDocVersion:             3,
+		TechnicalDocVersion:           5,
+		TechnicalSourceProductVersion: 2,
+		CodeVersion:                   9,
+		CodeSourceTechnicalVersion:    4,
+	})
+	if !technicalStale || !codeStale {
+		t.Fatalf("expected stale dependencies, technical=%v code=%v", technicalStale, codeStale)
+	}
+
+	_, _, technicalStale, codeStale, _ = functionVersionFlags(&model.Function{
+		ProductDocVersion:             3,
+		TechnicalDocVersion:           5,
+		TechnicalSourceProductVersion: 3,
+		CodeVersion:                   1,
+		CodeSourceTechnicalVersion:    5,
+	})
+	if technicalStale || codeStale {
+		t.Fatalf("expected synchronized dependencies, technical=%v code=%v", technicalStale, codeStale)
+	}
+}
