@@ -48,6 +48,7 @@ service SystemService {
   rpc CheckMenuAccess(system_proto.CheckMenuAccessReq) returns (system_proto.CheckMenuAccessResp);
 
   rpc ListAgentModels(system_proto.ListAgentModelsReq) returns (system_proto.ListAgentModelsResp);
+  rpc GetAgentModelRuntime(system_proto.GetAgentModelRuntimeReq) returns (system_proto.GetAgentModelRuntimeResp);
   rpc CreateAgentModel(system_proto.CreateAgentModelReq) returns (system_proto.CreateAgentModelResp);
   rpc UpdateAgentModel(system_proto.UpdateAgentModelReq) returns (system_proto.UpdateAgentModelResp);
   rpc DeleteAgentModel(system_proto.DeleteAgentModelReq) returns (system_proto.DeleteAgentModelResp);
@@ -70,5 +71,7 @@ service SystemService {
   rpc GetUploadPreviewURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
   rpc GetUploadDownloadURL(system_proto.GetUploadURLReq) returns (system_proto.GetUploadURLResp);
   rpc ResolveUploadForAgent(system_proto.ResolveUploadForAgentReq) returns (system_proto.ResolveUploadForAgentResp);
+  rpc UploadRemoteFile(system_proto.UploadRemoteFileReq) returns (system_proto.UploadRemoteFileResp);
+  rpc UploadInlineFile(system_proto.UploadInlineFileReq) returns (system_proto.UploadInlineFileResp);
 
 }

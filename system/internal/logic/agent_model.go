@@ -34,6 +34,14 @@ func (a *AgentModelLogic) ListAgentModels(ctx context.Context, _ *systemproto.Li
 	return out, nil
 }
 
+func (a *AgentModelLogic) GetAgentModelRuntime(ctx context.Context, req *systemproto.GetAgentModelRuntimeReq) (*systemproto.AgentModel, error) {
+	item, err := a.agentModelDao.Get(ctx, strings.TrimSpace(req.GetId()))
+	if err != nil {
+		return nil, err
+	}
+	return modelAgentModelToProto(item, false), nil
+}
+
 func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto.CreateAgentModelReq) (*systemproto.AgentModel, error) {
 	name, modelName, err := validateAgentModelIdentity(req.GetName(), req.GetModel())
 	if err != nil {
@@ -44,6 +52,7 @@ func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto
 		ID:                uuid.New().String(),
 		Name:              name,
 		Model:             modelName,
+		Type:              normalizeAgentModelType(req.GetType()),
 		BaseURL:           strings.TrimSpace(req.GetBaseUrl()),
 		AuthToken:         strings.TrimSpace(req.GetAuthToken()),
 		ThinkMode:         strings.TrimSpace(req.GetThinkConfig().GetMode()),
@@ -58,7 +67,7 @@ func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto
 		UpdatedAt:         now,
 	}
 	if item.IsDefault {
-		if err := a.agentModelDao.ClearDefault(ctx, ""); err != nil {
+		if err := a.agentModelDao.ClearDefaultForType(ctx, "", item.Type); err != nil {
 			return nil, err
 		}
 	}
@@ -86,6 +95,7 @@ func (a *AgentModelLogic) UpdateAgentModel(ctx context.Context, req *systemproto
 	}
 	item.Name = name
 	item.Model = modelName
+	item.Type = normalizeAgentModelType(req.GetType())
 	item.BaseURL = strings.TrimSpace(req.GetBaseUrl())
 	if token := strings.TrimSpace(req.GetAuthToken()); token != "" && token != maskedAuthToken {
 		item.AuthToken = token
@@ -100,7 +110,7 @@ func (a *AgentModelLogic) UpdateAgentModel(ctx context.Context, req *systemproto
 	item.Remark = strings.TrimSpace(req.GetRemark())
 	item.UpdatedAt = nowUnixMicro()
 	if item.IsDefault {
-		if err := a.agentModelDao.ClearDefault(ctx, item.ID); err != nil {
+		if err := a.agentModelDao.ClearDefaultForType(ctx, item.ID, item.Type); err != nil {
 			return nil, err
 		}
 	}
@@ -172,6 +182,15 @@ func normalizeAgentModelStatus(status int) int {
 	return model.AgentModelStatusEnabled
 }
 
+func normalizeAgentModelType(value string) string {
+	switch value = strings.ToLower(strings.TrimSpace(value)); value {
+	case "image", "audio", "video":
+		return value
+	default:
+		return "chat"
+	}
+}
+
 func modelAgentModelToProto(item *model.AgentModel, maskToken bool) *systemproto.AgentModel {
 	authToken := item.AuthToken
 	if maskToken && authToken != "" {
@@ -195,5 +214,6 @@ func modelAgentModelToProto(item *model.AgentModel, maskToken bool) *systemproto
 		Remark:    item.Remark,
 		CreatedAt: item.CreatedAt,
 		UpdatedAt: item.UpdatedAt,
+		Type:      normalizeAgentModelType(item.Type),
 	}
 }

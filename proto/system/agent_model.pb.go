@@ -105,6 +105,7 @@ type AgentModel struct {
 	Remark      string                 `protobuf:"bytes,10,opt,name=remark,proto3" json:"remark"`
 	CreatedAt   int64                  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"createdAt"`
 	UpdatedAt   int64                  `protobuf:"varint,12,opt,name=updated_at,json=updatedAt,proto3" json:"updatedAt"`
+	Type        string                 `protobuf:"bytes,13,opt,name=type,proto3" json:"type"`
 }
 
 func (m *AgentModel) Reset()         { *m = AgentModel{} }
@@ -224,6 +225,13 @@ func (m *AgentModel) GetUpdatedAt() int64 {
 	return 0
 }
 
+func (m *AgentModel) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
 type ListAgentModelsReq struct {
 }
 
@@ -260,6 +268,102 @@ func (m *ListAgentModelsReq) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ListAgentModelsReq proto.InternalMessageInfo
 
+type GetAgentModelRuntimeReq struct {
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+}
+
+func (m *GetAgentModelRuntimeReq) Reset()         { *m = GetAgentModelRuntimeReq{} }
+func (m *GetAgentModelRuntimeReq) String() string { return proto.CompactTextString(m) }
+func (*GetAgentModelRuntimeReq) ProtoMessage()    {}
+func (*GetAgentModelRuntimeReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ddc9e7eb360104cd, []int{3}
+}
+func (m *GetAgentModelRuntimeReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetAgentModelRuntimeReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetAgentModelRuntimeReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetAgentModelRuntimeReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetAgentModelRuntimeReq.Merge(m, src)
+}
+func (m *GetAgentModelRuntimeReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetAgentModelRuntimeReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetAgentModelRuntimeReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetAgentModelRuntimeReq proto.InternalMessageInfo
+
+func (m *GetAgentModelRuntimeReq) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type GetAgentModelRuntimeResp struct {
+	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
+	Model      *AgentModel        `protobuf:"bytes,2,opt,name=model,proto3" json:"model"`
+}
+
+func (m *GetAgentModelRuntimeResp) Reset()         { *m = GetAgentModelRuntimeResp{} }
+func (m *GetAgentModelRuntimeResp) String() string { return proto.CompactTextString(m) }
+func (*GetAgentModelRuntimeResp) ProtoMessage()    {}
+func (*GetAgentModelRuntimeResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ddc9e7eb360104cd, []int{4}
+}
+func (m *GetAgentModelRuntimeResp) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GetAgentModelRuntimeResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GetAgentModelRuntimeResp.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GetAgentModelRuntimeResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetAgentModelRuntimeResp.Merge(m, src)
+}
+func (m *GetAgentModelRuntimeResp) XXX_Size() int {
+	return m.Size()
+}
+func (m *GetAgentModelRuntimeResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetAgentModelRuntimeResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetAgentModelRuntimeResp proto.InternalMessageInfo
+
+func (m *GetAgentModelRuntimeResp) GetCommonResp() *grpcep.CommonResp {
+	if m != nil {
+		return m.CommonResp
+	}
+	return nil
+}
+
+func (m *GetAgentModelRuntimeResp) GetModel() *AgentModel {
+	if m != nil {
+		return m.Model
+	}
+	return nil
+}
+
 type ListAgentModelsResp struct {
 	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
 	Models     []*AgentModel      `protobuf:"bytes,2,rep,name=models,proto3" json:"models"`
@@ -269,7 +373,7 @@ func (m *ListAgentModelsResp) Reset()         { *m = ListAgentModelsResp{} }
 func (m *ListAgentModelsResp) String() string { return proto.CompactTextString(m) }
 func (*ListAgentModelsResp) ProtoMessage()    {}
 func (*ListAgentModelsResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{3}
+	return fileDescriptor_ddc9e7eb360104cd, []int{5}
 }
 func (m *ListAgentModelsResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -322,13 +426,14 @@ type CreateAgentModelReq struct {
 	IsDefault   bool                   `protobuf:"varint,7,opt,name=is_default,json=isDefault,proto3" json:"isDefault"`
 	Sort        int32                  `protobuf:"varint,8,opt,name=sort,proto3" json:"sort"`
 	Remark      string                 `protobuf:"bytes,9,opt,name=remark,proto3" json:"remark"`
+	Type        string                 `protobuf:"bytes,10,opt,name=type,proto3" json:"type"`
 }
 
 func (m *CreateAgentModelReq) Reset()         { *m = CreateAgentModelReq{} }
 func (m *CreateAgentModelReq) String() string { return proto.CompactTextString(m) }
 func (*CreateAgentModelReq) ProtoMessage()    {}
 func (*CreateAgentModelReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{4}
+	return fileDescriptor_ddc9e7eb360104cd, []int{6}
 }
 func (m *CreateAgentModelReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -420,6 +525,13 @@ func (m *CreateAgentModelReq) GetRemark() string {
 	return ""
 }
 
+func (m *CreateAgentModelReq) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
 type CreateAgentModelResp struct {
 	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
 	Model      *AgentModel        `protobuf:"bytes,2,opt,name=model,proto3" json:"model"`
@@ -429,7 +541,7 @@ func (m *CreateAgentModelResp) Reset()         { *m = CreateAgentModelResp{} }
 func (m *CreateAgentModelResp) String() string { return proto.CompactTextString(m) }
 func (*CreateAgentModelResp) ProtoMessage()    {}
 func (*CreateAgentModelResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{5}
+	return fileDescriptor_ddc9e7eb360104cd, []int{7}
 }
 func (m *CreateAgentModelResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -483,13 +595,14 @@ type UpdateAgentModelReq struct {
 	IsDefault   bool                   `protobuf:"varint,8,opt,name=is_default,json=isDefault,proto3" json:"isDefault"`
 	Sort        int32                  `protobuf:"varint,9,opt,name=sort,proto3" json:"sort"`
 	Remark      string                 `protobuf:"bytes,10,opt,name=remark,proto3" json:"remark"`
+	Type        string                 `protobuf:"bytes,11,opt,name=type,proto3" json:"type"`
 }
 
 func (m *UpdateAgentModelReq) Reset()         { *m = UpdateAgentModelReq{} }
 func (m *UpdateAgentModelReq) String() string { return proto.CompactTextString(m) }
 func (*UpdateAgentModelReq) ProtoMessage()    {}
 func (*UpdateAgentModelReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{6}
+	return fileDescriptor_ddc9e7eb360104cd, []int{8}
 }
 func (m *UpdateAgentModelReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -588,6 +701,13 @@ func (m *UpdateAgentModelReq) GetRemark() string {
 	return ""
 }
 
+func (m *UpdateAgentModelReq) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
 type UpdateAgentModelResp struct {
 	CommonResp *grpcep.CommonResp `protobuf:"bytes,1,opt,name=common_resp,json=commonResp,proto3" json:"common_resp"`
 	Model      *AgentModel        `protobuf:"bytes,2,opt,name=model,proto3" json:"model"`
@@ -597,7 +717,7 @@ func (m *UpdateAgentModelResp) Reset()         { *m = UpdateAgentModelResp{} }
 func (m *UpdateAgentModelResp) String() string { return proto.CompactTextString(m) }
 func (*UpdateAgentModelResp) ProtoMessage()    {}
 func (*UpdateAgentModelResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{7}
+	return fileDescriptor_ddc9e7eb360104cd, []int{9}
 }
 func (m *UpdateAgentModelResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -648,7 +768,7 @@ func (m *DeleteAgentModelReq) Reset()         { *m = DeleteAgentModelReq{} }
 func (m *DeleteAgentModelReq) String() string { return proto.CompactTextString(m) }
 func (*DeleteAgentModelReq) ProtoMessage()    {}
 func (*DeleteAgentModelReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{8}
+	return fileDescriptor_ddc9e7eb360104cd, []int{10}
 }
 func (m *DeleteAgentModelReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -692,7 +812,7 @@ func (m *DeleteAgentModelResp) Reset()         { *m = DeleteAgentModelResp{} }
 func (m *DeleteAgentModelResp) String() string { return proto.CompactTextString(m) }
 func (*DeleteAgentModelResp) ProtoMessage()    {}
 func (*DeleteAgentModelResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{9}
+	return fileDescriptor_ddc9e7eb360104cd, []int{11}
 }
 func (m *DeleteAgentModelResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -736,7 +856,7 @@ func (m *EnableAgentModelReq) Reset()         { *m = EnableAgentModelReq{} }
 func (m *EnableAgentModelReq) String() string { return proto.CompactTextString(m) }
 func (*EnableAgentModelReq) ProtoMessage()    {}
 func (*EnableAgentModelReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{10}
+	return fileDescriptor_ddc9e7eb360104cd, []int{12}
 }
 func (m *EnableAgentModelReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -781,7 +901,7 @@ func (m *EnableAgentModelResp) Reset()         { *m = EnableAgentModelResp{} }
 func (m *EnableAgentModelResp) String() string { return proto.CompactTextString(m) }
 func (*EnableAgentModelResp) ProtoMessage()    {}
 func (*EnableAgentModelResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{11}
+	return fileDescriptor_ddc9e7eb360104cd, []int{13}
 }
 func (m *EnableAgentModelResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -832,7 +952,7 @@ func (m *DisableAgentModelReq) Reset()         { *m = DisableAgentModelReq{} }
 func (m *DisableAgentModelReq) String() string { return proto.CompactTextString(m) }
 func (*DisableAgentModelReq) ProtoMessage()    {}
 func (*DisableAgentModelReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{12}
+	return fileDescriptor_ddc9e7eb360104cd, []int{14}
 }
 func (m *DisableAgentModelReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -877,7 +997,7 @@ func (m *DisableAgentModelResp) Reset()         { *m = DisableAgentModelResp{} }
 func (m *DisableAgentModelResp) String() string { return proto.CompactTextString(m) }
 func (*DisableAgentModelResp) ProtoMessage()    {}
 func (*DisableAgentModelResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ddc9e7eb360104cd, []int{13}
+	return fileDescriptor_ddc9e7eb360104cd, []int{15}
 }
 func (m *DisableAgentModelResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -924,6 +1044,8 @@ func init() {
 	proto.RegisterType((*AgentModelThinkConfig)(nil), "system_proto.AgentModelThinkConfig")
 	proto.RegisterType((*AgentModel)(nil), "system_proto.AgentModel")
 	proto.RegisterType((*ListAgentModelsReq)(nil), "system_proto.ListAgentModelsReq")
+	proto.RegisterType((*GetAgentModelRuntimeReq)(nil), "system_proto.GetAgentModelRuntimeReq")
+	proto.RegisterType((*GetAgentModelRuntimeResp)(nil), "system_proto.GetAgentModelRuntimeResp")
 	proto.RegisterType((*ListAgentModelsResp)(nil), "system_proto.ListAgentModelsResp")
 	proto.RegisterType((*CreateAgentModelReq)(nil), "system_proto.CreateAgentModelReq")
 	proto.RegisterType((*CreateAgentModelResp)(nil), "system_proto.CreateAgentModelResp")
@@ -940,58 +1062,61 @@ func init() {
 func init() { proto.RegisterFile("agent_model.proto", fileDescriptor_ddc9e7eb360104cd) }
 
 var fileDescriptor_ddc9e7eb360104cd = []byte{
-	// 803 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x94, 0xcb, 0x6e, 0xf3, 0x44,
-	0x14, 0xc7, 0xeb, 0xa4, 0x49, 0x93, 0x49, 0x3e, 0xc1, 0x37, 0x49, 0xc0, 0x54, 0x28, 0x8e, 0x5c,
-	0x81, 0xb2, 0x48, 0x1d, 0x29, 0x08, 0x24, 0x04, 0x9b, 0xa6, 0xe9, 0x0e, 0x36, 0xa3, 0x56, 0x48,
-	0x08, 0xc9, 0x9a, 0xc4, 0x53, 0x77, 0x14, 0xdf, 0x6a, 0x8f, 0xa5, 0xf6, 0x2d, 0x58, 0x51, 0x78,
-	0x0a, 0x5e, 0x83, 0x65, 0x97, 0x88, 0x85, 0x85, 0xda, 0x9d, 0x9f, 0x02, 0xcd, 0xb1, 0x93, 0xb8,
-	0xa4, 0x2d, 0x5e, 0x54, 0x22, 0x1b, 0xcf, 0x9c, 0xff, 0x1c, 0xcf, 0xb9, 0xfd, 0x6c, 0xf4, 0x9e,
-	0xda, 0xcc, 0x13, 0xa6, 0xeb, 0x5b, 0xcc, 0x31, 0x82, 0xd0, 0x17, 0x3e, 0x6e, 0x47, 0xb7, 0x91,
-	0x60, 0xae, 0x09, 0xd6, 0xe1, 0xb1, 0xcd, 0xc5, 0x55, 0x3c, 0x37, 0x16, 0xbe, 0x3b, 0xb6, 0x7d,
-	0xdb, 0x1f, 0x83, 0x3c, 0x8f, 0x2f, 0xc1, 0x02, 0x03, 0x76, 0xd9, 0xcb, 0x87, 0x93, 0x82, 0xbb,
-	0x60, 0xd4, 0x3d, 0xb6, 0xa8, 0x67, 0x31, 0x87, 0xfb, 0xde, 0xf8, 0x3a, 0xe6, 0x8b, 0xa5, 0xed,
-	0x8f, 0xed, 0x30, 0x58, 0xb0, 0x60, 0xec, 0xf0, 0x79, 0xf6, 0x8e, 0xfe, 0x97, 0x82, 0x7a, 0x27,
-	0x32, 0x8d, 0xef, 0x65, 0x16, 0xe7, 0x57, 0xdc, 0x5b, 0x9e, 0xfa, 0xde, 0x25, 0xb7, 0xf1, 0xa7,
-	0x68, 0x5f, 0x66, 0xa6, 0x2a, 0x03, 0x65, 0xd8, 0x9c, 0x36, 0xd2, 0x44, 0x03, 0x9b, 0xc0, 0x13,
-	0x7f, 0x89, 0xde, 0xcd, 0x63, 0xcb, 0x66, 0xc2, 0x14, 0xfe, 0x92, 0x79, 0x91, 0x5a, 0x19, 0x28,
-	0xc3, 0xda, 0xf4, 0xc3, 0x34, 0xd1, 0xda, 0xd9, 0xc1, 0x39, 0xe8, 0xe4, 0x89, 0x85, 0x3f, 0x43,
-	0x07, 0x16, 0x8f, 0x02, 0x87, 0xde, 0xaa, 0x55, 0xb8, 0xb7, 0x95, 0x26, 0xda, 0x4a, 0x22, 0xab,
-	0x0d, 0x3e, 0x43, 0x1d, 0x97, 0xde, 0x98, 0x42, 0xa6, 0xc3, 0x3d, 0x7b, 0x15, 0x63, 0x1f, 0x62,
-	0xf4, 0xd2, 0x44, 0x7b, 0xef, 0xd2, 0x9b, 0xf3, 0xfc, 0x34, 0x0f, 0xb4, 0x2d, 0xe9, 0xbf, 0xec,
-	0x23, 0xb4, 0x29, 0x0e, 0x7f, 0x84, 0x2a, 0xdc, 0xca, 0xeb, 0xa9, 0xa7, 0x89, 0x56, 0xe1, 0x16,
-	0xa9, 0x70, 0x4b, 0x56, 0xea, 0x51, 0x97, 0x41, 0x09, 0x79, 0xa5, 0xd2, 0x26, 0xf0, 0xc4, 0x1a,
-	0xaa, 0xc1, 0x84, 0xf2, 0x84, 0x9b, 0x69, 0xa2, 0x65, 0x02, 0xc9, 0x16, 0xfc, 0x39, 0x6a, 0xcc,
-	0x69, 0xc4, 0xcc, 0x38, 0x74, 0x20, 0xc3, 0xbc, 0x28, 0xa9, 0x5d, 0x84, 0x0e, 0x59, 0x6d, 0xf0,
-	0x57, 0x08, 0xd1, 0x58, 0x5c, 0x65, 0xc5, 0xa8, 0x35, 0xf0, 0xfc, 0x38, 0x4d, 0xb4, 0x8e, 0x54,
-	0x21, 0xe3, 0x91, 0xef, 0x72, 0xc1, 0xdc, 0x40, 0xdc, 0x92, 0xe6, 0x5a, 0xc4, 0x14, 0xb5, 0xa1,
-	0x11, 0xe6, 0x02, 0x06, 0xa3, 0xd6, 0x07, 0xca, 0xb0, 0x35, 0x39, 0x32, 0x8a, 0xa8, 0x18, 0xcf,
-	0xce, 0x70, 0xfa, 0x49, 0x9a, 0x68, 0x3d, 0xb1, 0x11, 0x0a, 0x01, 0x5a, 0x05, 0x19, 0xeb, 0xa8,
-	0x1e, 0x09, 0x2a, 0xe2, 0x48, 0x3d, 0x80, 0x16, 0xa3, 0x34, 0xd1, 0x72, 0x85, 0xe4, 0x2b, 0x1e,
-	0x21, 0xc4, 0x23, 0xd3, 0x62, 0x97, 0x34, 0x76, 0x84, 0xda, 0x18, 0x28, 0xc3, 0xc6, 0xf4, 0x5d,
-	0x9a, 0x68, 0x4d, 0x1e, 0xcd, 0x32, 0x91, 0x6c, 0xb6, 0xb2, 0xa7, 0x91, 0x1f, 0x0a, 0xb5, 0x09,
-	0xf7, 0x41, 0x4f, 0xa5, 0x4d, 0xe0, 0x29, 0xe3, 0x85, 0xcc, 0xa5, 0xe1, 0x52, 0x45, 0xd0, 0x06,
-	0x88, 0x97, 0x29, 0x24, 0x5f, 0x65, 0xbc, 0x45, 0xc8, 0xa8, 0x60, 0x96, 0x49, 0x85, 0xda, 0x1a,
-	0x28, 0xc3, 0x6a, 0x16, 0x2f, 0x57, 0x4f, 0x04, 0xd9, 0x6c, 0xa5, 0x77, 0x1c, 0x58, 0x2b, 0xef,
-	0xf6, 0xc6, 0x3b, 0x57, 0xa5, 0xf7, 0x7a, 0xab, 0x77, 0x11, 0xfe, 0x8e, 0x47, 0x62, 0xd3, 0xb4,
-	0x88, 0xb0, 0x6b, 0xfd, 0x37, 0x05, 0x75, 0xb6, 0xe4, 0x28, 0xc0, 0x33, 0xd4, 0x5a, 0xf8, 0xae,
-	0xeb, 0x7b, 0x66, 0xc8, 0xa2, 0x00, 0x00, 0x6a, 0x4d, 0xb0, 0x91, 0x7d, 0x4b, 0xc6, 0x29, 0x1c,
-	0x49, 0xc7, 0xe9, 0x07, 0x69, 0xa2, 0x15, 0x5d, 0x09, 0x5a, 0xac, 0x0f, 0xf1, 0xb7, 0xa8, 0x0e,
-	0xbc, 0xc8, 0x4f, 0xa5, 0x3a, 0x6c, 0x4d, 0xd4, 0x97, 0x06, 0x98, 0x75, 0x23, 0xf3, 0x25, 0xf9,
-	0xaa, 0xdf, 0x55, 0x51, 0xe7, 0x14, 0xaa, 0xdd, 0x38, 0x12, 0x76, 0xbd, 0x66, 0x57, 0x79, 0x9d,
-	0xdd, 0x4a, 0x09, 0x76, 0xab, 0xaf, 0xb0, 0x3b, 0x7a, 0xc2, 0x6e, 0x46, 0x39, 0xb4, 0x77, 0x8d,
-	0x69, 0x91, 0xd8, 0x1f, 0xfe, 0x45, 0x6c, 0xad, 0x3c, 0xb1, 0xd0, 0xc2, 0x02, 0x9a, 0x2f, 0x71,
-	0x5a, 0x2f, 0xc9, 0xe9, 0x41, 0x49, 0x4e, 0x1b, 0xff, 0xc1, 0x69, 0xf3, 0x25, 0x4e, 0xf5, 0x3b,
-	0x05, 0x75, 0xb7, 0x27, 0xf3, 0x66, 0xd8, 0x7c, 0x5d, 0x1c, 0xe1, 0x6b, 0xd4, 0x6c, 0x0d, 0x57,
-	0xff, 0xbd, 0x8a, 0x3a, 0x17, 0xc0, 0xfc, 0x53, 0x66, 0xfe, 0xe7, 0xff, 0xe0, 0xe8, 0x99, 0xff,
-	0x60, 0x79, 0x96, 0xea, 0x6f, 0xcf, 0xd2, 0xce, 0xfc, 0xf3, 0x80, 0xa5, 0xed, 0x89, 0xed, 0x02,
-	0x4b, 0xc7, 0xa8, 0x33, 0x63, 0x0e, 0x2b, 0x89, 0x92, 0xfe, 0x13, 0xea, 0x6e, 0xbb, 0xbf, 0x55,
-	0x1d, 0x32, 0x99, 0x33, 0x8f, 0xce, 0x9d, 0x92, 0xc9, 0xc8, 0xae, 0x6e, 0xfb, 0xef, 0x42, 0x57,
-	0x0d, 0xd4, 0x9d, 0xf1, 0xa8, 0x7c, 0x25, 0xbf, 0x2a, 0xa8, 0xf7, 0xcc, 0x0b, 0x3b, 0x50, 0xca,
-	0xf4, 0xe8, 0x8f, 0x87, 0xbe, 0x72, 0xff, 0xd0, 0x57, 0xfe, 0x7e, 0xe8, 0x2b, 0x3f, 0x3f, 0xf6,
-	0xf7, 0xee, 0x1f, 0xfb, 0x7b, 0x7f, 0x3e, 0xf6, 0xf7, 0x7e, 0x6c, 0x1a, 0xe3, 0x6f, 0xb2, 0x7b,
-	0xe6, 0x75, 0xb8, 0xe8, 0x8b, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x74, 0xf2, 0x96, 0x94, 0xfa,
-	0x0a, 0x00, 0x00,
+	// 851 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0xaf, 0x93, 0x36, 0x4d, 0x5e, 0x5a, 0xc1, 0x4e, 0x5a, 0xd6, 0xac, 0x50, 0x1c, 0x79, 0x05,
+	0x8a, 0x44, 0x9b, 0x88, 0x45, 0x20, 0x21, 0xb8, 0x6c, 0xda, 0x15, 0x17, 0xb8, 0x8c, 0xba, 0x42,
+	0x42, 0x48, 0x96, 0x1d, 0x4f, 0xdd, 0x51, 0xfd, 0x2f, 0xf6, 0x58, 0xda, 0x7c, 0x0b, 0x6e, 0x80,
+	0xf8, 0x1a, 0xf0, 0x1d, 0xb8, 0x20, 0xf5, 0x88, 0x38, 0x58, 0xa8, 0xbd, 0xf9, 0x53, 0xa0, 0x79,
+	0xb6, 0x13, 0x97, 0x24, 0xc5, 0x87, 0x4a, 0x9b, 0x8b, 0x3d, 0xef, 0x37, 0x6f, 0xe6, 0xfd, 0xfb,
+	0xfd, 0x6c, 0x78, 0x62, 0x3a, 0xcc, 0x17, 0x86, 0x17, 0xd8, 0xcc, 0x1d, 0x85, 0x51, 0x20, 0x02,
+	0x72, 0x10, 0xcf, 0x63, 0xc1, 0x3c, 0x03, 0xad, 0x67, 0xa7, 0x0e, 0x17, 0x57, 0x89, 0x35, 0x9a,
+	0x06, 0xde, 0xd8, 0x09, 0x9c, 0x60, 0x8c, 0xb0, 0x95, 0x5c, 0xa2, 0x85, 0x06, 0xae, 0xf2, 0xc3,
+	0xcf, 0x3e, 0xae, 0xba, 0xbb, 0xf3, 0xd3, 0xab, 0xc4, 0x1a, 0xcf, 0x12, 0x3e, 0xbd, 0x76, 0x82,
+	0xb1, 0x13, 0x85, 0x53, 0x16, 0x8e, 0x5d, 0x6e, 0xe5, 0xce, 0xfa, 0xdf, 0x0a, 0x1c, 0xbf, 0x94,
+	0xf1, 0xbf, 0x95, 0xe1, 0x2f, 0xae, 0xb8, 0x7f, 0x7d, 0x16, 0xf8, 0x97, 0xdc, 0x21, 0x1f, 0xc0,
+	0xae, 0x4c, 0x49, 0x55, 0x06, 0xca, 0xb0, 0x33, 0x69, 0x67, 0xa9, 0x86, 0x36, 0xc5, 0x27, 0xf9,
+	0x0c, 0x0e, 0xad, 0xc4, 0x76, 0x98, 0x30, 0x44, 0x70, 0xcd, 0xfc, 0x58, 0x6d, 0x0c, 0x94, 0xe1,
+	0xde, 0xe4, 0xdd, 0x2c, 0xd5, 0x0e, 0xf2, 0x8d, 0x0b, 0xc4, 0xe9, 0x3d, 0x8b, 0x7c, 0x08, 0xfb,
+	0x36, 0x8f, 0x43, 0xd7, 0x9c, 0xab, 0x4d, 0xbc, 0xb7, 0x9b, 0xa5, 0x5a, 0x09, 0xd1, 0x72, 0x41,
+	0x5e, 0x41, 0xcf, 0x33, 0xdf, 0x18, 0x42, 0xa6, 0xc3, 0x7d, 0xa7, 0x8c, 0xb1, 0x8b, 0x31, 0x8e,
+	0xb3, 0x54, 0x7b, 0xe2, 0x99, 0x6f, 0x2e, 0x8a, 0xdd, 0x22, 0xd0, 0x2a, 0xa4, 0xff, 0xb6, 0x0b,
+	0xb0, 0x2c, 0x8e, 0xbc, 0x07, 0x0d, 0x6e, 0x17, 0xf5, 0xb4, 0xb2, 0x54, 0x6b, 0x70, 0x9b, 0x36,
+	0xb8, 0x2d, 0x2b, 0xf5, 0x4d, 0x8f, 0x61, 0x09, 0x45, 0xa5, 0xd2, 0xa6, 0xf8, 0x24, 0x1a, 0xec,
+	0xe1, 0x68, 0x8a, 0x84, 0x3b, 0x59, 0xaa, 0xe5, 0x00, 0xcd, 0x5f, 0xe4, 0x23, 0x68, 0x5b, 0x66,
+	0xcc, 0x8c, 0x24, 0x72, 0x31, 0xc3, 0xa2, 0x28, 0x89, 0xbd, 0x8e, 0x5c, 0x5a, 0x2e, 0xc8, 0xe7,
+	0x00, 0x66, 0x22, 0xae, 0xf2, 0x62, 0xd4, 0x3d, 0xf4, 0x7c, 0x9a, 0xa5, 0x5a, 0x4f, 0xa2, 0x98,
+	0xf1, 0x49, 0xe0, 0x71, 0xc1, 0xbc, 0x50, 0xcc, 0x69, 0x67, 0x01, 0x12, 0x13, 0x0e, 0xb0, 0x11,
+	0xc6, 0x14, 0x07, 0xa3, 0xb6, 0x06, 0xca, 0xb0, 0xfb, 0xe2, 0xf9, 0xa8, 0xca, 0x91, 0xd1, 0xda,
+	0x19, 0x4e, 0xde, 0xcf, 0x52, 0xed, 0x58, 0x2c, 0x81, 0x4a, 0x80, 0x6e, 0x05, 0x26, 0x3a, 0xb4,
+	0x62, 0x61, 0x8a, 0x24, 0x56, 0xf7, 0xb1, 0xc5, 0x90, 0xa5, 0x5a, 0x81, 0xd0, 0xe2, 0x4d, 0x4e,
+	0x00, 0x78, 0x6c, 0xd8, 0xec, 0xd2, 0x4c, 0x5c, 0xa1, 0xb6, 0x07, 0xca, 0xb0, 0x3d, 0x39, 0xcc,
+	0x52, 0xad, 0xc3, 0xe3, 0xf3, 0x1c, 0xa4, 0xcb, 0xa5, 0xec, 0x69, 0x1c, 0x44, 0x42, 0xed, 0xe0,
+	0x7d, 0xd8, 0x53, 0x69, 0x53, 0x7c, 0xca, 0x78, 0x11, 0xf3, 0xcc, 0xe8, 0x5a, 0x05, 0x6c, 0x03,
+	0xc6, 0xcb, 0x11, 0x5a, 0xbc, 0x65, 0xbc, 0x69, 0xc4, 0x4c, 0xc1, 0x6c, 0xc3, 0x14, 0x6a, 0x77,
+	0xa0, 0x0c, 0x9b, 0x79, 0xbc, 0x02, 0x7d, 0x29, 0xe8, 0x72, 0x29, 0xbd, 0x93, 0xd0, 0x2e, 0xbd,
+	0x0f, 0x96, 0xde, 0x05, 0x2a, 0xbd, 0x17, 0x4b, 0x99, 0x9d, 0x98, 0x87, 0x4c, 0x3d, 0x5c, 0x4e,
+	0x5c, 0xda, 0x14, 0x9f, 0xfa, 0x11, 0x90, 0x6f, 0x78, 0x2c, 0x96, 0x2d, 0x8d, 0x29, 0x9b, 0xe9,
+	0x9f, 0xc0, 0xd3, 0xaf, 0x59, 0x05, 0xa4, 0x89, 0x2f, 0xb8, 0xc7, 0x28, 0x9b, 0x6d, 0x22, 0x96,
+	0xfe, 0xab, 0x02, 0xea, 0xfa, 0x33, 0x71, 0x48, 0xce, 0xa1, 0x3b, 0x0d, 0x3c, 0x2f, 0xf0, 0x8d,
+	0x88, 0xc5, 0x21, 0x9e, 0xee, 0xbe, 0x20, 0xa3, 0x5c, 0xa1, 0xa3, 0x33, 0xdc, 0x92, 0x8e, 0x93,
+	0x77, 0xb2, 0x54, 0xab, 0xba, 0x52, 0x98, 0x2e, 0x36, 0xc9, 0x17, 0x25, 0x3b, 0x1b, 0x78, 0x5e,
+	0xdd, 0xc4, 0x8a, 0x55, 0xde, 0xea, 0xbf, 0x28, 0xd0, 0x5b, 0xa9, 0xf3, 0xd1, 0x12, 0xfb, 0x0a,
+	0x5a, 0x18, 0x46, 0x7e, 0x19, 0x9a, 0x0f, 0x66, 0x86, 0xc3, 0xcf, 0x7d, 0x69, 0xf1, 0xd6, 0x7f,
+	0x6f, 0x42, 0xef, 0x0c, 0x87, 0x5b, 0x69, 0x1e, 0x9b, 0x2d, 0xa4, 0xaa, 0x3c, 0x2c, 0xd5, 0x46,
+	0x0d, 0xa9, 0x36, 0x1f, 0x90, 0xea, 0xc9, 0x3d, 0xa9, 0xe6, 0xa2, 0x46, 0x36, 0x2d, 0x54, 0x59,
+	0x15, 0xe8, 0x77, 0xff, 0x11, 0xe8, 0x5e, 0x7d, 0x81, 0x62, 0x0b, 0x2b, 0x4a, 0xdc, 0x24, 0xcb,
+	0x56, 0x4d, 0x59, 0xee, 0xd7, 0x94, 0x65, 0xfb, 0x7f, 0x64, 0xd9, 0xd9, 0x28, 0xcb, 0x52, 0x3a,
+	0xb0, 0x56, 0x3a, 0x3f, 0x29, 0x70, 0xb4, 0x3a, 0xb7, 0x6d, 0x60, 0xfb, 0x9f, 0x4d, 0xe8, 0xbd,
+	0xc6, 0x0f, 0xc0, 0x7d, 0x46, 0xbd, 0xe5, 0x9f, 0xc2, 0xc9, 0x9a, 0x9f, 0x42, 0x7d, 0xa6, 0xb5,
+	0x1e, 0x9f, 0x69, 0xdb, 0xf3, 0x03, 0x28, 0x99, 0xd6, 0xdd, 0xc8, 0xb4, 0xd5, 0x79, 0x6e, 0x03,
+	0xd3, 0x4e, 0xa1, 0x77, 0xce, 0x5c, 0x56, 0x93, 0x68, 0xfa, 0x0f, 0x70, 0xb4, 0xea, 0xfe, 0x58,
+	0x75, 0xc8, 0x64, 0x5e, 0xf9, 0xa6, 0xe5, 0xd6, 0x4c, 0x46, 0x76, 0x75, 0xd5, 0x7f, 0x1b, 0xba,
+	0x3a, 0x82, 0xa3, 0x73, 0x1e, 0xd7, 0xaf, 0xe4, 0x67, 0x05, 0x8e, 0xd7, 0x1c, 0xd8, 0x82, 0x52,
+	0x26, 0xcf, 0xff, 0xb8, 0xed, 0x2b, 0x37, 0xb7, 0x7d, 0xe5, 0x9f, 0xdb, 0xbe, 0xf2, 0xe3, 0x5d,
+	0x7f, 0xe7, 0xe6, 0xae, 0xbf, 0xf3, 0xd7, 0x5d, 0x7f, 0xe7, 0xfb, 0xce, 0x68, 0xfc, 0x65, 0x7e,
+	0x8f, 0xd5, 0xc2, 0x8b, 0x3e, 0xfd, 0x37, 0x00, 0x00, 0xff, 0xff, 0x5c, 0xc4, 0x95, 0x03, 0x1e,
+	0x0c, 0x00, 0x00,
 }
 
 func (m *AgentModelThinkConfig) Marshal() (dAtA []byte, err error) {
@@ -1061,6 +1186,13 @@ func (m *AgentModel) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintAgentModel(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x6a
+	}
 	if m.UpdatedAt != 0 {
 		i = encodeVarintAgentModel(dAtA, i, uint64(m.UpdatedAt))
 		i--
@@ -1171,6 +1303,83 @@ func (m *ListAgentModelsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *GetAgentModelRuntimeReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetAgentModelRuntimeReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetAgentModelRuntimeReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Id) > 0 {
+		i -= len(m.Id)
+		copy(dAtA[i:], m.Id)
+		i = encodeVarintAgentModel(dAtA, i, uint64(len(m.Id)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GetAgentModelRuntimeResp) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GetAgentModelRuntimeResp) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetAgentModelRuntimeResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Model != nil {
+		{
+			size, err := m.Model.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAgentModel(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.CommonResp != nil {
+		{
+			size, err := m.CommonResp.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintAgentModel(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *ListAgentModelsResp) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1240,6 +1449,13 @@ func (m *CreateAgentModelReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintAgentModel(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x52
+	}
 	if len(m.Remark) > 0 {
 		i -= len(m.Remark)
 		copy(dAtA[i:], m.Remark)
@@ -1377,6 +1593,13 @@ func (m *UpdateAgentModelReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Type) > 0 {
+		i -= len(m.Type)
+		copy(dAtA[i:], m.Type)
+		i = encodeVarintAgentModel(dAtA, i, uint64(len(m.Type)))
+		i--
+		dAtA[i] = 0x5a
+	}
 	if len(m.Remark) > 0 {
 		i -= len(m.Remark)
 		copy(dAtA[i:], m.Remark)
@@ -1803,6 +2026,10 @@ func (m *AgentModel) Size() (n int) {
 	if m.UpdatedAt != 0 {
 		n += 1 + sovAgentModel(uint64(m.UpdatedAt))
 	}
+	l = len(m.Type)
+	if l > 0 {
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
 	return n
 }
 
@@ -1812,6 +2039,36 @@ func (m *ListAgentModelsReq) Size() (n int) {
 	}
 	var l int
 	_ = l
+	return n
+}
+
+func (m *GetAgentModelRuntimeReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Id)
+	if l > 0 {
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
+	return n
+}
+
+func (m *GetAgentModelRuntimeResp) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.CommonResp != nil {
+		l = m.CommonResp.Size()
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
+	if m.Model != nil {
+		l = m.Model.Size()
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
 	return n
 }
 
@@ -1870,6 +2127,10 @@ func (m *CreateAgentModelReq) Size() (n int) {
 		n += 1 + sovAgentModel(uint64(m.Sort))
 	}
 	l = len(m.Remark)
+	if l > 0 {
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
+	l = len(m.Type)
 	if l > 0 {
 		n += 1 + l + sovAgentModel(uint64(l))
 	}
@@ -1933,6 +2194,10 @@ func (m *UpdateAgentModelReq) Size() (n int) {
 		n += 1 + sovAgentModel(uint64(m.Sort))
 	}
 	l = len(m.Remark)
+	if l > 0 {
+		n += 1 + l + sovAgentModel(uint64(l))
+	}
+	l = len(m.Type)
 	if l > 0 {
 		n += 1 + l + sovAgentModel(uint64(l))
 	}
@@ -2553,6 +2818,38 @@ func (m *AgentModel) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipAgentModel(dAtA[iNdEx:])
@@ -2603,6 +2900,210 @@ func (m *ListAgentModelsReq) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: ListAgentModelsReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAgentModel(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetAgentModelRuntimeReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAgentModel
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetAgentModelRuntimeReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetAgentModelRuntimeReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Id = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAgentModel(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GetAgentModelRuntimeResp) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAgentModel
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GetAgentModelRuntimeResp: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GetAgentModelRuntimeResp: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CommonResp", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.CommonResp == nil {
+				m.CommonResp = &grpcep.CommonResp{}
+			}
+			if err := m.CommonResp.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Model", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Model == nil {
+				m.Model = &AgentModel{}
+			}
+			if err := m.Model.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipAgentModel(dAtA[iNdEx:])
@@ -3026,6 +3527,38 @@ func (m *CreateAgentModelReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Remark = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -3484,6 +4017,38 @@ func (m *UpdateAgentModelReq) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Remark = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Type", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAgentModel
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAgentModel
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Type = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

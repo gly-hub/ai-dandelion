@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gly-hub/ai-dandelion/system/internal/model"
 	"gorm.io/gorm"
@@ -43,7 +44,14 @@ func (d *AgentModel) Delete(ctx context.Context, id string) error {
 }
 
 func (d *AgentModel) ClearDefault(ctx context.Context, exceptID string) error {
-	query := d.db.WithContext(ctx).Model(&model.AgentModel{}).Where("is_default = ?", true)
+	return d.ClearDefaultForType(ctx, exceptID, "")
+}
+
+func (d *AgentModel) ClearDefaultForType(ctx context.Context, exceptID, modelType string) error {
+	query := d.db.WithContext(ctx).Model(&model.AgentModel{}).Where("is_default = ? AND (type = ? OR (? = 'chat' AND type = ''))", true, modelType, modelType)
+	if strings.TrimSpace(modelType) == "" {
+		query = d.db.WithContext(ctx).Model(&model.AgentModel{}).Where("is_default = ?", true)
+	}
 	if exceptID != "" {
 		query = query.Where("id <> ?", exceptID)
 	}

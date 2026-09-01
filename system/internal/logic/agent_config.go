@@ -53,6 +53,8 @@ func (a *AgentConfigLogic) UpdateAgentConfig(ctx context.Context, req *systempro
 	item.SystemPrompt = strings.TrimSpace(req.GetSystemPrompt())
 	item.PermissionMode = permissionMode
 	item.MaxTurns = maxTurns
+	item.ImageToolEnabled = req.GetImageToolEnabled()
+	item.ImageModelID = strings.TrimSpace(req.GetImageModelId())
 	item.UpdatedAt = now
 	if err := a.agentConfigDao.Save(ctx, item); err != nil {
 		return nil, err
@@ -94,6 +96,8 @@ func modelAgentConfigToProto(item *model.AgentSystemConfig) *systemproto.AgentSy
 		SystemPrompt:   item.SystemPrompt,
 		PermissionMode: item.PermissionMode,
 		MaxTurns:       int32(item.MaxTurns),
+		ImageToolEnabled: item.ImageToolEnabled,
+		ImageModelId:    item.ImageModelID,
 		UpdatedAt:      item.UpdatedAt,
 	}
 }

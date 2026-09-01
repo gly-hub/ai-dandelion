@@ -10,6 +10,8 @@ message AgentSystemConfig {
   string permission_mode = 2 [(gogoproto.jsontag) = 'permissionMode'];
   int32 max_turns = 3 [(gogoproto.jsontag) = 'maxTurns'];
   int64 updated_at = 4 [(gogoproto.jsontag) = 'updatedAt'];
+  bool image_tool_enabled = 5 [(gogoproto.jsontag) = 'imageToolEnabled'];
+  string image_model_id = 6 [(gogoproto.jsontag) = 'imageModelId'];
 }
 
 message AgentSessionConfig {
@@ -36,6 +38,8 @@ message UpdateAgentConfigReq {
   string system_prompt = 1 [(gogoproto.jsontag) = 'systemPrompt'];
   string permission_mode = 2 [(gogoproto.jsontag) = 'permissionMode'];
   int32 max_turns = 3 [(gogoproto.jsontag) = 'maxTurns'];
+  bool image_tool_enabled = 4 [(gogoproto.jsontag) = 'imageToolEnabled'];
+  string image_model_id = 5 [(gogoproto.jsontag) = 'imageModelId'];
 }
 
 message UpdateAgentConfigResp {

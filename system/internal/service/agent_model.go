@@ -14,6 +14,12 @@ func (s *SystemService) ListAgentModels(ctx context.Context, req *systemproto.Li
 	return
 }
 
+func (s *SystemService) GetAgentModelRuntime(ctx context.Context, req *systemproto.GetAgentModelRuntimeReq) (out *systemproto.GetAgentModelRuntimeResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Model, err = s.agentModelLogic.GetAgentModelRuntime(ctx, req)
+	return
+}
+
 func (s *SystemService) CreateAgentModel(ctx context.Context, req *systemproto.CreateAgentModelReq) (
 	out *systemproto.CreateAgentModelResp, err error) {
 	grpcep.InitResponse(&out)

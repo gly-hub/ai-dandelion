@@ -1,6 +1,7 @@
 package uploader_minio
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -26,6 +27,35 @@ type MinioUploader struct {
 	basePath       string
 	location       string
 	domain         string
+}
+
+// UploadBytes stores a backend-produced artifact directly in the configured bucket.
+func (u *MinioUploader) UploadBytes(data []byte, fileName, contentType string) (string, error) {
+	if len(data) == 0 {
+		return "", errors.New("file is empty")
+	}
+	if strings.TrimSpace(fileName) == "" {
+		fileName = "file"
+	}
+	uuid, err := u.newObjectUUID(fileName)
+	if err != nil {
+		return "", err
+	}
+	objectName, err := u.objectName(uuid)
+	if err != nil {
+		return "", err
+	}
+	contentType = strings.TrimSpace(contentType)
+	if contentType == "" {
+		contentType = u.getContentType(path.Ext(fileName))
+	}
+	if _, err = u.minioClient.PutObject(u.minioBucket, objectName, bytes.NewReader(data), int64(len(data)), minio.PutObjectOptions{ContentType: contentType, CacheControl: "max-age=31536000"}); err != nil {
+		return "", err
+	}
+	if publicURL, err := u.PublicURL(uuid); err == nil && publicURL != "" {
+		return publicURL, nil
+	}
+	return u.PresignedPreviewURL(uuid, DefaultPresignedPreviewExpireTime)
 }
 
 type ComplPart struct {

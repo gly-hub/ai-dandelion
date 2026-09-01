@@ -42,6 +42,7 @@ type MessageLogic struct {
 	askUserQuestionBroker       *AskUserQuestionBroker
 	toolPermissionBroker        *ToolPermissionBroker
 	navigationRuntime           *NavigationRuntime
+	systemToolRuntime           *SystemToolRuntime
 }
 
 var (
@@ -101,6 +102,12 @@ func (m *MessageLogic) SetNavigationRuntime(runtime *NavigationRuntime) {
 func (m *MessageLogic) SetFunctionConversationRuntime(runtime *FunctionConversationRuntime) {
 	if m != nil {
 		m.functionConversationRuntime = runtime
+	}
+}
+
+func (m *MessageLogic) SetSystemToolRuntime(runtime *SystemToolRuntime) {
+	if m != nil {
+		m.systemToolRuntime = runtime
 	}
 }
 
@@ -349,6 +356,18 @@ func (m *MessageLogic) resolveStreamEngineConfig(
 				engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig)
 			}
 			engineConfig.SDKMCPServers[navigationMCPServerID] = navigationServer
+		}
+	}
+	if m.systemToolRuntime != nil {
+		systemTools, toolErr := m.systemToolRuntime.Server(ctx)
+		if toolErr != nil {
+			return AgentEngineRunConfig{}, toolErr
+		}
+		if systemTools.Instance != nil {
+			if engineConfig.SDKMCPServers == nil {
+				engineConfig.SDKMCPServers = make(map[string]claudeagentsdk.MCPServerConfig)
+			}
+			engineConfig.SDKMCPServers[systemToolsMCPServerID] = systemTools
 		}
 	}
 	var conversationSetup *FunctionConversationSetup

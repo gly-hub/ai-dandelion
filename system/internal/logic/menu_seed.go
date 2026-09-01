@@ -2,9 +2,11 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gly-hub/ai-dandelion/system/internal/dao"
 	"github.com/gly-hub/ai-dandelion/system/internal/model"
+	"gorm.io/gorm"
 )
 
 type seedMenu struct {
@@ -22,6 +24,16 @@ type seedMenu struct {
 }
 
 func seedMenus(ctx context.Context, menuDao *dao.Menu) error {
+	// This standalone page was folded into the main Agent system settings.
+	for _, code := range []string{"system.agent-image-tools.save", "system.agent-image-tools"} {
+		if menu, err := menuDao.GetByCode(ctx, code); err == nil {
+			if err := menuDao.Delete(ctx, menu.ID); err != nil {
+				return err
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
 	seeds := []seedMenu{
 		{Module: model.MenuModuleFuncOperation, Placement: model.MenuPlacementModuleNav, Name: "功能库", Code: "func-operation.use", ViewKey: "published", Icon: "RocketOutlined", MenuType: model.MenuTypeDirectory, Sort: 10, IsDefault: true, Remark: "使用已发布功能"},
 		{Module: model.MenuModuleFuncOperation, Placement: model.MenuPlacementModuleNav, Name: "后台管理", Code: "console.manager", ViewKey: "console.manager", Icon: "SettingOutlined", MenuType: model.MenuTypeDirectory, Sort: 30, Remark: "统一管理功能与系统配置"},

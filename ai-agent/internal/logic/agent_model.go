@@ -80,6 +80,7 @@ func EnsureSeedAgentModels(ctx context.Context, agentModelDao *dao.AgentModel, c
 		ID:                uuid.New().String(),
 		Name:              cfg.Model,
 		Model:             cfg.Model,
+		Type:              "chat",
 		BaseURL:           strings.TrimSpace(cfg.BaseURL),
 		AuthToken:         strings.TrimSpace(cfg.AuthToken),
 		ThinkMode:         strings.TrimSpace(cfg.ThinkConfig.Mode),
@@ -101,6 +102,7 @@ func modelAgentModelOptionToProto(item *model.AgentModel) *aiagent.AgentModelOpt
 		Id:        item.ID,
 		Name:      item.Name,
 		Model:     item.Model,
+		Type:      item.Type,
 		IsDefault: item.IsDefault,
 	}
 }
