@@ -49,22 +49,24 @@ func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto
 	}
 	now := nowUnixMicro()
 	item := &model.AgentModel{
-		ID:                uuid.New().String(),
-		Name:              name,
-		Model:             modelName,
-		Type:              normalizeAgentModelType(req.GetType()),
-		BaseURL:           strings.TrimSpace(req.GetBaseUrl()),
-		AuthToken:         strings.TrimSpace(req.GetAuthToken()),
-		ThinkMode:         strings.TrimSpace(req.GetThinkConfig().GetMode()),
-		ThinkBudgetTokens: int(req.GetThinkConfig().GetBudgetTokens()),
-		ThinkDisplay:      strings.TrimSpace(req.GetThinkConfig().GetDisplay()),
-		MaxThinkingTokens: int(req.GetThinkConfig().GetMaxThinkingTokens()),
-		Status:            normalizeAgentModelStatus(int(req.GetStatus())),
-		IsDefault:         req.GetIsDefault(),
-		Sort:              int(req.GetSort()),
-		Remark:            strings.TrimSpace(req.GetRemark()),
-		CreatedAt:         now,
-		UpdatedAt:         now,
+		ID:        uuid.New().String(),
+		Name:      name,
+		Model:     modelName,
+		Type:      normalizeAgentModelType(req.GetType()),
+		BaseURL:   strings.TrimSpace(req.GetBaseUrl()),
+		AuthToken: strings.TrimSpace(req.GetAuthToken()),
+		Status:    normalizeAgentModelStatus(int(req.GetStatus())),
+		IsDefault: req.GetIsDefault(),
+		Sort:      int(req.GetSort()),
+		Remark:    strings.TrimSpace(req.GetRemark()),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if item.Type == "chat" {
+		item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
+		item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
+		item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
+		item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
 	}
 	if item.IsDefault {
 		if err := a.agentModelDao.ClearDefaultForType(ctx, "", item.Type); err != nil {
@@ -100,10 +102,14 @@ func (a *AgentModelLogic) UpdateAgentModel(ctx context.Context, req *systemproto
 	if token := strings.TrimSpace(req.GetAuthToken()); token != "" && token != maskedAuthToken {
 		item.AuthToken = token
 	}
-	item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
-	item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
-	item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
-	item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
+	item.ThinkMode, item.ThinkDisplay = "", ""
+	item.ThinkBudgetTokens, item.MaxThinkingTokens = 0, 0
+	if item.Type == "chat" {
+		item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
+		item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
+		item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
+		item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
+	}
 	item.Status = normalizeAgentModelStatus(int(req.GetStatus()))
 	item.IsDefault = req.GetIsDefault()
 	item.Sort = int(req.GetSort())
