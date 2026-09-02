@@ -37,3 +37,15 @@ func (s *SystemService) ResolveUploadForAgent(ctx context.Context, req *systempr
 	out.Upload, err = s.uploadLogic.ResolveForAgent(ctx, req)
 	return
 }
+
+func (s *SystemService) UploadRemoteFile(ctx context.Context, req *systemproto.UploadRemoteFileReq) (out *systemproto.UploadRemoteFileResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Url, out.FileName, out.ContentType, err = s.uploadLogic.UploadRemoteFile(ctx, req)
+	return
+}
+
+func (s *SystemService) UploadInlineFile(ctx context.Context, req *systemproto.UploadInlineFileReq) (out *systemproto.UploadInlineFileResp, err error) {
+	grpcep.InitResponse(&out)
+	out.Url, out.FileName, out.ContentType, err = s.uploadLogic.UploadInlineFile(ctx, req)
+	return
+}

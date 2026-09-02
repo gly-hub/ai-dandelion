@@ -15,6 +15,7 @@ type AgentModel struct {
 	ID                string `gorm:"column:id;type:varchar(36);primaryKey"`
 	Name              string `gorm:"column:name;type:varchar(120);not null"`
 	Model             string `gorm:"column:model;type:varchar(120);not null"`
+	Type              string `gorm:"column:type;type:varchar(32);not null;default:'chat';index"`
 	BaseURL           string `gorm:"column:base_url;type:varchar(255);not null;default:''"`
 	AuthToken         string `gorm:"column:auth_token;type:varchar(255);not null;default:''"`
 	SystemPrompt      string `gorm:"column:system_prompt;type:text"`

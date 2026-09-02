@@ -69,12 +69,14 @@ func RegisterHandler(s *rpc.Server) {
 	}
 	attachmentResolver := logic.NewAttachmentResolver(systemproto.NewSystemServiceClient(systemConn), attachmentStorageDir)
 	navigationRuntime := logic.NewNavigationRuntime(systemproto.NewSystemServiceClient(systemConn))
+	systemToolRuntime := logic.NewSystemToolRuntime(systemproto.NewSystemServiceClient(systemConn))
 	agentEngine := logic.NewAgentEngine(runnerFactory, agentModelLogic)
 
 	sessionLogic := logic.NewSessionLogic(sessionDao, runnerFactory.DefaultRunner())
 	messageLogic := logic.NewMessageLogic(sessionDao, messageDao, sessionReferenceDao, runnerFactory, agentModelLogic, agentSessionConfigDao, skillLogic, mcpLogic, functionSkillRuntime)
 	messageLogic.SetAttachmentResolver(attachmentResolver)
 	messageLogic.SetNavigationRuntime(navigationRuntime)
+	messageLogic.SetSystemToolRuntime(systemToolRuntime)
 	messageLogic.SetFunctionConversationRuntime(functionConversationRuntime)
 	runtime := logic.NewAgentBotRuntime(agentBotDao, sessionLogic, messageLogic, agentEngine, skillLogic, mcpLogic)
 	agentBotLogic := logic.NewAgentBotLogic(agentBotDao, runtime.Reload)

@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/dop251/goja v0.0.0-20260723142020-b4aef50fa347
 	github.com/gly-hub/claude-agent-sdk-go v1.0.0
-	github.com/gly-hub/quickgo v1.0.1
+	github.com/gly-hub/quickgo v1.1.0
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/websocket/v2 v2.0.13
 	github.com/gogo/protobuf v1.3.2

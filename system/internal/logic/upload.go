@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -17,6 +22,8 @@ import (
 )
 
 const maxPresignedURLExpire = 7 * 24 * time.Hour
+const maxRemoteFileBytes int64 = 64 * 1024 * 1024
+const maxInlineFileBytes int = 16 * 1024 * 1024
 
 type UploadLogic struct {
 	dao      *dao.Upload
@@ -31,6 +38,75 @@ func (l *UploadLogic) ready() error {
 		return errors.New("file uploader is not configured")
 	}
 	return nil
+}
+
+// UploadRemoteFile mirrors a model-produced URL into MinIO and returns its CDN URL.
+func (l *UploadLogic) UploadRemoteFile(ctx context.Context, req *systemproto.UploadRemoteFileReq) (string, string, string, error) {
+	if err := l.ready(); err != nil {
+		return "", "", "", err
+	}
+	if req == nil {
+		return "", "", "", errors.New("url is required")
+	}
+	parsed, err := url.Parse(strings.TrimSpace(req.GetUrl()))
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
+		return "", "", "", errors.New("remote url is invalid")
+	}
+	name := path.Base(parsed.Path)
+	if strings.TrimSpace(req.GetFileName()) != "" {
+		name = path.Base(strings.TrimSpace(req.GetFileName()))
+	}
+	if name == "." || name == "/" || name == "" {
+		name = "artifact"
+	}
+	client := &http.Client{Timeout: 60 * time.Second}
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, parsed.String(), nil)
+	if err != nil {
+		return "", "", "", err
+	}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return "", "", "", fmt.Errorf("download remote file: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", "", "", fmt.Errorf("download remote file: %s", resp.Status)
+	}
+	if resp.ContentLength > maxRemoteFileBytes {
+		return "", "", "", errors.New("remote file exceeds limit")
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, maxRemoteFileBytes+1))
+	if err != nil {
+		return "", "", "", err
+	}
+	if int64(len(data)) > maxRemoteFileBytes {
+		return "", "", "", errors.New("remote file exceeds limit")
+	}
+	contentType := strings.TrimSpace(req.GetContentType())
+	if contentType == "" {
+		contentType = strings.TrimSpace(strings.Split(resp.Header.Get("Content-Type"), ";")[0])
+	}
+	cdnURL, err := l.uploader.UploadBytes(data, name, contentType)
+	if err != nil {
+		return "", "", "", fmt.Errorf("upload remote file: %w", err)
+	}
+	return cdnURL, name, contentType, nil
+}
+
+func (l *UploadLogic) UploadInlineFile(_ context.Context, req *systemproto.UploadInlineFileReq) (string, string, string, error) {
+	if err := l.ready(); err != nil {
+		return "", "", "", err
+	}
+	if req == nil || len(req.GetData()) == 0 || len(req.GetData()) > maxInlineFileBytes {
+		return "", "", "", errors.New("inline file is empty or too large")
+	}
+	name := path.Base(strings.TrimSpace(req.GetFileName()))
+	if name == "" || name == "." || name == "/" {
+		name = "artifact"
+	}
+	contentType := strings.TrimSpace(req.GetContentType())
+	url, err := l.uploader.UploadBytes(req.GetData(), name, contentType)
+	return url, name, contentType, err
 }
 func uploadExpire(seconds int64, fallback time.Duration) (time.Duration, error) {
 	if seconds == 0 {

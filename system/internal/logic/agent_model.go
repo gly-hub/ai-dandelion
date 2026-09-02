@@ -34,6 +34,14 @@ func (a *AgentModelLogic) ListAgentModels(ctx context.Context, _ *systemproto.Li
 	return out, nil
 }
 
+func (a *AgentModelLogic) GetAgentModelRuntime(ctx context.Context, req *systemproto.GetAgentModelRuntimeReq) (*systemproto.AgentModel, error) {
+	item, err := a.agentModelDao.Get(ctx, strings.TrimSpace(req.GetId()))
+	if err != nil {
+		return nil, err
+	}
+	return modelAgentModelToProto(item, false), nil
+}
+
 func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto.CreateAgentModelReq) (*systemproto.AgentModel, error) {
 	name, modelName, err := validateAgentModelIdentity(req.GetName(), req.GetModel())
 	if err != nil {
@@ -41,24 +49,27 @@ func (a *AgentModelLogic) CreateAgentModel(ctx context.Context, req *systemproto
 	}
 	now := nowUnixMicro()
 	item := &model.AgentModel{
-		ID:                uuid.New().String(),
-		Name:              name,
-		Model:             modelName,
-		BaseURL:           strings.TrimSpace(req.GetBaseUrl()),
-		AuthToken:         strings.TrimSpace(req.GetAuthToken()),
-		ThinkMode:         strings.TrimSpace(req.GetThinkConfig().GetMode()),
-		ThinkBudgetTokens: int(req.GetThinkConfig().GetBudgetTokens()),
-		ThinkDisplay:      strings.TrimSpace(req.GetThinkConfig().GetDisplay()),
-		MaxThinkingTokens: int(req.GetThinkConfig().GetMaxThinkingTokens()),
-		Status:            normalizeAgentModelStatus(int(req.GetStatus())),
-		IsDefault:         req.GetIsDefault(),
-		Sort:              int(req.GetSort()),
-		Remark:            strings.TrimSpace(req.GetRemark()),
-		CreatedAt:         now,
-		UpdatedAt:         now,
+		ID:        uuid.New().String(),
+		Name:      name,
+		Model:     modelName,
+		Type:      normalizeAgentModelType(req.GetType()),
+		BaseURL:   strings.TrimSpace(req.GetBaseUrl()),
+		AuthToken: strings.TrimSpace(req.GetAuthToken()),
+		Status:    normalizeAgentModelStatus(int(req.GetStatus())),
+		IsDefault: req.GetIsDefault(),
+		Sort:      int(req.GetSort()),
+		Remark:    strings.TrimSpace(req.GetRemark()),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	if item.Type == "chat" {
+		item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
+		item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
+		item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
+		item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
 	}
 	if item.IsDefault {
-		if err := a.agentModelDao.ClearDefault(ctx, ""); err != nil {
+		if err := a.agentModelDao.ClearDefaultForType(ctx, "", item.Type); err != nil {
 			return nil, err
 		}
 	}
@@ -86,21 +97,26 @@ func (a *AgentModelLogic) UpdateAgentModel(ctx context.Context, req *systemproto
 	}
 	item.Name = name
 	item.Model = modelName
+	item.Type = normalizeAgentModelType(req.GetType())
 	item.BaseURL = strings.TrimSpace(req.GetBaseUrl())
 	if token := strings.TrimSpace(req.GetAuthToken()); token != "" && token != maskedAuthToken {
 		item.AuthToken = token
 	}
-	item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
-	item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
-	item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
-	item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
+	item.ThinkMode, item.ThinkDisplay = "", ""
+	item.ThinkBudgetTokens, item.MaxThinkingTokens = 0, 0
+	if item.Type == "chat" {
+		item.ThinkMode = strings.TrimSpace(req.GetThinkConfig().GetMode())
+		item.ThinkBudgetTokens = int(req.GetThinkConfig().GetBudgetTokens())
+		item.ThinkDisplay = strings.TrimSpace(req.GetThinkConfig().GetDisplay())
+		item.MaxThinkingTokens = int(req.GetThinkConfig().GetMaxThinkingTokens())
+	}
 	item.Status = normalizeAgentModelStatus(int(req.GetStatus()))
 	item.IsDefault = req.GetIsDefault()
 	item.Sort = int(req.GetSort())
 	item.Remark = strings.TrimSpace(req.GetRemark())
 	item.UpdatedAt = nowUnixMicro()
 	if item.IsDefault {
-		if err := a.agentModelDao.ClearDefault(ctx, item.ID); err != nil {
+		if err := a.agentModelDao.ClearDefaultForType(ctx, item.ID, item.Type); err != nil {
 			return nil, err
 		}
 	}
@@ -172,6 +188,15 @@ func normalizeAgentModelStatus(status int) int {
 	return model.AgentModelStatusEnabled
 }
 
+func normalizeAgentModelType(value string) string {
+	switch value = strings.ToLower(strings.TrimSpace(value)); value {
+	case "image", "audio", "video":
+		return value
+	default:
+		return "chat"
+	}
+}
+
 func modelAgentModelToProto(item *model.AgentModel, maskToken bool) *systemproto.AgentModel {
 	authToken := item.AuthToken
 	if maskToken && authToken != "" {
@@ -195,5 +220,6 @@ func modelAgentModelToProto(item *model.AgentModel, maskToken bool) *systemproto
 		Remark:    item.Remark,
 		CreatedAt: item.CreatedAt,
 		UpdatedAt: item.UpdatedAt,
+		Type:      normalizeAgentModelType(item.Type),
 	}
 }

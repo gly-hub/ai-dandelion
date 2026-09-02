@@ -10,6 +10,7 @@ message AgentModelOption {
   string name = 2 [(gogoproto.jsontag) = 'name'];
   string model = 3 [(gogoproto.jsontag) = 'model'];
   bool is_default = 4 [(gogoproto.jsontag) = 'isDefault'];
+  string type = 5 [(gogoproto.jsontag) = 'type'];
 }
 
 message ListAgentModelsReq {

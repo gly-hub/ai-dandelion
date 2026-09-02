@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const legacyDefaultAgentSystemPrompt = "You are a helpful agent assistant. Keep answers clear and practical."
+
 type AgentConfigLogic struct {
 	agentConfigDao *dao.AgentConfig
 }
@@ -53,6 +55,8 @@ func (a *AgentConfigLogic) UpdateAgentConfig(ctx context.Context, req *systempro
 	item.SystemPrompt = strings.TrimSpace(req.GetSystemPrompt())
 	item.PermissionMode = permissionMode
 	item.MaxTurns = maxTurns
+	item.ImageToolEnabled = req.GetImageToolEnabled()
+	item.ImageModelID = strings.TrimSpace(req.GetImageModelId())
 	item.UpdatedAt = now
 	if err := a.agentConfigDao.Save(ctx, item); err != nil {
 		return nil, err
@@ -61,23 +65,29 @@ func (a *AgentConfigLogic) UpdateAgentConfig(ctx context.Context, req *systempro
 }
 
 func (a *AgentConfigLogic) EnsureSeedAgentConfig(ctx context.Context, systemPrompt, permissionMode string, maxTurns int) error {
-	count, err := a.agentConfigDao.Count(ctx)
-	if err != nil {
-		return err
-	}
-	if count > 0 {
-		return nil
-	}
+	systemPrompt = strings.TrimSpace(systemPrompt)
 	if strings.TrimSpace(permissionMode) == "" {
 		permissionMode = "bypassPermissions"
 	}
 	if maxTurns <= 0 {
 		maxTurns = 20
 	}
+	item, err := a.agentConfigDao.Get(ctx)
+	if err == nil {
+		if item.SystemPrompt == legacyDefaultAgentSystemPrompt && systemPrompt != "" {
+			item.SystemPrompt = systemPrompt
+			item.UpdatedAt = nowUnixMicro()
+			return a.agentConfigDao.Save(ctx, item)
+		}
+		return nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
 	now := nowUnixMicro()
-	item := &model.AgentSystemConfig{
+	item = &model.AgentSystemConfig{
 		ID:             model.AgentSystemConfigID,
-		SystemPrompt:   strings.TrimSpace(systemPrompt),
+		SystemPrompt:   systemPrompt,
 		PermissionMode: permissionMode,
 		MaxTurns:       maxTurns,
 		CreatedAt:      now,
@@ -91,9 +101,11 @@ func modelAgentConfigToProto(item *model.AgentSystemConfig) *systemproto.AgentSy
 		return &systemproto.AgentSystemConfig{}
 	}
 	return &systemproto.AgentSystemConfig{
-		SystemPrompt:   item.SystemPrompt,
-		PermissionMode: item.PermissionMode,
-		MaxTurns:       int32(item.MaxTurns),
-		UpdatedAt:      item.UpdatedAt,
+		SystemPrompt:     item.SystemPrompt,
+		PermissionMode:   item.PermissionMode,
+		MaxTurns:         int32(item.MaxTurns),
+		ImageToolEnabled: item.ImageToolEnabled,
+		ImageModelId:     item.ImageModelID,
+		UpdatedAt:        item.UpdatedAt,
 	}
 }

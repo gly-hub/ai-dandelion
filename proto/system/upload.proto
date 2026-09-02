@@ -39,3 +39,13 @@ message AgentUpload {
   string url = 5 [(gogoproto.jsontag) = 'url'];
 }
 message ResolveUploadForAgentResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; AgentUpload upload = 2 [(gogoproto.jsontag) = 'upload']; }
+
+// UploadRemoteFile is used by trusted backend tools to mirror a remote file into CDN.
+message UploadRemoteFileReq {
+  string url = 1 [(gogoproto.jsontag) = 'url'];
+  string file_name = 2 [(gogoproto.jsontag) = 'fileName'];
+  string content_type = 3 [(gogoproto.jsontag) = 'contentType'];
+}
+message UploadRemoteFileResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; string file_name = 3 [(gogoproto.jsontag) = 'fileName']; string content_type = 4 [(gogoproto.jsontag) = 'contentType']; }
+message UploadInlineFileReq { bytes data = 1 [(gogoproto.jsontag) = 'data']; string file_name = 2 [(gogoproto.jsontag) = 'fileName']; string content_type = 3 [(gogoproto.jsontag) = 'contentType']; }
+message UploadInlineFileResp { grpcep.CommonResp common_resp = 1 [(gogoproto.jsontag) = 'common_resp']; string url = 2 [(gogoproto.jsontag) = 'url']; string file_name = 3 [(gogoproto.jsontag) = 'fileName']; string content_type = 4 [(gogoproto.jsontag) = 'contentType']; }

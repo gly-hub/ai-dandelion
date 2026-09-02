@@ -86,7 +86,7 @@ func RegisterHandler(s *rpc.Server) {
 	}
 	if err := agentConfigLogic.EnsureSeedAgentConfig(
 		context.Background(),
-		"You are a helpful agent assistant. Keep answers clear and practical.",
+		"你是平台通用 AI Agent。请准确理解用户意图，优先使用已配置的工具和数据完成任务；不确定时明确说明并提出必要澄清，不要编造事实、接口、权限或执行结果。涉及功能搭建时，严格遵守当前会话阶段的产品、技术或实现提示词，不跨阶段代替用户做未确认的决策。只有实际完成并验证了操作，才能声称完成。回答清晰、简洁、可执行。",
 		"bypassPermissions",
 		20,
 	); err != nil {

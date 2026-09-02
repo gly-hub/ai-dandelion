@@ -18,7 +18,7 @@ func NewAgentModel(db *gorm.DB) *AgentModel {
 func (d *AgentModel) ListEnabled(ctx context.Context) ([]model.AgentModel, error) {
 	var items []model.AgentModel
 	err := d.db.WithContext(ctx).
-		Where("status = ?", model.AgentModelStatusEnabled).
+		Where("status = ? AND (type = '' OR type = 'chat')", model.AgentModelStatusEnabled).
 		Order("sort ASC, created_at ASC").
 		Find(&items).Error
 	return items, err
@@ -27,7 +27,7 @@ func (d *AgentModel) ListEnabled(ctx context.Context) ([]model.AgentModel, error
 func (d *AgentModel) GetEnabled(ctx context.Context, id string) (*model.AgentModel, error) {
 	var item model.AgentModel
 	err := d.db.WithContext(ctx).
-		Where("id = ? AND status = ?", id, model.AgentModelStatusEnabled).
+		Where("id = ? AND status = ? AND (type = '' OR type = 'chat')", id, model.AgentModelStatusEnabled).
 		First(&item).Error
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (d *AgentModel) GetEnabled(ctx context.Context, id string) (*model.AgentMod
 func (d *AgentModel) GetDefaultEnabled(ctx context.Context) (*model.AgentModel, error) {
 	var item model.AgentModel
 	err := d.db.WithContext(ctx).
-		Where("status = ? AND is_default = ?", model.AgentModelStatusEnabled, true).
+		Where("status = ? AND is_default = ? AND (type = '' OR type = 'chat')", model.AgentModelStatusEnabled, true).
 		Order("sort ASC, created_at ASC").
 		First(&item).Error
 	if err != nil {
